@@ -736,11 +736,39 @@ button:active {
 .form-nova-cat {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
-.form-nova-cat .input-group {
-  margin-top: 0;
+.cat-input-nome {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  min-width: 0;
+}
+
+.cat-input-nome::placeholder {
+  color: var(--muted);
+}
+
+.cat-input-nome:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cat-input-cor {
+  width: 50px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .btn-adicionar-cat {
@@ -751,6 +779,12 @@ button:active {
   margin-top: 0 !important;
   white-space: nowrap;
   flex-shrink: 0;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
 }
 
 .btn-adicionar-cat:hover {
