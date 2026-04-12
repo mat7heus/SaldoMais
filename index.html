@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>SaldoMais</title>
 
+  <link rel="icon" href="https://i.imgur.com/gNzlTGO.png" type="image/png">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,7 +18,13 @@
 <body>
 
 <div id="loading" class="loading-overlay">
-  <div class="loading-spinner"></div>
+  <div class="loading-container">
+    <div class="loading-logo-wrapper">
+      <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="loading-logo">
+      <div class="loading-spinner-ring"></div>
+    </div>
+    <p class="loading-text">Carregando<span class="loading-dots"></span></p>
+  </div>
 </div>
 
 <div id="notificationToast" class="notification-toast"></div>
@@ -41,8 +49,8 @@
       style="width:100%;padding:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;margin-bottom:15px;"
     >
     <div style="display:flex;gap:10px;">
-      <button id="editarCategoriaConfirm" style="flex:1;">✅ Atualizar</button>
-      <button id="editarCategoriaCancel" style="flex:1;background:#6b7280;">❌ Cancelar</button>
+      <button id="editarCategoriaConfirm" style="flex:1;background:var(--accent);color:black;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;">✅ Atualizar</button>
+      <button id="editarCategoriaCancel" style="flex:1;background:#6b7280;color:var(--text);border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;">❌ Cancelar</button>
     </div>
   </div>
 </div>
