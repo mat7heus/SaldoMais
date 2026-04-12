@@ -28,6 +28,7 @@ init();
 
 function init(){
   try {
+    mostrarLoading();
     criarCategorias();
     setupConfirmModal();
     setupEditarCategoriaModal();
@@ -219,10 +220,13 @@ function abrirEditarCategoriaModal(catId, nomeAtual){
       cat.nome = novoNome;
       set(STORAGE.categorias, cats);
       
-      renderAll();
-      renderCategoriasLista();
-      renderDashboard();
-      notificar("✅ Categoria atualizada com sucesso!");
+      mostrarLoading();
+      setTimeout(() => {
+        renderAll();
+        renderCategoriasLista();
+        renderDashboard();
+        notificar("✅ Categoria atualizada com sucesso!");
+      }, 100);
     }
   };
 }
@@ -305,8 +309,10 @@ salvarOrcamento.onclick=()=>{
     set(STORAGE.orcamentos,lista);
     orcamentoInput.value=formatarMoeda(valor);
     mostrarLoading();
-    renderAll();
-    renderDashboard();
+    setTimeout(() => {
+      renderAll();
+      renderDashboard();
+    }, 100);
   } catch (error) {
     console.error("Erro ao salvar orçamento:", error);
     notificar("Erro ao salvar orçamento");
@@ -319,8 +325,15 @@ function mostrarLoading(){
   
   loading.classList.add("show");
   setTimeout(()=>{
-    loading.classList.remove("show");
+    ocultarLoading();
   },1500);
+}
+
+function ocultarLoading(){
+  const loading=document.getElementById("loading");
+  if(!loading) return;
+  
+  loading.classList.remove("show");
 }
 
 // LANÇAMENTO
@@ -372,8 +385,10 @@ addLancamento.onclick=()=>{
   desc.value="";
   valorInput.value="";
   mostrarLoading();
-  renderAll();
-  renderDashboard();
+  setTimeout(() => {
+    renderAll();
+    renderDashboard();
+  }, 100);
 };
 
 // RENDER
@@ -738,8 +753,10 @@ function deletarLancamento(id){
     const lanc=get(STORAGE.lancamentos).filter(l=>l.id!==id);
     set(STORAGE.lancamentos,lanc);
     mostrarLoading();
-    renderAll();
-    renderDashboard();
+    setTimeout(() => {
+      renderAll();
+      renderDashboard();
+    }, 100);
   });
 }
 
@@ -766,9 +783,11 @@ function resetarMes(){
     }
 
     mostrarLoading();
-    renderAll();
-    renderDashboard();
-    notificar("Mês limpado com sucesso");
+    setTimeout(() => {
+      renderAll();
+      renderDashboard();
+      notificar("Mês limpado com sucesso");
+    }, 100);
   });
 }
 
@@ -900,10 +919,12 @@ function adicionarNovaCategoria(){
   corInput.value = "#f59e0b";
   
   mostrarLoading();
-  renderAll();
-  renderCategoriasLista();
-  renderDashboard();
-  notificar("✅ Categoria criada com sucesso!");
+  setTimeout(() => {
+    renderAll();
+    renderCategoriasLista();
+    renderDashboard();
+    notificar("✅ Categoria criada com sucesso!");
+  }, 100);
 }
 
 function atualizarPercentualCategoria(catId, valor) {
@@ -1023,8 +1044,10 @@ function deletarCategoria(catId){
   set(STORAGE.lancamentos, lanc);
   
   mostrarLoading();
-  renderAll();
-  renderCategoriasLista();
-  renderDashboard();
-  notificar("✅ Categoria removida!");
+  setTimeout(() => {
+    renderAll();
+    renderCategoriasLista();
+    renderDashboard();
+    notificar("✅ Categoria removida!");
+  }, 100);
 }
