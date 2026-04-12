@@ -62,6 +62,12 @@ body {
   border-radius: 11px;
   display: block;
   filter: drop-shadow(0 0 8px rgba(245,158,11,0.25));
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover .logo-img {
+  filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));
+  transform: scale(1.1) rotate(-5deg);
 }
 
 .logo-text {
