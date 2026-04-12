@@ -218,10 +218,9 @@ function abrirEditarCategoriaModal(catId, nomeAtual){
     const cat = cats.find(c => c.id === catId);
     if(cat) {
       cat.nome = novoNome;
-      set(STORAGE.categorias, cats);
-      
       mostrarLoading();
       setTimeout(() => {
+        set(STORAGE.categorias, cats);
         renderAll();
         renderCategoriasLista();
         renderDashboard();
@@ -306,10 +305,10 @@ salvarOrcamento.onclick=()=>{
       lista[oIdx].valor_total=valor;
     }
 
-    set(STORAGE.orcamentos,lista);
-    orcamentoInput.value=formatarMoeda(valor);
     mostrarLoading();
     setTimeout(() => {
+      set(STORAGE.orcamentos,lista);
+      orcamentoInput.value=formatarMoeda(valor);
       renderAll();
       renderDashboard();
     }, 100);
@@ -381,11 +380,11 @@ addLancamento.onclick=()=>{
     descricao:descricao
   });
 
-  set(STORAGE.lancamentos,lanc);
-  desc.value="";
-  valorInput.value="";
   mostrarLoading();
   setTimeout(() => {
+    set(STORAGE.lancamentos,lanc);
+    desc.value="";
+    valorInput.value="";
     renderAll();
     renderDashboard();
   }, 100);
@@ -552,9 +551,9 @@ function salvarPercentuais() {
     return;
   }
   
-  set(STORAGE.categorias, novosCats);
   mostrarLoading();
   setTimeout(() => {
+    set(STORAGE.categorias, novosCats);
     notificar('✅ Percentuais salvos com sucesso!');
     renderCategorias();
   }, 500);
@@ -750,10 +749,10 @@ function deletarLancamento(id){
   exigirConfirmacao("Deseja deletar este lançamento?", (confirmado)=>{
     if(!confirmado) return;
 
-    const lanc=get(STORAGE.lancamentos).filter(l=>l.id!==id);
-    set(STORAGE.lancamentos,lanc);
     mostrarLoading();
     setTimeout(() => {
+      const lanc=get(STORAGE.lancamentos).filter(l=>l.id!==id);
+      set(STORAGE.lancamentos,lanc);
       renderAll();
       renderDashboard();
     }, 100);
@@ -771,19 +770,19 @@ function resetarMes(){
       return;
     }
 
-    set(STORAGE.lancamentos,
-      get(STORAGE.lancamentos).filter(l=>l.id_orcamento!==o.id)
-    );
-
-    let lista=get(STORAGE.orcamentos);
-    const idx=lista.findIndex(x=>x.id===o.id);
-    if(idx>=0){
-      lista[idx].valor_total=0;
-      set(STORAGE.orcamentos,lista);
-    }
-
     mostrarLoading();
     setTimeout(() => {
+      set(STORAGE.lancamentos,
+        get(STORAGE.lancamentos).filter(l=>l.id_orcamento!==o.id)
+      );
+
+      let lista=get(STORAGE.orcamentos);
+      const idx=lista.findIndex(x=>x.id===o.id);
+      if(idx>=0){
+        lista[idx].valor_total=0;
+        set(STORAGE.orcamentos,lista);
+      }
+
       renderAll();
       renderDashboard();
       notificar("Mês limpado com sucesso");
@@ -914,12 +913,11 @@ function adicionarNovaCategoria(){
     cor_hex: cor
   });
   
-  set(STORAGE.categorias, cats);
-  nomeInput.value = "";
-  corInput.value = "#f59e0b";
-  
   mostrarLoading();
   setTimeout(() => {
+    set(STORAGE.categorias, cats);
+    nomeInput.value = "";
+    corInput.value = "#f59e0b";
     renderAll();
     renderCategoriasLista();
     renderDashboard();
@@ -984,9 +982,9 @@ function salvarPercentuaisCategorias() {
     return;
   }
   
-  set(STORAGE.categorias, novosCats);
   mostrarLoading();
   setTimeout(() => {
+    set(STORAGE.categorias, novosCats);
     notificar('✅ Percentuais salvos com sucesso!');
     renderAll();
     renderCategoriasLista();
@@ -1040,11 +1038,10 @@ function deletarCategoria(catId){
   // Remove lançamentos da categoria
   lanc = lanc.filter(l => l.id_categoria !== catId);
   
-  set(STORAGE.categorias, cats);
-  set(STORAGE.lancamentos, lanc);
-  
   mostrarLoading();
   setTimeout(() => {
+    set(STORAGE.categorias, cats);
+    set(STORAGE.lancamentos, lanc);
     renderAll();
     renderCategoriasLista();
     renderDashboard();
