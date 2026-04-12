@@ -2,7 +2,7 @@
 
 Uma aplicação web moderna e intuitiva para **gestão de finanças pessoais**, desenvolvida com tecnologias web puras (HTML, CSS, JavaScript vanilla). Organize seu orçamento mensal, acompanhe suas despesas por categoria e visualize seus gastos de forma clara através de gráficos interativos.
 
-![Interface do SaldoMais](https://i.imgur.com/gaFCELE.jpeg)
+![Interface do SaldoMais](https://i.imgur.com/pYzgybs.jpeg)
 
 ---
 
