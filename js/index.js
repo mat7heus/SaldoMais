@@ -30,6 +30,7 @@ function init(){
   try {
     criarCategorias();
     setupConfirmModal();
+    setupEditarCategoriaModal();
     setupButtons();
     navegar();
     atualizarDataMes();
@@ -134,6 +135,96 @@ function exigirConfirmacao(msg, callback){
   msgEl.textContent=msg;
   confirmarCallback=callback;
   modal.classList.add("show");
+}
+
+// EDITAR CATEGORIA MODAL
+let editarCategoriaCallback = null;
+let editarCategoriaId = null;
+let editarCategoriaNomeAtual = null;
+
+function setupEditarCategoriaModal(){
+  const modal = document.getElementById("editarCategoriaModal");
+  const confirm = document.getElementById("editarCategoriaConfirm");
+  const cancel = document.getElementById("editarCategoriaCancel");
+  const input = document.getElementById("editarCategoriaInput");
+  
+  if(!confirm || !cancel || !input) return;
+  
+  confirm.onclick = () => {
+    if(editarCategoriaCallback) editarCategoriaCallback(true);
+    modal.classList.remove("show");
+  };
+  
+  cancel.onclick = () => {
+    if(editarCategoriaCallback) editarCategoriaCallback(false);
+    modal.classList.remove("show");
+  };
+  
+  // Permitir Enter para confirmar
+  input.addEventListener("keypress", (e) => {
+    if(e.key === "Enter") {
+      confirm.click();
+    }
+  });
+  
+  // Permitir Escape para cancelar
+  input.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") {
+      cancel.click();
+    }
+  });
+}
+
+function abrirEditarCategoriaModal(catId, nomeAtual){
+  const modal = document.getElementById("editarCategoriaModal");
+  const input = document.getElementById("editarCategoriaInput");
+  const titulo = document.getElementById("editarCategoriaTitulo");
+  
+  if(!modal || !input || !titulo) return;
+  
+  editarCategoriaId = catId;
+  editarCategoriaNomeAtual = nomeAtual;
+  
+  titulo.textContent = `Editar: ${nomeAtual}`;
+  input.value = nomeAtual;
+  
+  modal.classList.add("show");
+  input.focus();
+  input.select();
+  
+  editarCategoriaCallback = (confirmado) => {
+    if(!confirmado) return;
+    
+    const novoNome = input.value.trim();
+    
+    if(!novoNome) {
+      notificar("❌ O nome não pode estar vazio");
+      return;
+    }
+    
+    if(novoNome.toLowerCase() === editarCategoriaNomeAtual.toLowerCase()) {
+      notificar("ℹ️ O nome é igual ao anterior");
+      return;
+    }
+    
+    const cats = get(STORAGE.categorias);
+    
+    if(cats.some(c => c.id !== catId && c.nome.toLowerCase() === novoNome.toLowerCase())) {
+      notificar("❌ Já existe uma categoria com este nome");
+      return;
+    }
+    
+    const cat = cats.find(c => c.id === catId);
+    if(cat) {
+      cat.nome = novoNome;
+      set(STORAGE.categorias, cats);
+      
+      renderAll();
+      renderCategoriasLista();
+      renderDashboard();
+      notificar("✅ Categoria atualizada com sucesso!");
+    }
+  };
 }
 
 // NAV
@@ -887,34 +978,7 @@ function abrirEditorCategoria(catId){
   
   if(!cat) return;
   
-  const novoNome = prompt(`Editar nome da categoria:\n\nNome atual: ${cat.nome}`, cat.nome);
-  
-  if(novoNome === null) return; // Cancelado
-  
-  const nomeAtualizado = novoNome.trim();
-  
-  if(!nomeAtualizado) {
-    notificar("O nome não pode estar vazio");
-    return;
-  }
-  
-  if(nomeAtualizado.toLowerCase() === cat.nome.toLowerCase()) {
-    return; // Sem mudanças
-  }
-  
-  // Verificar se já existe categoria com esse nome
-  if(cats.some(c => c.id !== catId && c.nome.toLowerCase() === nomeAtualizado.toLowerCase())) {
-    notificar("Já existe uma categoria com este nome");
-    return;
-  }
-  
-  cat.nome = nomeAtualizado;
-  set(STORAGE.categorias, cats);
-  
-  renderAll();
-  renderCategoriasLista();
-  renderDashboard();
-  notificar("✅ Categoria atualizada!");
+  abrirEditarCategoriaModal(catId, cat.nome);
 }
 
 function abrirEditorCor(catId, corAtual){
