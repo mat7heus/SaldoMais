@@ -59,8 +59,15 @@
 
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>💰 SaldoMais</h1>
-      <p class="sidebar-subtitle">Gastos claros, decisões inteligentes.</p>
+      <div class="logo-container" onclick="mostrarLoading(); setTimeout(function(){ document.querySelector('.nav-btn[data-screen=dashboard]').click(); }, 1500)">
+        <div class="logo-icon">
+          <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="logo-img">
+        </div>
+        <div class="logo-text">
+          <span class="logo-brand">SaldoMais</span>
+          <span class="logo-tagline">Gastos claros, decisões inteligentes.</span>
+        </div>
+      </div>
     </div>
 
     <nav class="sidebar-nav">
