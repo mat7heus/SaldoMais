@@ -10,6 +10,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <link rel="stylesheet" href="./css/index.css">
 
   <!-- IMPORTANTE -->
@@ -49,8 +52,8 @@
       style="width:100%;padding:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;margin-bottom:15px;"
     >
     <div style="display:flex;gap:10px;">
-      <button id="editarCategoriaConfirm" style="flex:1;background:var(--accent);color:black;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;">✅ Atualizar</button>
-      <button id="editarCategoriaCancel" style="flex:1;background:#6b7280;color:var(--text);border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;">❌ Cancelar</button>
+      <button id="editarCategoriaConfirm" style="flex:1;background:var(--accent);color:black;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="check" size="18"></i> Atualizar</button>
+      <button id="editarCategoriaCancel" style="flex:1;background:#6b7280;color:var(--text);border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="x" size="18"></i> Cancelar</button>
     </div>
   </div>
 </div>
@@ -72,15 +75,15 @@
 
     <nav class="sidebar-nav">
       <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento">
-        <span class="nav-icon">📈</span>
+        <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
         <span class="nav-label">Dashboard</span>
       </button>
       <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas">
-        <span class="nav-icon">💰</span>
+        <span class="nav-icon"><i data-lucide="circle-dollar-sign"></i></span>
         <span class="nav-label">Lançamentos</span>
       </button>
       <button data-screen="categorias" class="nav-btn" title="Personalizar categorias">
-        <span class="nav-icon">🏷️</span>
+        <span class="nav-icon"><i data-lucide="tags"></i></span>
         <span class="nav-label">Categorias</span>
       </button>
     </nav>
@@ -97,13 +100,13 @@
 
       <div class="dashboard-setup">
         <div class="input-group">
-          <label for="orcamentoInput">💵 Orçamento do Mês</label>
+          <label for="orcamentoInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="wallet" size="16"></i> Orçamento do Mês</label>
           <input id="orcamentoInput" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
           <div class="input-helper">Digite o valor total disponível para este mês</div>
         </div>
         <div class="button-group">
-          <button id="salvarOrcamento" class="btn-primary">💾 Salvar Orçamento</button>
-          <button id="limparMes" class="btn-danger">🗑️ Limpar Mês</button>
+          <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
+          <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
         </div>
       </div>
 
@@ -129,26 +132,26 @@
 
       <div class="lancamento-form">
         <div class="input-group">
-          <label for="desc">📝 Descrição</label>
+          <label for="desc" style="display:flex;align-items:center;gap:8px;"><i data-lucide="file-text" size="16"></i> Descrição</label>
           <input id="desc" placeholder="Ex: Mercado, Netflix, Gasolina..." autocomplete="off">
         </div>
 
         <div class="input-row">
           <div class="input-group" style="flex:1;">
-            <label for="valorInput">💰 Valor</label>
+            <label for="valorInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor</label>
             <input id="valorInput" type="text" inputmode="decimal" placeholder="Ex: 150,50">
           </div>
           <div class="input-group" style="flex:1;">
-            <label for="categoriaSelect">🏷️ Categoria</label>
+            <label for="categoriaSelect" style="display:flex;align-items:center;gap:8px;"><i data-lucide="tag" size="16"></i> Categoria</label>
             <select id="categoriaSelect"></select>
           </div>
         </div>
 
-        <button id="addLancamento" class="btn-primary" style="width:100%;">➕ Adicionar Despesa</button>
+        <button id="addLancamento" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="plus-circle" size="18"></i> Adicionar Despesa</button>
       </div>
 
       <div class="lancamentos-section">
-        <h3>📋 Despesas do Mês</h3>
+        <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Despesas do Mês</h3>
         <div id="listaLancamentos" class="lista-lancamentos"></div>
       </div>
     </section>
@@ -162,7 +165,7 @@
       
       <div class="categorias-manager">
         <div class="nova-categoria-form">
-          <h4>➕ Adicionar Nova Categoria</h4>
+          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="plus" size="18"></i> Adicionar Nova Categoria</h4>
           <div class="form-nova-cat">
             <input id="novaCategoriaNome" type="text" placeholder="Nome da Categoria" maxlength="30" class="cat-input-nome">
             <input id="novaCategoriaCor" type="color" value="#f59e0b" class="cat-input-cor" title="Selecione uma cor">
@@ -171,7 +174,7 @@
         </div>
 
         <div class="categorias-lista-editor">
-          <h4>📋 Categorias Existentes</h4>
+          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list" size="18"></i> Categorias Existentes</h4>
           <div id="categoriasListaEditor" class="categorias-lista"></div>
         </div>
       </div>

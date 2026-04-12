@@ -38,6 +38,7 @@ function init(){
     renderAll();
     renderDashboard();
   } catch (error) {
+    if (window.lucide) lucide.createIcons();
     console.error("Erro na inicialização:", error);
   }
 }
@@ -399,6 +400,7 @@ function renderAll(){
     renderCategorias();
     renderCategoriasLista();
   } catch (error) {
+    if (window.lucide) lucide.createIcons();
     console.error("Erro ao renderizar elementos:", error);
   }
 }
@@ -481,16 +483,17 @@ function renderCategorias(){
         <span class="total-value" id="totalPercentual">${totalPercentual}%</span>
       </div>
       ${totalPercentual !== 100 ? `
-        <div class="total-warning">⚠️ O total deve ser 100% para funcionar corretamente</div>
+        <div class="total-warning" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="alert-triangle" size="16"></i> O total deve ser 100% para funcionar corretamente</div>
       ` : `
-        <div class="total-success">✅ Distribuição completa e balanceada</div>
+        <div class="total-success" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="check-circle-2" size="16"></i> Distribuição completa e balanceada</div>
       `}
-      <button onclick="salvarPercentuais()" class="btn-salvar-percentuais">💾 Salvar Percentuais</button>
+      <button onclick="salvarPercentuais()" class="btn-salvar-percentuais" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Percentuais</button>
     </div>
   </div>
   `;
   
   listaCategorias.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
 }
 
 function atualizarPercentualPreview(catId, valor) {
@@ -583,9 +586,10 @@ function renderLancamentos(){
           <div class="lancamento-categoria">${cat ? cat.nome : 'Sem categoria'}</div>
         </div>
         <div class="lancamento-valor">${formatarMoeda(l.valor)}</div>
-        <button onclick="deletarLancamento(${l.id})" class="lancamento-delete">❌</button>
+        <button onclick="deletarLancamento(${l.id})" class="lancamento-delete"><i data-lucide="trash-2" size="14"></i></button>
       </div>
     `}).join("");
+  if (window.lucide) lucide.createIcons();
 }
 
 function renderDashboard(){
@@ -620,6 +624,7 @@ function renderDashboard(){
 
   // Renderizar gráfico
   renderGrafico(cats,lanc,o);
+  if (window.lucide) lucide.createIcons();
 }
 
 function renderResumoGeral(cats, lanc, o){
@@ -640,13 +645,13 @@ function renderResumoGeral(cats, lanc, o){
 
   resumoGeral.innerHTML = `
     <div class="stat-card">
-      <span class="stat-label">💰 Total Disponível</span>
+      <span class="stat-label">Total Disponível</span>
       <span class="stat-value">${formatarMoeda(o.valor_total)}</span>
       <span class="stat-subtitle">Seu orçamento do mês</span>
     </div>
 
     <div class="stat-card">
-      <span class="stat-label">💸 Total Gasto</span>
+      <span class="stat-label">Total Gasto</span>
       <span class="stat-value">${formatarMoeda(totalGasto)}</span>
       <div class="stat-bar">
         <div class="stat-bar-fill" style="width:${Math.min(percentualUsado, 100)}%"></div>
@@ -655,7 +660,7 @@ function renderResumoGeral(cats, lanc, o){
     </div>
 
     <div class="stat-card">
-      <span class="stat-label">🎯 Disponível</span>
+      <span class="stat-label">Disponível</span>
       <span class="stat-value" style="color:${totalRestante > 0 ? 'var(--ok)' : 'var(--danger)'}">
         ${formatarMoeda(totalRestante)}
       </span>
@@ -664,7 +669,7 @@ function renderResumoGeral(cats, lanc, o){
 
     ${categoriasAlert > 0 ? `
       <div class="stat-card" style="border-color:#fb923c40;background:rgba(251, 146, 60, 0.1);">
-        <span class="stat-label">⚠️  Atenção</span>
+        <span class="stat-label">Atenção</span>
         <span class="stat-value" style="color:var(--warn);">${categoriasAlert}</span>
         <span class="stat-subtitle">categoria(s) com limite ultrapassado</span>
       </div>
@@ -851,11 +856,11 @@ function renderCategoriasLista(){
         <span class="total-percentual" id="totalPercentualCategorias">${totalPercentual}%</span>
       </div>
       ${totalPercentual !== 100 ? `
-        <div class="total-warning">⚠️ O total deve ser 100%</div>
+        <div class="total-warning" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="alert-triangle" size="16"></i> O total deve ser 100%</div>
       ` : `
-        <div class="total-success">✅ Distribuição perfeita!</div>
+        <div class="total-success" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="check-circle-2" size="16"></i> Distribuição perfeita!</div>
       `}
-      <button onclick="salvarPercentuaisCategorias()" class="btn-salvar-percentuais">💾 Salvar Percentuais</button>
+      <button onclick="salvarPercentuaisCategorias()" class="btn-salvar-percentuais" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Percentuais</button>
     </div>
     
     <div class="categorias-existentes">
@@ -870,8 +875,8 @@ function renderCategoriasLista(){
         <div class="categoria-item-info">Percentual: ${c.percentual}%</div>
       </div>
       <div class="categoria-item-actions">
-        <button onclick="abrirEditorCategoria(${c.id})" class="btn-editar-cat">✏️ Editar</button>
-        <button onclick="deletarCategoriaConfirm(${c.id})" class="btn-deletar-cat">🗑️ Remover</button>
+        <button onclick="abrirEditorCategoria(${c.id})" class="btn-editar-cat" style="display:flex;align-items:center;gap:4px;"><i data-lucide="edit-3" size="12"></i> Editar</button>
+        <button onclick="deletarCategoriaConfirm(${c.id})" class="btn-deletar-cat" style="display:flex;align-items:center;gap:4px;"><i data-lucide="trash-2" size="12"></i> Remover</button>
       </div>
     </div>
   `).join("");
@@ -882,6 +887,7 @@ function renderCategoriasLista(){
   `;
   
   categoriasListaEditor.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
 }
 
 function adicionarNovaCategoria(){
