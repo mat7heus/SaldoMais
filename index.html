@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>SaldoMais</title>
+  <title>SaldoMais | Gastos claros, decisões inteligentes.</title>
 
   <link rel="icon" href="https://i.imgur.com/gNzlTGO.png" type="image/png">
 
@@ -60,7 +60,7 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1>💰 SaldoMais</h1>
-      <p class="sidebar-subtitle">Gestão Financeira</p>
+      <p class="sidebar-subtitle">Gastos claros, decisões inteligentes.</p>
     </div>
 
     <nav class="sidebar-nav">
@@ -157,14 +157,8 @@
         <div class="nova-categoria-form">
           <h4>➕ Adicionar Nova Categoria</h4>
           <div class="form-nova-cat">
-            <div class="input-group" style="flex:1;">
-              <label for="novaCategoriaNome">📝 Nome da Categoria</label>
-              <input id="novaCategoriaNome" type="text" placeholder="Ex: Educação, Lazer, Saúde..." maxlength="30">
-            </div>
-            <div class="input-group" style="flex:0 1 120px;">
-              <label for="novaCategoriaCor">🎨 Cor</label>
-              <input id="novaCategoriaCor" type="color" value="#f59e0b">
-            </div>
+            <input id="novaCategoriaNome" type="text" placeholder="Nome da Categoria" maxlength="30" class="cat-input-nome">
+            <input id="novaCategoriaCor" type="color" value="#f59e0b" class="cat-input-cor" title="Selecione uma cor">
             <button onclick="adicionarNovaCategoria()" class="btn-adicionar-cat">Adicionar</button>
           </div>
         </div>
