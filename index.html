@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>SaldoMais</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="./css/index.css">
+
+  <!-- IMPORTANTE -->
+  <script src="./js/index.js" defer></script>
+</head>
+<body>
+
+<div id="loading" class="loading-overlay">
+  <div class="loading-spinner"></div>
+</div>
+
+<div id="notificationToast" class="notification-toast"></div>
+
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-container">
+    <p id="confirmMessage"></p>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button id="confirmYes" style="flex:1;">Confirmar</button>
+      <button id="confirmNo" style="flex:1;background:#6b7280;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>💰 SaldoMais</h1>
+      <p class="sidebar-subtitle">Gestão Financeira</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+      <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Lançamentos</span>
+      </button>
+      <button data-screen="categorias" class="nav-btn" title="Personalizar categorias">
+        <span class="nav-icon">🏷️</span>
+        <span class="nav-label">Categorias</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="screen active">
+      <div class="dashboard-header">
+        <h2>Dashboard - Seu Orçamento</h2>
+        <p class="dashboard-subtitle" id="mesAtualText"></p>
+      </div>
+
+      <div class="dashboard-setup">
+        <div class="input-group">
+          <label for="orcamentoInput">💵 Orçamento do Mês</label>
+          <input id="orcamentoInput" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
+          <div class="input-helper">Digite o valor total disponível para este mês</div>
+        </div>
+        <div class="button-group">
+          <button id="salvarOrcamento" class="btn-primary">💾 Salvar Orçamento</button>
+          <button id="limparMes" class="btn-danger">🗑️ Limpar Mês</button>
+        </div>
+      </div>
+
+      <div id="resumoGeral" class="resumo-geral"></div>
+
+      <div class="dashboard-content">
+        <div class="chart-container">
+          <h3>Distribuição de Gastos</h3>
+          <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+            <canvas id="grafico"></canvas>
+          </div>
+        </div>
+        <div id="categoriasStatus" class="categorias-container"></div>
+      </div>
+    </section>
+
+    <!-- LANÇAMENTOS -->
+    <section id="lancamentos" class="screen">
+      <div class="dashboard-header">
+        <h2>Adicionar Despesa</h2>
+        <p class="dashboard-subtitle">Registre seus gastos por categoria</p>
+      </div>
+
+      <div class="lancamento-form">
+        <div class="input-group">
+          <label for="desc">📝 Descrição</label>
+          <input id="desc" placeholder="Ex: Mercado, Netflix, Gasolina..." autocomplete="off">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex:1;">
+            <label for="valorInput">💰 Valor</label>
+            <input id="valorInput" type="text" inputmode="decimal" placeholder="Ex: 150,50">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="categoriaSelect">🏷️ Categoria</label>
+            <select id="categoriaSelect"></select>
+          </div>
+        </div>
+
+        <button id="addLancamento" class="btn-primary" style="width:100%;">➕ Adicionar Despesa</button>
+      </div>
+
+      <div class="lancamentos-section">
+        <h3>📋 Despesas do Mês</h3>
+        <div id="listaLancamentos" class="lista-lancamentos"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section id="categorias" class="screen">
+      <div class="dashboard-header">
+        <h2>Minhas Categorias</h2>
+        <p class="dashboard-subtitle">Crie, edite ou remova suas categorias</p>
+      </div>
+      
+      <div class="categorias-manager">
+        <div class="nova-categoria-form">
+          <h4>➕ Adicionar Nova Categoria</h4>
+          <div class="form-nova-cat">
+            <div class="input-group" style="flex:1;">
+              <label for="novaCategoriaNome">📝 Nome da Categoria</label>
+              <input id="novaCategoriaNome" type="text" placeholder="Ex: Educação, Lazer, Saúde..." maxlength="30">
+            </div>
+            <div class="input-group" style="flex:0 1 120px;">
+              <label for="novaCategoriaCor">🎨 Cor</label>
+              <input id="novaCategoriaCor" type="color" value="#f59e0b">
+            </div>
+            <button onclick="adicionarNovaCategoria()" class="btn-adicionar-cat">Adicionar</button>
+          </div>
+        </div>
+
+        <div class="categorias-lista-editor">
+          <h4>📋 Categorias Existentes</h4>
+          <div id="categoriasListaEditor" class="categorias-lista"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="configuracoes" class="screen">
+      <div class="dashboard-header">
+        <h2>Configurações</h2>
+        <p class="dashboard-subtitle">Ajuste os percentuais do seu orçamento</p>
+      </div>
+      <div id="listaCategorias" class="lista-categorias"></div>
+    </section>
+
+  </main>
+
+</div>
+
+</body>
+</html>
