@@ -40,21 +40,55 @@ body {
 .sidebar-header {
   margin-bottom: 30px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 15px;
+  padding-bottom: 18px;
 }
 
-.sidebar h1 {
-  font-size: 20px;
-  opacity: 0.95;
-  margin: 0 0 5px 0;
-  font-weight: 600;
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
 }
 
-.sidebar-subtitle {
-  font-size: 12px;
+.logo-icon {
+  flex-shrink: 0;
+  border-radius: 11px;
+  transition: box-shadow 0.3s ease;
+}
+
+.logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 11px;
+  display: block;
+  filter: drop-shadow(0 0 8px rgba(245,158,11,0.25));
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.logo-brand {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.logo-tagline {
+  display: block;
+  font-size: 10px;
   color: var(--muted);
-  margin: 0;
-  opacity: 0.7;
+  opacity: 0.6;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-nav {
