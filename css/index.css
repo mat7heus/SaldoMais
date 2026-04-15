@@ -476,6 +476,47 @@ button:active {
   max-height: 100% !important;
 }
 
+.grafico-legenda-custom {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: center;
+  padding: 18px 4px 0;
+  max-height: 90px;
+  overflow-y: auto;
+}
+
+.grafico-legenda-custom::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.grafico-legenda-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grafico-legenda-custom::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.grafico-legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.grafico-legenda-cor {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
 /* LANÇAMENTOS */
 .lancamento-form {
   background: var(--card);
@@ -1542,20 +1583,24 @@ button:active {
 .calc-table-wrapper {
   max-height: 240px;
   overflow-y: auto;
+  overflow-x: auto;
   border-radius: 8px;
   border: 1px solid var(--border);
+  background: #111113;
 }
 
 .calc-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 12px;
 }
 
 .calc-table th {
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.06);
+  z-index: 1;
+  background: #111113;
   color: var(--muted);
   font-size: 11px;
   text-transform: uppercase;
@@ -1664,4 +1709,192 @@ button:active {
 .screen-footer-link:hover {
   color: var(--accent);
   opacity: 1;
+}
+
+/* =====================
+   MOBILE
+   ===================== */
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 99;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+
+  .hamburger-btn {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-logo-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .mobile-logo-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px !important;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .content {
+    padding: 16px;
+    padding-top: 72px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 20px;
+  }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 380px;
+    justify-content: flex-start;
+    padding-top: 48px;
+  }
+
+  .grafico-legenda-custom {
+    max-height: 72px;
+    gap: 5px 10px;
+  }
+
+  .grafico-legenda-item {
+    font-size: 11px;
+  }
+
+  .input-row {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .input-row .input-group {
+    min-width: 100%;
+  }
+
+  .form-nova-cat {
+    flex-wrap: wrap;
+  }
+
+  .categoria-editor-controls {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .categoria-item-editor {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .categoria-item-actions {
+    flex: 0 0 100%;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+
+  .btn-editar-cat,
+  .btn-deletar-cat {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .button-group {
+    flex-wrap: wrap;
+  }
+
+  .calc-section {
+    padding: 16px;
+  }
+
+  .calc-card {
+    padding: 16px;
+  }
+
+  .calc-result-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .calc-stat-value {
+    font-size: 13px;
+  }
+
+  .calc-table {
+    font-size: 11px;
+  }
+
+  .calc-table th,
+  .calc-table td {
+    padding: 5px 7px;
+  }
 }
