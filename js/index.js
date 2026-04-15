@@ -34,6 +34,7 @@ function init(){
     setupEditarCategoriaModal();
     setupButtons();
     navegar();
+    setupMobileMenu();
     atualizarDataMes();
     renderAll();
     renderDashboard();
@@ -72,6 +73,36 @@ function setupButtons(){
       e.target.value=textoAtual ? formatarMoeda(Number(textoAtual)/100) : "";
     });
   }
+}
+
+// MENU MOBILE
+function setupMobileMenu() {
+  const hamburger = document.getElementById('hamburgerBtn');
+  const sidebar   = document.querySelector('.sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+  if (!hamburger || !sidebar || !overlay) return;
+
+  function abrirMenu() {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharMenu() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', abrirMenu);
+  overlay.addEventListener('click', fecharMenu);
+
+  // Fecha o menu ao clicar em qualquer item de navegação no mobile
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (window.innerWidth <= 768) fecharMenu();
+    });
+  });
 }
 
 // NOTIFICAÇÕES
@@ -691,6 +722,16 @@ function renderGrafico(cats,lanc,o){
       window.graficoChart.destroy();
     }
 
+    const legendaEl=document.getElementById('grafico-legenda');
+    if(legendaEl){
+      legendaEl.innerHTML=labels.map((label,i)=>`
+        <div class="grafico-legenda-item">
+          <span class="grafico-legenda-cor" style="background:${cores[i]};"></span>
+          <span>${label}</span>
+        </div>
+      `).join('');
+    }
+
     window.graficoChart=new Chart(ctx,{
       type:"doughnut",
       data:{
@@ -713,12 +754,7 @@ function renderGrafico(cats,lanc,o){
         },
         plugins:{
           legend:{
-            labels:{
-              color:"#f5f5f5",
-              font:{size:12},
-              padding:15
-            },
-            position:"bottom"
+            display:false
           },
           tooltip:{
             enabled:true,
