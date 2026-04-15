@@ -61,21 +61,15 @@ function setupButtons(){
   
   if(orcamentoInput){
     orcamentoInput.addEventListener("input",(e)=>{
-      const textoAtual=e.target.value.replace(/[^\d]/g,"");
-      if(textoAtual){
-        const numero=Number(textoAtual)/100;
-        e.target.value=formatarMoeda(numero);
-      }
+      const textoAtual=e.target.value.replace(/[^\d]/g,"").slice(0,11);
+      e.target.value=textoAtual ? formatarMoeda(Number(textoAtual)/100) : "";
     });
   }
-  
+
   if(valorInput){
     valorInput.addEventListener("input",(e)=>{
-      const textoAtual=e.target.value.replace(/[^\d]/g,"");
-      if(textoAtual){
-        const numero=Number(textoAtual)/100;
-        e.target.value=formatarMoeda(numero);
-      }
+      const textoAtual=e.target.value.replace(/[^\d]/g,"").slice(0,11);
+      e.target.value=textoAtual ? formatarMoeda(Number(textoAtual)/100) : "";
     });
   }
 }
@@ -1037,13 +1031,13 @@ function deletarCategoriaConfirm(catId){
 function deletarCategoria(catId){
   let cats = get(STORAGE.categorias);
   let lanc = get(STORAGE.lancamentos);
-  
+
   // Remove a categoria
   cats = cats.filter(c => c.id !== catId);
-  
+
   // Remove lançamentos da categoria
   lanc = lanc.filter(l => l.id_categoria !== catId);
-  
+
   mostrarLoading();
   setTimeout(() => {
     set(STORAGE.categorias, cats);
@@ -1054,3 +1048,484 @@ function deletarCategoria(catId){
     notificar("✅ Categoria removida!");
   }, 100);
 }
+
+// =====================
+// CALCULADORAS
+// =====================
+
+function parseBRCalc(str) {
+  if (!str) return 0;
+  str = String(str).trim().replace(/\s/g, '');
+  if (str.includes(',')) {
+    if (str.includes('.') && str.lastIndexOf('.') < str.lastIndexOf(',')) {
+      // Formato BR: 1.000,50 — remove pontos de milhar, troca vírgula por ponto
+      str = str.replace(/\./g, '').replace(',', '.');
+    } else {
+      // Vírgula como decimal: 1,5
+      str = str.replace(',', '.');
+    }
+  }
+  return parseFloat(str.replace(/[^\d.\-]/g, '')) || 0;
+}
+
+function calcularJurosCompostos() {
+  const capital   = parseBRCalc(document.getElementById('jc-capital').value);
+  const aporte    = parseBRCalc(document.getElementById('jc-aporte').value) || 0;
+  const taxaAnual = parseBRCalc(document.getElementById('jc-taxa').value) / 100;
+  const periodo   = parseInt(document.getElementById('jc-periodo').value) || 0;
+
+  if (capital   <= 0) { notificar('Digite um capital inicial válido'); return; }
+  if (taxaAnual <= 0) { notificar('Digite uma taxa de juros válida');   return; }
+  if (periodo   <  1) { notificar('Digite um período válido (mín. 1 mês)'); return; }
+
+  // Conversão correta: taxa mensal equivalente à taxa anual
+  const taxa = Math.pow(1 + taxaAnual, 1 / 12) - 1;
+
+  let saldo = capital;
+  let totalInvestido = capital;
+  const linhas = [];
+
+  for (let m = 1; m <= periodo; m++) {
+    const jurosMes = saldo * taxa;
+    saldo = saldo * (1 + taxa) + aporte;
+    totalInvestido += aporte;
+    linhas.push({ mes: m, aporte, jurosMes, montante: saldo });
+  }
+
+  const totalJuros = saldo - totalInvestido;
+
+  document.getElementById('jc-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Montante Final</span>
+      <span class="calc-stat-value">${formatarMoeda(saldo)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total Investido</span>
+      <span class="calc-stat-value">${formatarMoeda(totalInvestido)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total em Juros</span>
+      <span class="calc-stat-value" style="color:var(--accent)">${formatarMoeda(totalJuros)}</span>
+    </div>
+  `;
+
+  document.getElementById('jc-tabela').innerHTML = `
+    <thead>
+      <tr><th>Mês</th><th>Aporte</th><th>Juros do Mês</th><th>Montante Acum.</th></tr>
+    </thead>
+    <tbody>
+      ${linhas.map(l => `
+        <tr>
+          <td>${l.mes}</td>
+          <td>${formatarMoeda(l.aporte)}</td>
+          <td>${formatarMoeda(l.jurosMes)}</td>
+          <td>${formatarMoeda(l.montante)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+
+  document.getElementById('jc-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularCDBCDI() {
+  const valor      = parseBRCalc(document.getElementById('cdi-valor').value);
+  const taxaCDI    = parseBRCalc(document.getElementById('cdi-taxa').value);
+  const percentual = parseBRCalc(document.getElementById('cdi-percentual').value);
+  const prazo      = parseInt(document.getElementById('cdi-prazo').value) || 0;
+
+  if (valor      <= 0) { notificar('Digite um valor investido válido');    return; }
+  if (taxaCDI    <= 0) { notificar('Digite a taxa do CDI válida');         return; }
+  if (percentual <= 0) { notificar('Digite o percentual do CDI válido');   return; }
+  if (prazo      <  1) { notificar('Digite um prazo válido (mín. 1 dia)'); return; }
+
+  // Taxa efetiva anual do CDB = CDI_aa * (percentual / 100)
+  const taxaEfetiva = (taxaCDI * percentual / 100) / 100;
+  // Converter para taxa diária (convenção 252 dias úteis)
+  const taxaDiaria  = Math.pow(1 + taxaEfetiva, 1 / 252) - 1;
+  // Rendimento bruto sobre os dias corridos informados
+  const rendBruto   = valor * (Math.pow(1 + taxaDiaria, prazo) - 1);
+
+  // Tabela regressiva de IR
+  let aliquota;
+  if      (prazo <= 180) aliquota = 0.225;
+  else if (prazo <= 360) aliquota = 0.20;
+  else if (prazo <= 720) aliquota = 0.175;
+  else                   aliquota = 0.15;
+
+  const ir       = rendBruto * aliquota;
+  const valorLiq = valor + rendBruto - ir;
+
+  document.getElementById('cdi-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Rendimento Bruto</span>
+      <span class="calc-stat-value">${formatarMoeda(rendBruto)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">IR Descontado (${(aliquota * 100).toFixed(1)}%)</span>
+      <span class="calc-stat-value" style="color:var(--danger)">${formatarMoeda(ir)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Valor Líquido Final</span>
+      <span class="calc-stat-value" style="color:var(--ok)">${formatarMoeda(valorLiq)}</span>
+    </div>
+  `;
+
+  document.getElementById('cdi-ir-info').innerHTML = `
+    <div class="calc-alert calc-alert-ok" style="margin-top:12px;">
+      <i data-lucide="info" size="16"></i>
+      IR de ${(aliquota * 100).toFixed(1)}% aplicado (${prazo} dias).
+      Tabela: ≤180d → 22,5% | ≤360d → 20% | ≤720d → 17,5% | &gt;720d → 15%
+    </div>
+  `;
+
+  document.getElementById('cdi-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularAporteMeta() {
+  const meta  = parseBRCalc(document.getElementById('meta-valor').value);
+  const prazo = parseInt(document.getElementById('meta-prazo').value) || 0;
+  const taxa  = parseBRCalc(document.getElementById('meta-taxa').value) / 100;
+
+  if (meta  <= 0) { notificar('Digite um valor de meta válido');       return; }
+  if (prazo <  1) { notificar('Digite um prazo válido (mín. 1 mês)'); return; }
+  if (taxa  <= 0) { notificar('Digite uma taxa de juros válida');      return; }
+
+  // PMT = FV × r / [(1+r)^n − 1]
+  const fator        = Math.pow(1 + taxa, prazo);
+  const pmt          = meta * taxa / (fator - 1);
+  const totalAportado = pmt * prazo;
+  const totalJuros   = meta - totalAportado;
+
+  document.getElementById('meta-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Aporte Mensal Necessário</span>
+      <span class="calc-stat-value" style="color:var(--accent)">${formatarMoeda(pmt)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total Aportado</span>
+      <span class="calc-stat-value">${formatarMoeda(totalAportado)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Gerado em Juros</span>
+      <span class="calc-stat-value" style="color:var(--ok)">${formatarMoeda(totalJuros)}</span>
+    </div>
+  `;
+
+  document.getElementById('meta-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularDividendYield() {
+  const patrimonio = parseBRCalc(document.getElementById('dy-patrimonio').value);
+  const yieldAnual = parseBRCalc(document.getElementById('dy-yield').value);
+
+  if (patrimonio <= 0) { notificar('Digite um patrimônio válido');     return; }
+  if (yieldAnual <= 0) { notificar('Digite um dividend yield válido'); return; }
+
+  const rendaAnual  = patrimonio * (yieldAnual / 100);
+  const rendaMensal = rendaAnual / 12;
+
+  document.getElementById('dy-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Renda Mensal Estimada</span>
+      <span class="calc-stat-value" style="color:var(--accent)">${formatarMoeda(rendaMensal)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Renda Anual Estimada</span>
+      <span class="calc-stat-value">${formatarMoeda(rendaAnual)}</span>
+    </div>
+  `;
+
+  document.getElementById('dy-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularFinanciamentoPrice() {
+  const pv   = parseBRCalc(document.getElementById('price-valor').value);
+  const taxa = parseBRCalc(document.getElementById('price-taxa').value) / 100;
+  const n    = parseInt(document.getElementById('price-parcelas').value) || 0;
+
+  if (pv   <= 0) { notificar('Digite um valor financiado válido');        return; }
+  if (taxa <= 0) { notificar('Digite uma taxa de juros válida');           return; }
+  if (n    <  1) { notificar('Digite o número de parcelas (mín. 1)');     return; }
+
+  // Tabela Price: PMT = PV × r / [1 − (1+r)^(−n)]
+  const parcela    = pv * taxa / (1 - Math.pow(1 + taxa, -n));
+  const totalPago  = parcela * n;
+  const totalJuros = totalPago - pv;
+
+  document.getElementById('price-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Valor da Parcela</span>
+      <span class="calc-stat-value">${formatarMoeda(parcela)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total Pago</span>
+      <span class="calc-stat-value">${formatarMoeda(totalPago)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total de Juros</span>
+      <span class="calc-stat-value" style="color:var(--danger)">${formatarMoeda(totalJuros)}</span>
+    </div>
+  `;
+
+  let saldo = pv;
+  let rows  = '';
+  for (let i = 1; i <= n; i++) {
+    const juros = saldo * taxa;
+    const amort = parcela - juros;
+    saldo = Math.max(0, saldo - amort);
+    rows += `<tr>
+      <td>${i}</td>
+      <td>${formatarMoeda(parcela)}</td>
+      <td>${formatarMoeda(amort)}</td>
+      <td>${formatarMoeda(juros)}</td>
+      <td>${formatarMoeda(saldo)}</td>
+    </tr>`;
+  }
+
+  document.getElementById('price-tabela').innerHTML = `
+    <thead>
+      <tr><th>Parcela</th><th>Prestação</th><th>Amortização</th><th>Juros</th><th>Saldo Dev.</th></tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  `;
+
+  document.getElementById('price-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularRotativoCartao() {
+  const divida    = parseBRCalc(document.getElementById('rot-divida').value);
+  const taxa      = parseBRCalc(document.getElementById('rot-taxa').value) / 100;
+  const pagamento = parseBRCalc(document.getElementById('rot-minimo').value);
+
+  if (divida    <= 0) { notificar('Digite uma dívida válida');                    return; }
+  if (taxa      <= 0) { notificar('Digite uma taxa de juros válida');              return; }
+  if (pagamento <= 0) { notificar('Digite um valor de pagamento mensal válido');  return; }
+
+  const alertaEl    = document.getElementById('rot-alerta');
+  const resultadoEl = document.getElementById('rot-resultado');
+  const jurosPrimeiro = divida * taxa;
+
+  if (pagamento <= jurosPrimeiro) {
+    alertaEl.innerHTML = `
+      <div class="calc-alert calc-alert-danger">
+        <i data-lucide="alert-triangle" size="16"></i>
+        Seu pagamento (${formatarMoeda(pagamento)}) é menor ou igual aos juros do 1º mês
+        (${formatarMoeda(jurosPrimeiro)}). A dívida nunca será quitada!
+      </div>
+    `;
+    document.getElementById('rot-cards').innerHTML   = '';
+    document.getElementById('rot-tabela').innerHTML  = '';
+    resultadoEl.style.display = 'block';
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  alertaEl.innerHTML = '';
+
+  let saldo      = divida;
+  let totalPago  = 0;
+  let totalJuros = 0;
+  let meses      = 0;
+  const linhas   = [];
+  const MAX_MESES = 1200;
+
+  while (saldo > 0.005 && meses < MAX_MESES) {
+    meses++;
+    const juros     = saldo * taxa;
+    const pag       = Math.min(pagamento, saldo + juros);
+    const novoSaldo = Math.max(0, saldo + juros - pag);
+    totalPago  += pag;
+    totalJuros += juros;
+    if (linhas.length < 24) linhas.push({ mes: meses, saldo, juros, pag, novoSaldo });
+    saldo = novoSaldo;
+  }
+
+  document.getElementById('rot-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Meses para Quitar</span>
+      <span class="calc-stat-value">${meses >= MAX_MESES ? '&gt; ' + MAX_MESES : meses}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total Pago</span>
+      <span class="calc-stat-value">${formatarMoeda(totalPago)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Total em Juros</span>
+      <span class="calc-stat-value" style="color:var(--danger)">${formatarMoeda(totalJuros)}</span>
+    </div>
+  `;
+
+  document.getElementById('rot-tabela').innerHTML = `
+    <thead>
+      <tr><th>Mês</th><th>Saldo Dev.</th><th>Juros</th><th>Pagamento</th><th>Novo Saldo</th></tr>
+    </thead>
+    <tbody>
+      ${linhas.map(l => `
+        <tr>
+          <td>${l.mes}</td>
+          <td>${formatarMoeda(l.saldo)}</td>
+          <td>${formatarMoeda(l.juros)}</td>
+          <td>${formatarMoeda(l.pag)}</td>
+          <td>${formatarMoeda(l.novoSaldo)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+
+  resultadoEl.style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularAVistaVsParcelado() {
+  const avista       = parseBRCalc(document.getElementById('avp-vista').value);
+  const parcelaValor = parseBRCalc(document.getElementById('avp-parcelas-valor').value);
+  const nParcelas    = parseInt(document.getElementById('avp-n-parcelas').value) || 0;
+  const taxa         = parseBRCalc(document.getElementById('avp-rendimento').value) / 100;
+
+  if (avista       <= 0) { notificar('Digite o preço à vista válido');                  return; }
+  if (parcelaValor <= 0) { notificar('Digite o valor de cada parcela válido');           return; }
+  if (nParcelas    <  2) { notificar('Digite o número de parcelas (mín. 2)');            return; }
+  if (taxa         <= 0) { notificar('Digite a taxa mensal do investimento válida');     return; }
+
+  // Valor presente das parcelas descontadas à taxa de rendimento do investidor
+  // PV = PMT × [1 − (1+r)^(−n)] / r
+  const pvParcelas     = parcelaValor * (1 - Math.pow(1 + taxa, -nParcelas)) / taxa;
+  const totalParcelado = parcelaValor * nParcelas;
+  const diferenca      = Math.abs(pvParcelas - avista);
+
+  const conclusaoEl = document.getElementById('avp-conclusao');
+  if (pvParcelas < avista) {
+    conclusaoEl.innerHTML = `
+      <div class="calc-alert calc-alert-ok">
+        <i data-lucide="trending-up" size="16"></i>
+        <strong>Parcelado é mais vantajoso</strong> — diferença de ${formatarMoeda(diferenca)} em valor presente.
+      </div>
+      <div class="calc-conclusion">
+        O valor presente das ${nParcelas} parcelas (${formatarMoeda(pvParcelas)}) é menor que o
+        preço à vista (${formatarMoeda(avista)}). Parcelando, você mantém o capital investido
+        a ${(taxa * 100).toFixed(2)}% ao mês — o rendimento compensa o custo total de
+        ${formatarMoeda(totalParcelado)}.
+      </div>
+    `;
+  } else {
+    conclusaoEl.innerHTML = `
+      <div class="calc-alert calc-alert-danger">
+        <i data-lucide="trending-down" size="16"></i>
+        <strong>À vista é mais vantajoso</strong> — economia de ${formatarMoeda(diferenca)} em valor presente.
+      </div>
+      <div class="calc-conclusion">
+        O valor presente das ${nParcelas} parcelas (${formatarMoeda(pvParcelas)}) supera o
+        preço à vista (${formatarMoeda(avista)}). Mesmo investindo o dinheiro a
+        ${(taxa * 100).toFixed(2)}% ao mês, as parcelas custam mais. Pagar à vista
+        economiza ${formatarMoeda(diferenca)}.
+      </div>
+    `;
+  }
+
+  document.getElementById('avp-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+function calcularQuitarDivida() {
+  const saldo      = parseBRCalc(document.getElementById('qd-saldo').value);
+  const taxaDivida = parseBRCalc(document.getElementById('qd-taxa-divida').value) / 100;
+  const parcelas   = parseInt(document.getElementById('qd-parcelas').value) || 0;
+  const desconto   = parseBRCalc(document.getElementById('qd-desconto').value) || 0;
+  const disponivel = parseBRCalc(document.getElementById('qd-disponivel').value);
+  const taxaInvest = parseBRCalc(document.getElementById('qd-taxa-invest').value) / 100;
+
+  if (saldo      <= 0) { notificar('Digite o saldo devedor válido');                   return; }
+  if (taxaDivida <= 0) { notificar('Digite a taxa de juros da dívida válida');         return; }
+  if (parcelas   <  1) { notificar('Digite o número de parcelas restantes');           return; }
+  if (disponivel <= 0) { notificar('Digite o valor disponível para quitar válido');    return; }
+  if (taxaInvest <= 0) { notificar('Digite a taxa mensal do investimento válida');     return; }
+
+  // Saldo após desconto de quitação antecipada
+  const saldoDesconto = saldo * (1 - desconto / 100);
+
+  // PMT original — total que ainda seria pago sem quitação antecipada
+  const pmtOriginal   = saldo * taxaDivida / (1 - Math.pow(1 + taxaDivida, -parcelas));
+  const totalOriginal = pmtOriginal * parcelas;
+
+  // Rendimento perdido: quanto o dinheiro renderia investido pelo mesmo período
+  const rendimentoPerdido = disponivel * (Math.pow(1 + taxaInvest, parcelas) - 1);
+
+  let economia, cenario, infoCenario;
+
+  if (disponivel >= saldoDesconto) {
+    // Cenário A — Quitação total
+    cenario     = 'A';
+    economia    = totalOriginal - saldoDesconto;
+    infoCenario = 'Quitação total possível';
+  } else {
+    // Cenário B — Quitação parcial: abate o disponível do saldo com desconto
+    cenario = 'B';
+    const novoSaldo        = saldoDesconto - disponivel;
+    const pmtNovo          = novoSaldo * taxaDivida / (1 - Math.pow(1 + taxaDivida, -parcelas));
+    const totalNovoParcelas = pmtNovo * parcelas;
+    economia    = totalOriginal - (disponivel + totalNovoParcelas);
+    infoCenario = `Quitação parcial — novo saldo de ${formatarMoeda(novoSaldo)} em ${parcelas} parcelas`;
+  }
+
+  const diferenca     = Math.abs(economia - rendimentoPerdido);
+  const quitarMelhor  = economia > rendimentoPerdido;
+
+  document.getElementById('qd-cards').innerHTML = `
+    <div class="calc-stat">
+      <span class="calc-stat-label">Saldo com Desconto</span>
+      <span class="calc-stat-value">${formatarMoeda(saldoDesconto)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Economia ao Quitar</span>
+      <span class="calc-stat-value" style="color:var(--ok)">${formatarMoeda(economia)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Rendimento Investido</span>
+      <span class="calc-stat-value" style="color:var(--accent)">${formatarMoeda(rendimentoPerdido)}</span>
+    </div>
+    <div class="calc-stat">
+      <span class="calc-stat-label">Diferença</span>
+      <span class="calc-stat-value">${formatarMoeda(diferenca)}</span>
+    </div>
+  `;
+
+  document.getElementById('qd-cenario').innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);">
+      <strong>Cenário ${cenario}:</strong> ${infoCenario}
+    </div>
+  `;
+
+  document.getElementById('qd-recomendacao').innerHTML = quitarMelhor ? `
+    <div class="calc-alert calc-alert-ok">
+      <i data-lucide="check-circle" size="16"></i>
+      <div>
+        <strong>Quite a dívida e economize ${formatarMoeda(diferenca)}</strong><br>
+        <span style="font-weight:400;font-size:12px;">A economia de ${formatarMoeda(economia)} supera o rendimento de ${formatarMoeda(rendimentoPerdido)} que o dinheiro geraria investido.</span>
+      </div>
+    </div>
+  ` : `
+    <div class="calc-alert calc-alert-danger">
+      <i data-lucide="x-circle" size="16"></i>
+      <div>
+        <strong>Mantenha investido e ganhe ${formatarMoeda(diferenca)} a mais</strong><br>
+        <span style="font-weight:400;font-size:12px;">O rendimento de ${formatarMoeda(rendimentoPerdido)} supera a economia de ${formatarMoeda(economia)} obtida quitando agora.</span>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('qd-resultado').style.display = 'block';
+  if (window.lucide) lucide.createIcons();
+}
+
+// Máscara de moeda para inputs das calculadoras (máx. R$ 999.999.999,99)
+document.addEventListener('input', function(e) {
+  if (!e.target.classList.contains('input-moeda')) return;
+  const digitos = e.target.value.replace(/[^\d]/g, '').slice(0, 11);
+  e.target.value = digitos ? formatarMoeda(Number(digitos) / 100) : '';
+});
