@@ -15,6 +15,8 @@ SaldoMais cobre o ciclo básico de controle financeiro pessoal:
 - ✅ Acompanhar o saldo disponível em tempo real
 - ✅ Calcular projeções financeiras com 8 calculadoras integradas
 - ✅ Exportar relatório mensal em PDF com layout dark estilizado
+- ✅ Exportar e importar backup completo dos dados em JSON
+- ✅ Navegar entre telas com atalhos de teclado (`Alt+1` a `Alt+4`)
 - ✅ Dados armazenados localmente — sem servidor, sem conta de usuário
 
 ---
@@ -177,6 +179,19 @@ saldomain_lancamentos: [
 - Receba alertas quando ultrapassar o limite
 - Adapte conforme suas necessidades financeiras
 
+### Backup e Restauração
+- Exporte todos os dados (categorias, orçamentos e lançamentos) como arquivo `.json` pelo Dashboard
+- Importe um backup para restaurar dados em outro dispositivo ou navegador
+- Formato aberto — o arquivo pode ser inspecionado ou editado manualmente
+
+### Atalhos de Teclado
+| Atalho | Ação |
+|---|---|
+| `Alt+1` | Ir para Dashboard |
+| `Alt+2` | Ir para Lançamentos |
+| `Alt+3` | Ir para Categorias |
+| `Alt+4` | Ir para Calculadoras |
+
 ---
 
 ## ⚙️ Funções Principais (`js/index.js`)
@@ -250,6 +265,9 @@ Em `js/index.js`, modifique a função `criarCategoria()` para incluir categoria
 
 - [x] Exportação de relatórios em PDF
 - [ ] Edição de lançamentos — atualmente só é possível excluir
+- [ ] Média diária de gastos — card no dashboard com gasto médio por dia (total gasto ÷ dias passados no mês)
+- [ ] Projeção de fim de mês — estimativa de saldo final com base no ritmo atual de gastos
+- [ ] Últimos lançamentos no dashboard — widget com os 3–5 gastos mais recentes sem precisar navegar para a tela de Lançamentos
 
 ---
 
