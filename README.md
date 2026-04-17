@@ -125,9 +125,18 @@ SaldoMais/
 ├── css/
 │   └── index.css       # Estilos globais e variáveis CSS
 ├── js/
-│   └── index.js        # Toda a lógica da aplicação
+│   ├── core.js         # Constantes, DOM, storage, utils, modais, navegação
+│   ├── lancamentos.js  # Orçamento, transações e render de lançamentos
+│   ├── categorias.js   # CRUD de categorias, render e sliders de percentual
+│   ├── dashboard.js    # renderDashboard, resumo financeiro e gráfico
+│   ├── calculadoras.js # 8 calculadoras financeiras (puras + UI)
+│   ├── backup.js       # Exportar e importar backup JSON
+│   ├── pdf.js          # Helpers e geração do relatório PDF
+│   └── app.js          # Orquestração: renderAll, setupButtons, init()
 └── README.md
 ```
+
+> Os arquivos são carregados via `<script defer>` em ordem no `index.html`. Como o projeto roda via `file://` sem bundler, cada arquivo compartilha o escopo global — `core.js` deve sempre ser o primeiro.
 
 ---
 
@@ -194,21 +203,66 @@ saldomain_lancamentos: [
 
 ---
 
-## ⚙️ Funções Principais (`js/index.js`)
+## ⚙️ Funções Principais
 
+### `js/core.js`
+| Função | Responsabilidade |
+|---|---|
+| `formatarMoeda()` | Formata valores em BRL |
+| `confirmar(msg)` | Modal de confirmação (retorna Promise) |
+| `editarCategoriaNome()` | Modal de edição de nome (retorna Promise) |
+| `withLoadingDelay(fn)` | Exibe loading e executa `fn` após delay |
+| `navegar()` | Controla a navegação entre telas |
+
+### `js/lancamentos.js`
+| Função | Responsabilidade |
+|---|---|
+| `adicionarLancamento()` | Valida e registra uma despesa |
+| `deletarLancamento(id)` | Remove um lançamento |
+| `resetarMes()` | Limpa todos os lançamentos do mês |
+| `renderLancamentos()` | Lista os lançamentos do mês |
+| `salvarOrcamentoHandler()` | Salva o orçamento mensal |
+
+### `js/categorias.js`
+| Função | Responsabilidade |
+|---|---|
+| `adicionarNovaCategoria()` | Cria uma nova categoria |
+| `abrirEditorCategoria(id)` | Edita o nome de uma categoria |
+| `deletarCategoria(id)` | Remove categoria e seus lançamentos |
+| `atualizarPercentual()` | Sincroniza slider + input + total |
+| `salvarPercentuaisEm()` | Persiste os percentuais dos sliders |
+
+### `js/dashboard.js`
+| Função | Responsabilidade |
+|---|---|
+| `renderDashboard()` | Atualiza o dashboard completo |
+| `renderResumoGeral()` | Cards de resumo financeiro |
+| `renderGrafico()` | Gráfico de distribuição por categoria |
+
+### `js/calculadoras.js`
+| Função | Responsabilidade |
+|---|---|
+| `calcJurosCompostos()` | Lógica pura de juros compostos |
+| `calcularJurosCompostos()` | UI da calculadora de juros compostos |
+| *(+ 7 pares equivalentes)* | Uma função pura + uma de UI por calculadora |
+
+### `js/pdf.js`
+| Função | Responsabilidade |
+|---|---|
+| `exportarPDF()` | Orquestra a geração e download do PDF |
+| `pdfCabecalho()` | Desenha o cabeçalho do relatório |
+| `pdfCardsResumo()` | Cards de resumo financeiro no PDF |
+| `pdfTabelaCategorias()` | Tabela de categorias no PDF |
+| `pdfTabelaLancamentos()` | Tabela de lançamentos no PDF |
+
+### `js/app.js`
 | Função | Responsabilidade |
 |---|---|
 | `init()` | Inicializa a aplicação |
-| `renderDashboard()` | Atualiza o dashboard |
-| `renderGrafico()` | Renderiza o gráfico de distribuição |
-| `adicionarLancamento()` | Valida e registra uma despesa |
-| `renderLancamentos()` | Lista os lançamentos do mês |
-| `criarCategoria()` | Cria ou atualiza uma categoria |
-| `exportarPDF()` | Gera e baixa o relatório mensal em PDF |
-| `exportarBackup()` | Exporta todos os dados como JSON |
-| `importarBackup(e)` | Restaura dados a partir de um arquivo JSON |
-| `navegar()` | Controla a navegação entre telas |
-| `formatarMoeda()` | Formata valores em BRL |
+| `renderAll()` | Renderiza todas as telas exceto dashboard |
+| `renderComplete()` | `renderAll()` + `renderDashboard()` |
+| `setupButtons()` | Registra listeners dos botões globais |
+| `setupEventDelegation()` | Event delegation para listas e sliders |
 
 ---
 
@@ -228,7 +282,7 @@ saldomain_lancamentos: [
 
 ### Categorias iniciais
 
-Em `js/index.js`, modifique a função `criarCategoria()` para incluir categorias pré-definidas ao inicializar a aplicação.
+Em `js/categorias.js`, modifique a função `criarCategorias()` para incluir categorias pré-definidas ao inicializar a aplicação.
 
 ---
 
