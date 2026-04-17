@@ -1,60 +1,83 @@
-# 💰 SaldoMais | Gastos claros, decisões inteligentes.
+# 💰 SaldoMais — Gastos claros, decisões inteligentes.
 
-Uma aplicação web moderna e intuitiva para **gestão de finanças pessoais**, desenvolvida com tecnologias web puras (HTML, CSS, JavaScript vanilla). Organize seu orçamento mensal, acompanhe suas despesas por categoria e visualize seus gastos de forma clara através de gráficos interativos.
+Aplicação web de **gestão de finanças pessoais** construída com HTML, CSS e JavaScript puro. Permite definir orçamentos mensais, categorizar despesas, acompanhar gastos em tempo real, usar calculadoras financeiras e exportar relatórios em PDF — tudo sem backend, com dados persistidos via `localStorage`.
 
-![Interface do SaldoMais](https://i.imgur.com/pYzgybs.jpeg)
+![Interface do SaldoMais](https://i.imgur.com/clRi211.png)
 
 ---
 
 ## 📋 Sobre o Projeto
 
-SaldoMais é pensada para ajudar você a:
-- ✅ Definir e gerir um orçamento mensal
+SaldoMais cobre o ciclo básico de controle financeiro pessoal:
+- ✅ Definir e gerenciar um orçamento mensal
 - ✅ Registrar despesas por categorias personalizáveis
 - ✅ Visualizar a distribuição dos gastos em gráficos
 - ✅ Acompanhar o saldo disponível em tempo real
-- ✅ Gerenciar dados localmente (sem a necessidade de um servidor)
+- ✅ Calcular projeções financeiras com 8 calculadoras integradas
+- ✅ Exportar relatório mensal em PDF com layout dark estilizado
+- ✅ Dados armazenados localmente — sem servidor, sem conta de usuário
 
 ---
 
 ## 🚀 Características
 
 ### Dashboard
-- Visão geral completa do seu orçamento
-- Exibição do mês atual
-- Resumo de gastos e saldo disponível
-- Gráfico mostrando distribuição por categoria
-- Status de cada categoria (dentro ou fora do orçamento)
+- Visão geral do orçamento: total, gasto e disponível
+- Barra de progresso de consumo do orçamento
+- Gráfico de distribuição dos gastos por categoria
+- Status individual de cada categoria (dentro/fora do limite)
 
 ### Lançamentos
-- Adição rápida de despesas
-- Seleção de categoria
-- Descrição da transação
-- Registro automático, após o lançamento
-- Lista de todos os lançamentos do mês
+- Registro rápido de despesas por categoria
+- Validação de limite por categoria antes de confirmar o lançamento
+- Histórico completo de transações do mês
+- Exclusão individual de lançamentos
 
 ### Categorias
-- Criar novas categorias personalizadas
-- Definir limite de gastos por categoria
-- Editar e atualizar categorias existentes
-- Gerenciar suas necessidades financeiras
+- Criação de categorias com cor personalizada
+- Distribuição percentual do orçamento por categoria via sliders
+- Edição e exclusão de categorias existentes
+
+### Calculadoras Financeiras
+
+8 calculadoras independentes para projeções e simulações:
+
+| Calculadora | O que calcula |
+|---|---|
+| Juros Compostos | Rendimento de investimento ao longo do tempo |
+| CDB / CDI | Projeção de rendimento em renda fixa |
+| Aporte por Meta | Quanto investir mensalmente para atingir um objetivo |
+| Dividend Yield | Retorno em dividendos de um ativo |
+| Financiamento Price | Parcelas e custo total de um financiamento |
+| Rotativo do Cartão | Custo real do crédito rotativo |
+| À Vista vs Parcelado | Comparativo de custo real entre as opções |
+| Quitar Dívida | Tempo e custo para quitação de uma dívida |
+
+### Exportação PDF
+- Gera um relatório mensal em PDF com layout dark, correspondente ao tema da aplicação
+- Inclui: cabeçalho com logo, resumo financeiro (3 cards), barra de progresso, tabela de categorias e tabela de lançamentos
+- Download automático com nome `SaldoMais-AAAA-MM.pdf`
 
 ### Interface
-- 🎨 Design moderno com tema escuro (para conforto da sua visão)
-- 📱 Responsivo e amigável
-- ⚡ Performance otimizada
+- 🎨 Tema escuro (dark mode nativo)
+- 📱 Responsivo e adaptado para mobile
+- ⚡ Performance otimizada — sem bundler, sem build step
 - 🇧🇷 Interface em português (Brasil)
 - 🔔 Notificações visuais de ações
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## 💻 Stack
 
-- **HTML5** - Estrutura semântica
-- **CSS3** - Estilização com variáveis CSS e design responsivo
-- **JavaScript (Vanilla)** - Lógica da aplicação sem dependências
-- **LocalStorage** - Persistência de dados no navegador
-- **Chart.js** - Visualização de dados em gráficos
+| Tecnologia | Uso |
+|---|---|
+| HTML5 | Estrutura semântica |
+| CSS3 | Layout, variáveis CSS e animações |
+| JavaScript (Vanilla) | Lógica da aplicação sem frameworks |
+| localStorage | Persistência de dados no navegador |
+| Chart.js | Gráfico de pizza interativo |
+| jsPDF | Geração de PDF client-side |
+| Lucide Icons | Ícones SVG via CDN |
 
 ---
 
@@ -62,11 +85,11 @@ SaldoMais é pensada para ajudar você a:
 
 ### Pré-requisitos
 - Navegador moderno (Chrome, Firefox, Safari, Edge)
-- Conexão com internet (para carregar bibliotecas externas)
+- Conexão com a internet (para carregar bibliotecas via CDN)
 
 ### Como Usar
 
-1. **Clone ou baixe o projeto**
+1. **Clone o repositório**
    ```bash
    git clone https://github.com/seu-usuario/SaldoMais.git
    cd SaldoMais
@@ -74,13 +97,15 @@ SaldoMais é pensada para ajudar você a:
 
 2. **Abra a aplicação**
    - Duplo clique no arquivo `index.html`
-   - Ou arraste `index.html` para o seu navegador
+   - Ou arraste `index.html` para o navegador
 
-3. **Comece a usar!**
+3. **Comece a usar**
    - Defina seu orçamento mensal
    - Crie categorias de gastos
    - Registre suas despesas
-   - Acompanhe seus gastos no dashboard
+   - Acompanhe no dashboard
+
+> Não é necessário servidor local. O arquivo `index.html` pode ser aberto diretamente no navegador.
 
 ---
 
@@ -88,12 +113,12 @@ SaldoMais é pensada para ajudar você a:
 
 ```
 SaldoMais/
-├── index.html          # Página principal da aplicação
+├── index.html          # Entrada da aplicação (SPA)
 ├── css/
-│   └── index.css       # Estilos e layout
+│   └── index.css       # Estilos globais e variáveis CSS
 ├── js/
-│   └── index.js        # Lógica da aplicação
-└── README.md           # Este arquivo
+│   └── index.js        # Toda a lógica da aplicação
+└── README.md
 ```
 
 ---
@@ -101,28 +126,27 @@ SaldoMais/
 ## 🎯 Como Funciona
 
 ### Armazenamento de Dados
-Todos os dados são armazenados **localmente no seu navegador** usando `localStorage`, garantindo:
-- 🔒 Privacidade
-- 💾 Dados persistentes entre sessões
-- ⚡ Carregamento rápido
 
-### Estrutura de Dados
+Todos os dados ficam no `localStorage` do navegador sob as seguintes chaves:
+
 ```javascript
-// Categorias (com ID e limite de gastos)
+// Categorias
 saldomain_categorias: [
-  { id, nome, limite }
+  { id, nome, percentual, cor_hex }
 ]
 
 // Orçamentos mensais
 saldomain_orcamentos: [
-  { mes, ano, valor }
+  { id, mes_referencia, valor_total }
 ]
 
-// Lançamentos de despesas
+// Lançamentos
 saldomain_lancamentos: [
-  { id, desc, valor, categoria, data }
+  { id, id_orcamento, id_categoria, valor, descricao }
 ]
 ```
+
+> Dados não sincronizam entre dispositivos e não há autenticação — qualquer pessoa com acesso ao navegador pode visualizá-los.
 
 ---
 
@@ -130,58 +154,65 @@ saldomain_lancamentos: [
 
 ### Dashboard
 - Defina o orçamento total para o mês
-- Visualize graficamente como seus gastos são distribuídos
+- Visualize graficamente como os gastos são distribuídos por categoria
 - Acompanhe o status de cada categoria
 - Limpe os dados do mês atual quando necessário
+- Exporte o relatório mensal em PDF
 
 ### Lançamentos
-- Registre uma nova despesa
+- Registre uma nova despesa vinculada a uma categoria
 - Escolha a categoria mais apropriada
-- Adicione uma descrição (opcional)
-- Veja o histórico completo de transações
+- Adicione uma descrição
+- Veja o histórico completo de transações do mês
 
 ### Categorias
 - Personalize suas categorias de gastos
-- Defina limites individuais por categoria
+- Defina o percentual do orçamento para cada categoria
 - Receba alertas quando ultrapassar o limite
-- Adapte às suas necessidades financeiras
+- Adapte conforme suas necessidades financeiras
 
 ---
 
-## ⚙️ Scripts e Funções Principais
+## ⚙️ Funções Principais (`js/index.js`)
 
-### Funções Principais (js/index.js)
-- `init()` - Inicializa a aplicação
-- `renderDashboard()` - Atualiza o dashboard
-- `adicionarLancamento()` - Registra uma despesa
-- `criarCategorias()` - Gerencia categorias
-- `navegar()` - Controla navegação entre telas
-- `formatarMoeda()` - Formata valores em reais
+| Função | Responsabilidade |
+|---|---|
+| `init()` | Inicializa a aplicação |
+| `renderDashboard()` | Atualiza o dashboard |
+| `renderGrafico()` | Renderiza o gráfico de distribuição |
+| `adicionarLancamento()` | Valida e registra uma despesa |
+| `renderLancamentos()` | Lista os lançamentos do mês |
+| `criarCategoria()` | Cria ou atualiza uma categoria |
+| `exportarPDF()` | Gera e baixa o relatório mensal em PDF |
+| `navegar()` | Controla a navegação entre telas |
+| `formatarMoeda()` | Formata valores em BRL |
 
 ---
 
 ## 🎨 Personalização
 
-### Cores Personalizadas
-Edite as variáveis CSS em `css/index.css`:
+### Variáveis de cor (`css/index.css`)
+
 ```css
 :root {
-  --bg: #0b0b0c;           /* Cor de fundo principal */
-  --accent: #f59e0b;       /* Cor de destaque */
-  --danger: #ef4444;       /* Cor de alerta */
-  --ok: #22c55e;           /* Cor de sucesso */
+  --bg: #0b0b0c;       /* fundo principal */
+  --accent: #f59e0b;   /* destaque (âmbar) */
+  --danger: #ef4444;   /* erro / limite excedido */
+  --ok: #22c55e;       /* dentro do orçamento */
+  --warn: #f97316;     /* aviso / gasto parcial */
 }
 ```
 
-### Adicionar Categorias Padrão
-Em `js/index.js`, modifique a função `criarCategorias()` para incluir suas categorias iniciais.
+### Categorias iniciais
+
+Em `js/index.js`, modifique a função `criarCategoria()` para incluir categorias pré-definidas ao inicializar a aplicação.
 
 ---
 
 ## 📱 Compatibilidade
 
 | Navegador | Suporte |
-|-----------|---------|
+|---|---|
 | Chrome    | ✅ Completo |
 | Firefox   | ✅ Completo |
 | Safari    | ✅ Completo |
@@ -192,46 +223,42 @@ Em `js/index.js`, modifique a função `criarCategorias()` para incluir suas cat
 
 ## 💡 Dicas de Uso
 
-1. **Backup de Dados**: Como os dados ficam no navegador, use ferramentas de dev para exportar seu localStorage periodicamente, se for o caso.
-2. **Orçamento Realista**: Defina orçamentos baseados no seu histórico de gastos, a ideia do SaldoMais é te ajudar a se organizar. :)
-3. **Categorias Claras**: Use nomes de categorias que façam sentido para seu contexto e a sua forma de se organizar.
-4. **Revisão Mensal**: Revise seus gastos regularmente para identificar padrões e melhorar o seu fluxo financeiro.
+1. **Backup de Dados**: Os dados ficam no navegador local. Use as ferramentas de dev (DevTools → Application → localStorage) para inspecionar ou exportar os dados se necessário.
+2. **Orçamento Realista**: Defina orçamentos com base no seu histórico de gastos — o SaldoMais é uma ferramenta de organização, não de projeção mágica.
+3. **Categorias Claras**: Use nomes de categorias objetivos e alinhados com o seu contexto financeiro.
+4. **Revisão Mensal**: Revise os gastos periodicamente para identificar padrões e ajustar o orçamento do próximo mês.
 
 ---
 
-## 🐛 Conhecidas Limitações
+## 🐛 Limitações Conhecidas
 
-- Dados são armazenados apenas no navegador local (não sincroniza entre dispositivos)
-- Limite de armazenamento depende do navegador (geralmente até 10MB)
-- Sem autenticação ou usuário - qualquer pessoa com acesso ao navegador pode ver os dados
+- Dados ficam apenas no navegador local — sem sincronização entre dispositivos
+- Limite de armazenamento do `localStorage` varia por navegador (~5–10 MB)
+- Sem autenticação — qualquer pessoa com acesso ao navegador pode ver os dados
 
 ---
 
 ## 🚀 Possíveis Melhorias Futuras
 
-- [ ] Exportação de relatórios (PDF/Excel)
+- [x] Exportação de relatórios em PDF
 
 ---
 
 ## 📝 Licença
 
-Este projeto é de **código aberto** e disponível sob a licença GPL v3.
+Distribuído sob a licença **GPL v3**.
 
 ---
 
 ## 🤝 Contribuições
 
-Contribuições são bem-vindas! Sinta-se livre para:
-- Reportar bugs
-- Sugerir novas features
-- Melhorar a documentação
-- Enviando pull requests
+Pull requests são bem-vindos. Para mudanças maiores, abra uma issue primeiro para alinhar o escopo antes de desenvolver.
 
 ---
 
 ## 📧 Contato
 
-Para dúvidas, sugestões ou reportar problemas, abra uma issue no repositório.
+Dúvidas, sugestões ou problemas? Abra uma issue no repositório.
 
 ---
 
