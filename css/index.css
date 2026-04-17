@@ -141,8 +141,9 @@ body {
 }
 
 .nav-btn:hover {
-  background: rgba(255,255,255,0.05);
-  color: white;
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  border-left-color: rgba(255,255,255,0.25);
 }
 
 .nav-btn.active {
@@ -299,6 +300,14 @@ input, select {
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.03);
   color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* BUTTON */
@@ -589,10 +598,19 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--danger) !important;
+  background: rgba(255,255,255,0.04) !important;
+  color: var(--muted) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
   padding: 8px !important;
   font-size: 12px !important;
   margin: 0 !important;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.lancamento-delete:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: var(--danger) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
 }
 
 .lista-categorias {
@@ -751,6 +769,8 @@ button:active {
   font-weight: 600;
   color: var(--accent);
   font-size: 13px;
+  min-width: 40px;
+  display: inline-block;
 }
 
 .editor-footer {
@@ -1417,6 +1437,22 @@ button:active {
   }
 }
 
+@keyframes fadeSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* SCREEN */
 .screen {
   display: none;
@@ -1542,8 +1578,66 @@ button:active {
 
 .calc-result {
   margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  display: none;
+}
+
+.calc-result.show {
+  display: block;
+  animation: fadeSlideIn 0.28s ease forwards;
+}
+
+.calc-result.hiding {
+  display: block !important;
+  animation: fadeSlideOut 0.2s ease forwards;
+  pointer-events: none;
+}
+
+.calc-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.calc-result-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ok);
+  opacity: 0.85;
+}
+
+.calc-result-close {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  line-height: 1;
+}
+
+.calc-result-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.28);
 }
 
 .calc-result-cards {
@@ -1681,6 +1775,79 @@ button:active {
 }
 
 /* =====================
+   EMPTY STATES
+   ===================== */
+
+.dashboard-empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--card);
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 14px;
+  text-align: center;
+  gap: 10px;
+}
+
+.dashboard-empty-icon {
+  color: var(--muted);
+  opacity: 0.35;
+  margin-bottom: 4px;
+}
+
+.dashboard-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.dashboard-empty-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.lancamentos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--card);
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 12px;
+  text-align: center;
+  gap: 10px;
+}
+
+.lancamentos-empty-icon {
+  color: var(--muted);
+  opacity: 0.35;
+  margin-bottom: 4px;
+}
+
+.lancamentos-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.lancamentos-empty-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* =====================
    RODAPÉ DAS PÁGINAS
    ===================== */
 
@@ -1739,7 +1906,7 @@ button:active {
   .mobile-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
     position: fixed;
     top: 0;
     left: 0;
@@ -1763,10 +1930,19 @@ button:active {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-top: 0;
   }
 
   .hamburger-btn:hover {
     background: rgba(255, 255, 255, 0.07);
+  }
+
+  input, select {
+    font-size: 16px;
   }
 
   .mobile-logo {

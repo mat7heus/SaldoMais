@@ -109,12 +109,45 @@ function setupMobileMenu() {
 function notificar(msg){
   const toast=document.getElementById("notificationToast");
   if(!toast) return;
-  
+
   toast.textContent=msg;
   toast.classList.add("show");
   setTimeout(()=>{
     toast.classList.remove("show");
   },2500);
+}
+
+// MOSTRAR RESULTADO DE CALCULADORA (com fade-in)
+function mostrarResultado(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = '';       // limpa inline display:none do HTML
+  el.classList.remove('show', 'hiding');
+  void el.offsetWidth;         // força reflow para reiniciar animação
+  el.classList.add('show');
+
+  if (!el.querySelector('.calc-result-header')) {
+    const header = document.createElement('div');
+    header.className = 'calc-result-header';
+    header.innerHTML = `
+      <span class="calc-result-title">
+        <i data-lucide="check-circle-2" size="13"></i>
+        Resultado
+      </span>
+      <button class="calc-result-close" title="Fechar resultado" aria-label="Fechar resultado">
+        <i data-lucide="x" size="13"></i>
+        Fechar
+      </button>
+    `;
+    header.querySelector('.calc-result-close').onclick = function() {
+      el.classList.add('hiding');
+      setTimeout(function() {
+        el.classList.remove('show', 'hiding');
+        el.style.display = 'none';
+      }, 200);
+    };
+    el.prepend(header);
+  }
 }
 
 // FORMATAÇÃO DE MOEDA
@@ -589,7 +622,17 @@ function salvarPercentuais() {
 
 function renderLancamentos(){
   const o=orcamentoAtual();
-  if(!o) return;
+  if(!o) {
+    listaLancamentos.innerHTML = `
+      <div class="lancamentos-empty">
+        <div class="lancamentos-empty-icon"><i data-lucide="wallet" size="40"></i></div>
+        <p class="lancamentos-empty-title">Orçamento não definido</p>
+        <p class="lancamentos-empty-desc">Vá ao Dashboard e defina o orçamento do mês primeiro</p>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
 
   const lancamentos=get(STORAGE.lancamentos)
     .filter(l=>l.id_orcamento===o.id);
@@ -597,7 +640,14 @@ function renderLancamentos(){
   const cats = get(STORAGE.categorias);
 
   if(lancamentos.length === 0){
-    listaLancamentos.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);"><p>Nenhuma despesa registrada ainda</p></div>';
+    listaLancamentos.innerHTML = `
+      <div class="lancamentos-empty">
+        <div class="lancamentos-empty-icon"><i data-lucide="receipt" size="40"></i></div>
+        <p class="lancamentos-empty-title">Nenhuma despesa registrada</p>
+        <p class="lancamentos-empty-desc">Use o formulário acima para adicionar seu primeiro lançamento</p>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
@@ -619,7 +669,20 @@ function renderLancamentos(){
 
 function renderDashboard(){
   const o=orcamentoAtual();
-  if(!o || o.valor_total<=0) return;
+  if(!o || o.valor_total<=0) {
+    const resumoGeral = document.getElementById("resumoGeral");
+    if(resumoGeral) {
+      resumoGeral.innerHTML = `
+        <div class="dashboard-empty-state">
+          <div class="dashboard-empty-icon"><i data-lucide="wallet" size="44"></i></div>
+          <p class="dashboard-empty-title">Nenhum orçamento definido</p>
+          <p class="dashboard-empty-desc">Digite um valor acima e clique em "Salvar Orçamento" para começar a controlar seus gastos</p>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    }
+    return;
+  }
 
   const cats=get(STORAGE.categorias);
   const lanc=get(STORAGE.lancamentos).filter(l=>l.id_orcamento===o.id);
@@ -684,7 +747,7 @@ function renderResumoGeral(cats, lanc, o){
       <span class="stat-subtitle">${percentualUsado.toFixed(1)}% do orçamento</span>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" style="border-color:${totalRestante > 0 ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'};background:${totalRestante > 0 ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)'};">
       <span class="stat-label">Disponível</span>
       <span class="stat-value" style="color:${totalRestante > 0 ? 'var(--ok)' : 'var(--danger)'}">
         ${formatarMoeda(totalRestante)}
@@ -1161,7 +1224,7 @@ function calcularJurosCompostos() {
     </tbody>
   `;
 
-  document.getElementById('jc-resultado').style.display = 'block';
+  mostrarResultado('jc-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1216,7 +1279,7 @@ function calcularCDBCDI() {
     </div>
   `;
 
-  document.getElementById('cdi-resultado').style.display = 'block';
+  mostrarResultado('cdi-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1250,7 +1313,7 @@ function calcularAporteMeta() {
     </div>
   `;
 
-  document.getElementById('meta-resultado').style.display = 'block';
+  mostrarResultado('meta-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1275,7 +1338,7 @@ function calcularDividendYield() {
     </div>
   `;
 
-  document.getElementById('dy-resultado').style.display = 'block';
+  mostrarResultado('dy-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1330,7 +1393,7 @@ function calcularFinanciamentoPrice() {
     <tbody>${rows}</tbody>
   `;
 
-  document.getElementById('price-resultado').style.display = 'block';
+  mostrarResultado('price-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1344,7 +1407,6 @@ function calcularRotativoCartao() {
   if (pagamento <= 0) { notificar('Digite um valor de pagamento mensal válido');  return; }
 
   const alertaEl    = document.getElementById('rot-alerta');
-  const resultadoEl = document.getElementById('rot-resultado');
   const jurosPrimeiro = divida * taxa;
 
   if (pagamento <= jurosPrimeiro) {
@@ -1357,7 +1419,7 @@ function calcularRotativoCartao() {
     `;
     document.getElementById('rot-cards').innerHTML   = '';
     document.getElementById('rot-tabela').innerHTML  = '';
-    resultadoEl.style.display = 'block';
+    mostrarResultado('rot-resultado');
     if (window.lucide) lucide.createIcons();
     return;
   }
@@ -1414,7 +1476,7 @@ function calcularRotativoCartao() {
     </tbody>
   `;
 
-  resultadoEl.style.display = 'block';
+  mostrarResultado('rot-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1464,7 +1526,7 @@ function calcularAVistaVsParcelado() {
     `;
   }
 
-  document.getElementById('avp-resultado').style.display = 'block';
+  mostrarResultado('avp-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1555,7 +1617,7 @@ function calcularQuitarDivida() {
     </div>
   `;
 
-  document.getElementById('qd-resultado').style.display = 'block';
+  mostrarResultado('qd-resultado');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1564,4 +1626,32 @@ document.addEventListener('input', function(e) {
   if (!e.target.classList.contains('input-moeda')) return;
   const digitos = e.target.value.replace(/[^\d]/g, '').slice(0, 11);
   e.target.value = digitos ? formatarMoeda(Number(digitos) / 100) : '';
+});
+
+// Enter nas calculadoras dispara o cálculo correspondente
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if (!e.target.matches('input, select')) return;
+
+  const card = e.target.closest('.calc-card');
+  if (!card) return;
+
+  const calcMap = [
+    ['jc-capital',    calcularJurosCompostos],
+    ['cdi-valor',     calcularCDBCDI],
+    ['meta-valor',    calcularAporteMeta],
+    ['dy-patrimonio', calcularDividendYield],
+    ['price-valor',   calcularFinanciamentoPrice],
+    ['rot-divida',    calcularRotativoCartao],
+    ['avp-vista',     calcularAVistaVsParcelado],
+    ['qd-saldo',      calcularQuitarDivida],
+  ];
+
+  for (const [inputId, fn] of calcMap) {
+    if (card.querySelector('#' + inputId)) {
+      e.preventDefault();
+      fn();
+      return;
+    }
+  }
 });
