@@ -14,6 +14,9 @@
   <!-- Ícones Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <link rel="stylesheet" href="./css/index.css">
 
   <!-- IMPORTANTE -->
@@ -134,6 +137,7 @@
           <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
           <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
         </div>
+        <button onclick="exportarPDF()" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
       </div>
 
       <div id="resumoGeral" class="resumo-geral"></div>
