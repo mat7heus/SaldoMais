@@ -1565,3 +1565,288 @@ document.addEventListener('input', function(e) {
   const digitos = e.target.value.replace(/[^\d]/g, '').slice(0, 11);
   e.target.value = digitos ? formatarMoeda(Number(digitos) / 100) : '';
 });
+
+// Enter nas calculadoras dispara o cálculo correspondente
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if (!e.target.matches('input, select')) return;
+
+  const card = e.target.closest('.calc-card');
+  if (!card) return;
+
+  const calcMap = [
+    ['jc-capital',    calcularJurosCompostos],
+    ['cdi-valor',     calcularCDBCDI],
+    ['meta-valor',    calcularAporteMeta],
+    ['dy-patrimonio', calcularDividendYield],
+    ['price-valor',   calcularFinanciamentoPrice],
+    ['rot-divida',    calcularRotativoCartao],
+    ['avp-vista',     calcularAVistaVsParcelado],
+    ['qd-saldo',      calcularQuitarDivida],
+  ];
+
+  for (const [inputId, fn] of calcMap) {
+    if (card.querySelector('#' + inputId)) {
+      e.preventDefault();
+      fn();
+      return;
+    }
+  }
+});
+
+// =====================
+// EXPORTAR PDF
+// =====================
+
+async function exportarPDF() {
+  const o = orcamentoAtual();
+  if (!o || o.valor_total <= 0) {
+    notificar('Defina um orçamento antes de exportar');
+    return;
+  }
+
+  if (!window.jspdf) {
+    notificar('Biblioteca de PDF ainda carregando, tente novamente');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const W = 210, H = 297, M = 18, CW = 174;
+
+  // ── paleta ──
+  const BG     = [11,  11,  12 ];
+  const BG2    = [18,  18,  24 ];
+  const CARD   = [26,  26,  32 ];
+  const BORDER = [42,  42,  52 ];
+  const ACCENT = [245, 158, 11 ];
+  const TEXT   = [245, 245, 245];
+  const MUTED  = [161, 161, 170];
+  const OK     = [34,  197, 94 ];
+  const DANGER = [239, 68,  68 ];
+  const WARN   = [251, 146, 60 ];
+
+  // ── helpers ──
+  const bg     = c => doc.setFillColor(...c);
+  const pen    = (c, w = 0.3) => { doc.setDrawColor(...c); doc.setLineWidth(w); };
+  const color  = c => doc.setTextColor(...c);
+  const bold   = s => { doc.setFont('helvetica', 'bold');   doc.setFontSize(s); };
+  const normal = s => { doc.setFont('helvetica', 'normal'); doc.setFontSize(s); };
+
+  function rrect(x, y, w, h, r, fill, stroke) {
+    if (fill)   bg(fill);
+    if (stroke) pen(stroke);
+    doc.roundedRect(x, y, w, h, r, r, fill && stroke ? 'FD' : fill ? 'F' : 'D');
+  }
+
+  // ── fundo da página ──
+  bg(BG); doc.rect(0, 0, W, H, 'F');
+
+  // ── cabeçalho ──
+  bg(BG2); doc.rect(0, 0, W, 46, 'F');
+  bg(ACCENT); doc.rect(0, 0, W, 2.5, 'F');
+
+  // ── logo ──
+  let textX = M;
+  try {
+    const resp = await fetch('https://i.imgur.com/gNzlTGO.png');
+    const blob = await resp.blob();
+    const b64  = await new Promise(res => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.readAsDataURL(blob);
+    });
+    doc.addImage(b64, 'PNG', M, 10, 22, 22);
+    textX = M + 27;
+  } catch (_) {}
+
+  bold(20); color(ACCENT);
+  doc.text('SaldoMais', textX, 22);
+  normal(8); color(MUTED);
+  doc.text('Gastos claros, decisões inteligentes.', textX, 30);
+
+  // ── título do relatório (direita) ──
+  const [year, month] = o.mes_referencia.split('-');
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  bold(10); color(TEXT);
+  doc.text('Relatório Mensal', W - M, 20, { align: 'right' });
+  normal(9); color(MUTED);
+  doc.text(`${MESES[+month - 1]} de ${year}`, W - M, 29, { align: 'right' });
+
+  let y = 56;
+
+  // ── dados ──
+  const cats  = get(STORAGE.categorias);
+  const lancs = get(STORAGE.lancamentos).filter(l => l.id_orcamento === o.id);
+  const totalGasto    = lancs.reduce((s, l) => s + l.valor, 0);
+  const totalRestante = o.valor_total - totalGasto;
+  const pct = o.valor_total > 0 ? Math.min(totalGasto / o.valor_total, 1) : 0;
+
+  // ── 3 cards de resumo ──
+  const cW = (CW - 8) / 3, cH = 28;
+  [
+    { label: 'Orçamento Total', value: formatarMoeda(o.valor_total), c: TEXT  },
+    { label: 'Total Gasto',     value: formatarMoeda(totalGasto),    c: WARN  },
+    { label: totalRestante >= 0 ? 'Disponível' : 'Excedido',
+      value: formatarMoeda(Math.abs(totalRestante)),
+      c: totalRestante >= 0 ? OK : DANGER },
+  ].forEach((s, i) => {
+    const cx = M + i * (cW + 4);
+    rrect(cx, y, cW, cH, 3, CARD, BORDER);
+    normal(8); color(MUTED);
+    doc.text(s.label, cx + cW / 2, y + 9, { align: 'center' });
+    bold(12); color(s.c);
+    doc.text(s.value, cx + cW / 2, y + 21, { align: 'center' });
+  });
+
+  y += cH + 10;
+
+  // ── barra de progresso ──
+  normal(8); color(MUTED);
+  doc.text(`Utilizado: ${(pct * 100).toFixed(1)}%`, M, y);
+  doc.text(`${formatarMoeda(totalGasto)} de ${formatarMoeda(o.valor_total)}`, W - M, y, { align: 'right' });
+  y += 4;
+
+  bg(CARD); doc.roundedRect(M, y, CW, 4.5, 2, 2, 'F');
+  if (pct > 0.005) {
+    const fillW  = CW * pct;
+    const barClr = pct > 0.9 ? DANGER : pct > 0.7 ? WARN : OK;
+    bg(barClr);
+    doc.roundedRect(M, y, fillW, 4.5, Math.min(2, fillW / 2), Math.min(2, fillW / 2), 'F');
+  }
+  y += 13;
+
+  // ── título de seção ──
+  function sectionTitle(label) {
+    bold(11); color(TEXT);
+    doc.text(label, M, y);
+    y += 3; pen(BORDER, 0.3);
+    doc.line(M, y + 1, W - M, y + 1);
+    y += 7;
+  }
+
+  // ── tabela: categorias ──
+  sectionTitle('Categorias');
+
+  const cc = [M, M+64, M+92, M+122, M+151];
+  bg(CARD); doc.rect(M, y, CW, 8, 'F');
+  ['Categoria','Meta','Alocado','Gasto','Disponível'].forEach((h, i) => {
+    bold(7.5); color(MUTED);
+    doc.text(h, i === 0 ? cc[0] + 7 : cc[i] + 11, y + 5.5, { align: i === 0 ? 'left' : 'center' });
+  });
+  y += 8;
+
+  cats.forEach((cat, idx) => {
+    const rH = 9;
+    if (idx % 2 === 0) { bg(BG2); doc.rect(M, y, CW, rH, 'F'); }
+
+    try {
+      const h = cat.cor_hex || '#f59e0b';
+      doc.setFillColor(parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16));
+    } catch (_) { bg(ACCENT); }
+    doc.circle(cc[0] + 3.5, y + 4.5, 1.8, 'F');
+
+    const alocado    = o.valor_total * cat.percentual / 100;
+    const gasto      = lancs.filter(l => l.id_categoria === cat.id).reduce((s, l) => s + l.valor, 0);
+    const disponivel = alocado - gasto;
+
+    normal(8.5); color(TEXT);
+    doc.text(cat.nome.slice(0, 22), cc[0] + 8, y + 6);
+    color(MUTED);
+    doc.text(`${cat.percentual}%`, cc[1] + 11, y + 6, { align: 'center' });
+    color(TEXT);
+    doc.text(formatarMoeda(alocado),    cc[2] + 11, y + 6, { align: 'center' });
+    color(gasto > alocado ? DANGER : WARN);
+    doc.text(formatarMoeda(gasto),      cc[3] + 11, y + 6, { align: 'center' });
+    color(disponivel >= 0 ? OK : DANGER);
+    doc.text(formatarMoeda(disponivel), cc[4] + 11, y + 6, { align: 'center' });
+
+    y += rH;
+  });
+
+  y += 10;
+
+  // ── tabela: lançamentos ──
+  if (lancs.length > 0) {
+    if (y > H - 70) {
+      doc.addPage();
+      bg(BG); doc.rect(0, 0, W, H, 'F');
+      y = 20;
+    }
+
+    sectionTitle('Lançamentos');
+
+    const tc = [M, M+88, M+143];
+    bg(CARD); doc.rect(M, y, CW, 8, 'F');
+    bold(7.5); color(MUTED);
+    doc.text('Descrição', tc[0] + 7,    y + 5.5);
+    doc.text('Categoria', tc[1] + 27.5, y + 5.5, { align: 'center' });
+    doc.text('Valor',     tc[2] + 15.5, y + 5.5, { align: 'center' });
+    y += 8;
+
+    const lancsOrdenados = [...lancs].sort((a, b) => {
+      const ca = cats.find(c => c.id === a.id_categoria)?.nome || '';
+      const cb = cats.find(c => c.id === b.id_categoria)?.nome || '';
+      return ca.localeCompare(cb);
+    });
+
+    lancsOrdenados.forEach((l, idx) => {
+      if (y > H - 26) {
+        doc.addPage();
+        bg(BG); doc.rect(0, 0, W, H, 'F');
+        y = 20;
+      }
+      const rH = 8;
+      if (idx % 2 === 0) { bg(BG2); doc.rect(M, y, CW, rH, 'F'); }
+
+      const cat = cats.find(c => c.id === l.id_categoria);
+      try {
+        const h = cat?.cor_hex || '#f59e0b';
+        doc.setFillColor(parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16));
+      } catch (_) { bg(ACCENT); }
+      doc.circle(tc[0] + 3.5, y + 4, 1.6, 'F');
+
+      normal(8); color(TEXT);
+      doc.text(l.descricao.slice(0, 38), tc[0] + 7, y + 5.5);
+      color(MUTED);
+      doc.text((cat?.nome || '–').slice(0, 20), tc[1] + 27.5, y + 5.5, { align: 'center' });
+      color(WARN);
+      doc.text(formatarMoeda(l.valor), tc[2] + 15.5, y + 5.5, { align: 'center' });
+
+      y += rH;
+    });
+
+    // ── linha de total ──
+    if (y > H - 14) {
+      doc.addPage();
+      bg(BG); doc.rect(0, 0, W, H, 'F');
+      y = 20;
+    }
+    bg(CARD); doc.rect(M, y, CW, 9, 'F');
+    bold(8.5); color(MUTED);
+    doc.text(`Total  ·  ${lancs.length} lançamento${lancs.length !== 1 ? 's' : ''}`, tc[0] + 7, y + 6);
+    bold(9); color(WARN);
+    doc.text(formatarMoeda(totalGasto), tc[2] + 15.5, y + 6, { align: 'center' });
+    y += 9;
+  }
+
+  // ── rodapé em todas as páginas ──
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    bg(BG2); doc.rect(0, H - 15, W, 15, 'F');
+    bg(ACCENT); doc.rect(0, H - 15, W, 0.5, 'F');
+    normal(7); color(MUTED);
+    doc.text('Gerado por SaldoMais · Gastos claros, decisões inteligentes.', M, H - 6);
+    const now = new Date();
+    doc.text(
+      `Exportado em ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`,
+      W - M, H - 6, { align: 'right' }
+    );
+  }
+
+  doc.save(`SaldoMais-${o.mes_referencia}.pdf`);
+  notificar('✅ Relatório exportado com sucesso!');
+}
