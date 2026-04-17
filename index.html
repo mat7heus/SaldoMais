@@ -92,27 +92,31 @@
     </div>
 
     <nav class="sidebar-nav">
-      <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento">
+      <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento (Alt+1)">
         <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
         <span class="nav-label">Dashboard</span>
+        <kbd class="nav-shortcut">Alt+1</kbd>
       </button>
-      <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas">
+      <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas (Alt+2)">
         <span class="nav-icon"><i data-lucide="circle-dollar-sign"></i></span>
         <span class="nav-label">Lançamentos</span>
+        <kbd class="nav-shortcut">Alt+2</kbd>
       </button>
-      <button data-screen="categorias" class="nav-btn" title="Personalizar categorias">
+      <button data-screen="categorias" class="nav-btn" title="Personalizar categorias (Alt+3)">
         <span class="nav-icon"><i data-lucide="tags"></i></span>
         <span class="nav-label">Categorias</span>
+        <kbd class="nav-shortcut">Alt+3</kbd>
       </button>
-      <button data-screen="calculadoras" class="nav-btn" title="Ferramentas de cálculo financeiro">
+      <button data-screen="calculadoras" class="nav-btn" title="Ferramentas de cálculo financeiro (Alt+4)">
         <span class="nav-icon"><i data-lucide="calculator"></i></span>
         <span class="nav-label">Calculadoras</span>
+        <kbd class="nav-shortcut">Alt+4</kbd>
       </button>
     </nav>
 
     <div class="sidebar-footer">
       <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Contribua com o SaldoMais no GitHub">
-        <span class="nav-icon"><i data-lucide="github"></i></span>
+        <span class="nav-icon"><i data-lucide="git-branch"></i></span>
         <span class="nav-label">Contribua</span>
       </a>
     </div>
@@ -138,6 +142,15 @@
           <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
         </div>
         <button onclick="exportarPDF()" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
+        <div class="btn-backup-group">
+          <button onclick="exportarBackup()" class="btn-backup" title="Exportar todos os dados como JSON">
+            <i data-lucide="download" size="14"></i> Exportar Backup
+          </button>
+          <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
+            <i data-lucide="upload" size="14"></i> Importar Backup
+            <input type="file" accept=".json" onchange="importarBackup(event)" style="display:none">
+          </label>
+        </div>
       </div>
 
       <div id="resumoGeral" class="resumo-geral"></div>

@@ -154,6 +154,25 @@ body {
   font-weight: 600;
 }
 
+.nav-shortcut {
+  font-size: 10px;
+  font-family: 'Inter', monospace;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: var(--muted);
+  opacity: 0.7;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.nav-btn.active .nav-shortcut {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.55);
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding-top: 15px;
@@ -284,6 +303,43 @@ body {
 
 .btn-export-pdf:active {
   opacity: 0.75;
+}
+
+.btn-backup-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-backup {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-top: 0;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-backup:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.13);
+  color: var(--text);
+}
+
+.btn-backup:active {
+  opacity: 0.7;
 }
 
 /* DASHBOARD SETUP */
@@ -1931,6 +1987,10 @@ button:active {
 }
 
 @media (max-width: 768px) {
+  .nav-shortcut {
+    display: none;
+  }
+
   .mobile-header {
     display: flex;
     align-items: center;
