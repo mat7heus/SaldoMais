@@ -19,8 +19,14 @@
 
   <link rel="stylesheet" href="./css/index.css">
 
-  <!-- IMPORTANTE -->
-  <script src="./js/index.js" defer></script>
+  <script src="./js/core.js" defer></script>
+  <script src="./js/lancamentos.js" defer></script>
+  <script src="./js/categorias.js" defer></script>
+  <script src="./js/dashboard.js" defer></script>
+  <script src="./js/calculadoras.js" defer></script>
+  <script src="./js/backup.js" defer></script>
+  <script src="./js/pdf.js" defer></script>
+  <script src="./js/app.js" defer></script>
 </head>
 <body>
 
@@ -80,7 +86,7 @@
 
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo-container" onclick="mostrarLoading(); setTimeout(function(){ document.querySelector('.nav-btn[data-screen=dashboard]').click(); }, 1500)">
+      <div class="logo-container" id="logoBtnSidebar">
         <div class="logo-icon">
           <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="logo-img">
         </div>
@@ -141,14 +147,14 @@
           <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
           <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
         </div>
-        <button onclick="exportarPDF()" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
+        <button id="btnExportPdf" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
         <div class="btn-backup-group">
-          <button onclick="exportarBackup()" class="btn-backup" title="Exportar todos os dados como JSON">
+          <button id="btnExportBackup" class="btn-backup" title="Exportar todos os dados como JSON">
             <i data-lucide="download" size="14"></i> Exportar Backup
           </button>
           <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
             <i data-lucide="upload" size="14"></i> Importar Backup
-            <input type="file" accept=".json" onchange="importarBackup(event)" style="display:none">
+            <input type="file" id="inputImportBackup" accept=".json" style="display:none">
           </label>
         </div>
       </div>
@@ -213,7 +219,7 @@
           <div class="form-nova-cat">
             <input id="novaCategoriaNome" type="text" placeholder="Nome da Categoria" maxlength="30" class="cat-input-nome">
             <input id="novaCategoriaCor" type="color" value="#f59e0b" class="cat-input-cor" title="Selecione uma cor">
-            <button onclick="adicionarNovaCategoria()" class="btn-adicionar-cat">Adicionar</button>
+            <button id="btnAdicionarCategoria" class="btn-adicionar-cat">Adicionar</button>
           </div>
         </div>
 
