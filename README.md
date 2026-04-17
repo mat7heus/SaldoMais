@@ -58,12 +58,18 @@ SaldoMais cobre o ciclo básico de controle financeiro pessoal:
 - Inclui: cabeçalho com logo, resumo financeiro (3 cards), barra de progresso, tabela de categorias e tabela de lançamentos
 - Download automático com nome `SaldoMais-AAAA-MM.pdf`
 
+### Backup e Restauração
+- Exporta todos os dados (categorias, orçamentos e lançamentos) em um arquivo `.json`
+- Importa um backup para restaurar dados em qualquer dispositivo
+- Download automático com nome `SaldoMais-backup-AAAA-MM-DD.json`
+
 ### Interface
 - 🎨 Tema escuro (dark mode nativo)
 - 📱 Responsivo e adaptado para mobile
 - ⚡ Performance otimizada — sem bundler, sem build step
 - 🇧🇷 Interface em português (Brasil)
 - 🔔 Notificações visuais de ações
+- ⌨️ Atalhos de teclado para navegação rápida (`Alt+1` a `Alt+4`)
 
 ---
 
@@ -91,7 +97,7 @@ SaldoMais cobre o ciclo básico de controle financeiro pessoal:
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/seu-usuario/SaldoMais.git
+   git clone https://github.com/mat7heus/SaldoMais.git
    cd SaldoMais
    ```
 
@@ -184,6 +190,8 @@ saldomain_lancamentos: [
 | `renderLancamentos()` | Lista os lançamentos do mês |
 | `criarCategoria()` | Cria ou atualiza uma categoria |
 | `exportarPDF()` | Gera e baixa o relatório mensal em PDF |
+| `exportarBackup()` | Exporta todos os dados como JSON |
+| `importarBackup(e)` | Restaura dados a partir de um arquivo JSON |
 | `navegar()` | Controla a navegação entre telas |
 | `formatarMoeda()` | Formata valores em BRL |
 
@@ -223,7 +231,7 @@ Em `js/index.js`, modifique a função `criarCategoria()` para incluir categoria
 
 ## 💡 Dicas de Uso
 
-1. **Backup de Dados**: Os dados ficam no navegador local. Use as ferramentas de dev (DevTools → Application → localStorage) para inspecionar ou exportar os dados se necessário.
+1. **Backup de Dados**: Use os botões **Exportar Backup** e **Importar Backup** no Dashboard para salvar e restaurar seus dados como arquivo `.json`. Isso permite transferir dados entre dispositivos ou navegadores.
 2. **Orçamento Realista**: Defina orçamentos com base no seu histórico de gastos — o SaldoMais é uma ferramenta de organização, não de projeção mágica.
 3. **Categorias Claras**: Use nomes de categorias objetivos e alinhados com o seu contexto financeiro.
 4. **Revisão Mensal**: Revise os gastos periodicamente para identificar padrões e ajustar o orçamento do próximo mês.
@@ -241,6 +249,7 @@ Em `js/index.js`, modifique a função `criarCategoria()` para incluir categoria
 ## 🚀 Possíveis Melhorias Futuras
 
 - [x] Exportação de relatórios em PDF
+- [ ] Edição de lançamentos — atualmente só é possível excluir
 
 ---
 
