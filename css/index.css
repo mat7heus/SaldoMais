@@ -257,6 +257,34 @@ body {
   opacity: 0.9;
 }
 
+.btn-export-pdf {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: var(--accent);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-export-pdf:hover {
+  background: rgba(245, 158, 11, 0.07);
+  border-color: rgba(245, 158, 11, 0.42);
+}
+
+.btn-export-pdf:active {
+  opacity: 0.75;
+}
+
 /* DASHBOARD SETUP */
 .dashboard-setup {
   background: var(--card);
