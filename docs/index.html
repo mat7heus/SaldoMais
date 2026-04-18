@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentação — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <style>
+    /* ── Nav extension: link list (index-only) ────────────────── */
+    .topnav .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .topnav .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .topnav .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 80px 32px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 420px;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.10) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .hero-logo {
+      width: 76px;
+      height: 76px;
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 1px rgba(245,158,11,0.2),
+        0 0 32px rgba(245,158,11,0.28),
+        0 12px 40px rgba(0,0,0,0.6);
+      margin-bottom: 24px;
+      animation: logoFloat 3.6s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-6px); }
+    }
+    .hero-title {
+      font-size: 52px;
+      font-weight: 600;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .hero-title .accent { color: var(--accent); }
+    .hero-subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      letter-spacing: 0.01em;
+    }
+    .hero-badges {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--card);
+      letter-spacing: 0.02em;
+    }
+    .badge.amber { border-color: rgba(245,158,11,0.30); color: var(--accent); background: rgba(245,158,11,0.06); }
+    .badge.green { border-color: rgba(34,197,94,0.30);  color: var(--ok);     background: rgba(34,197,94,0.06);  }
+
+    /* ── Shared layout ────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: -0.4px;
+    }
+    .section-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── Doc cards ────────────────────────────────────────────── */
+    .docs-section { padding: 72px 0 0; }
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .doc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: var(--text);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(245,158,11,0.05) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .doc-card:hover {
+      border-color: rgba(245,158,11,0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(245,158,11,0.07);
+      text-decoration: none;
+      color: var(--text);
+    }
+    .doc-card:hover::before { opacity: 1; }
+    .doc-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .doc-icon {
+      width: 38px;
+      height: 38px;
+      background: rgba(245,158,11,0.10);
+      border: 1px solid rgba(245,158,11,0.20);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .doc-icon i { width: 18px; height: 18px; }
+    .doc-num {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(245,158,11,0.5);
+      letter-spacing: 0.06em;
+      padding-top: 2px;
+    }
+    .doc-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; margin-bottom: 4px; }
+    .doc-desc  { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
+    .doc-footer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .doc-footer i { width: 13px; height: 13px; }
+
+    /* ── Stack ────────────────────────────────────────────────── */
+    .stack-section { padding: 64px 0; }
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .stack-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stack-item .si-icon { color: var(--accent); display: flex; align-items: center; }
+    .stack-item .si-icon i { width: 18px; height: 18px; }
+    .stack-item .si-name { font-size: 14px; font-weight: 600; }
+    .stack-item .si-use  { font-size: 12px; color: var(--muted); }
+
+    /* ── Quick start ──────────────────────────────────────────── */
+    .qs-section { padding: 64px 0 72px; }
+    .qs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .qs-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .qs-if   { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+    .qs-then { font-size: 14px; font-weight: 500; }
+    .qs-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .topnav .nav-links { display: none; }
+      .hero { padding: 48px 20px 48px; }
+      .hero-title { font-size: 36px; }
+      .container { padding: 0 20px; }
+      .docs-section { padding: 48px 0 0; }
+      .stack-section { padding: 40px 0; }
+      .qs-section { padding: 40px 0 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="brand">
+      <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais logo" />
+      Saldo<span class="accent">Mais</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="nav-links">
+      <a href="arquitetura.html">Arquitetura</a>
+      <a href="modulos.html">Módulos</a>
+      <a href="design-system.html">Design System</a>
+      <a href="contribuindo.html">Contribuindo</a>
+    </div>
+    <a href="../index.html" class="btn-app">
+      <i data-lucide="arrow-right"></i>
+      Abrir App
+    </a>
+  </nav>
+
+  <section class="hero">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="hero-logo" />
+    <h1 class="hero-title">Saldo<span class="accent">Mais</span></h1>
+    <p class="hero-subtitle">Documentação Técnica &mdash; Gastos claros, decisões inteligentes.</p>
+    <div class="hero-badges">
+      <span class="badge">Vanilla JS</span>
+      <span class="badge amber">Zero dependências</span>
+      <span class="badge">localStorage</span>
+      <span class="badge">Dark mode nativo</span>
+      <span class="badge green">7 documentos</span>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="docs-section">
+    <div class="container">
+      <p class="section-eyebrow">Documentação</p>
+      <h2 class="section-heading">Tudo que você precisa saber</h2>
+      <p class="section-sub">Documentação interna voltada para desenvolvedores. Cada documento cobre uma área específica da aplicação.</p>
+
+      <div class="docs-grid">
+
+        <a href="arquitetura.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="cpu"></i></div>
+            <span class="doc-num">01</span>
+          </div>
+          <div class="doc-title">Arquitetura</div>
+          <p class="doc-desc">Modelo de execução, escopo global, ordem de carregamento, fluxo de inicialização e padrões de design recorrentes.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="modulos.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="package"></i></div>
+            <span class="doc-num">02</span>
+          </div>
+          <div class="doc-title">Módulos JS</div>
+          <p class="doc-desc">Os 8 módulos JS — responsabilidades, assinaturas de funções e contratos de interface entre os módulos.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="dados.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="database"></i></div>
+            <span class="doc-num">03</span>
+          </div>
+          <div class="doc-title">Dados & Storage</div>
+          <p class="doc-desc">Schema das entidades no localStorage, relacionamentos, invariantes e formato de backup de dados.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="calculadoras.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="calculator"></i></div>
+            <span class="doc-num">04</span>
+          </div>
+          <div class="doc-title">Calculadoras</div>
+          <p class="doc-desc">Fórmulas matemáticas, parâmetros, retornos e edge cases das 8 calculadoras financeiras integradas.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="design-system.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="palette"></i></div>
+            <span class="doc-num">05</span>
+          </div>
+          <div class="doc-title">Design System</div>
+          <p class="doc-desc">Tokens CSS, componentes de UI, animações, responsividade e hierarquia de z-index da aplicação.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="funcionalidades.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="list-checks"></i></div>
+            <span class="doc-num">06</span>
+          </div>
+          <div class="doc-title">Funcionalidades</div>
+          <p class="doc-desc">Regras de negócio e fluxos técnicos detalhados de cada feature — o que acontece e por quê.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+        <a href="contribuindo.html" class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-icon"><i data-lucide="git-pull-request"></i></div>
+            <span class="doc-num">07</span>
+          </div>
+          <div class="doc-title">Contribuindo</div>
+          <p class="doc-desc">Setup do ambiente, convenções de código, guias para estender o projeto e técnicas de depuração.</p>
+          <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="stack-section">
+    <div class="container">
+      <p class="section-eyebrow">Stack</p>
+      <h2 class="section-heading">Tecnologias utilizadas</h2>
+      <p class="section-sub">Aplicação 100% client-side, sem bundler, sem build step.</p>
+
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="file-code"></i></div>
+          <div class="si-name">HTML5</div>
+          <div class="si-use">Estrutura semântica</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="paintbrush"></i></div>
+          <div class="si-name">CSS3</div>
+          <div class="si-use">Layout, variáveis e animações</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="braces"></i></div>
+          <div class="si-name">JavaScript</div>
+          <div class="si-use">Vanilla ES6+, sem framework</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="hard-drive"></i></div>
+          <div class="si-name">localStorage</div>
+          <div class="si-use">Persistência local de dados</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="pie-chart"></i></div>
+          <div class="si-name">Chart.js</div>
+          <div class="si-use">Gráfico de distribuição</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="file-down"></i></div>
+          <div class="si-name">jsPDF</div>
+          <div class="si-use">Geração de PDF client-side</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="qs-section">
+    <div class="container">
+      <p class="section-eyebrow">Guia rápido</p>
+      <h2 class="section-heading">Por onde começar?</h2>
+      <p class="section-sub">Navegue direto para o que você precisa com base no que vai fazer.</p>
+
+      <div class="qs-grid">
+        <div class="qs-card">
+          <div class="qs-if">Novo no projeto</div>
+          <div class="qs-then"><a href="arquitetura.html">arquitetura.html</a></div>
+          <div class="qs-desc">Entenda o modelo de execução antes de qualquer módulo.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Modificar uma feature</div>
+          <div class="qs-then"><a href="funcionalidades.html">funcionalidades.html</a> + <a href="modulos.html">modulos.html</a></div>
+          <div class="qs-desc">Regras de negócio e contratos de interface.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Alterar dados ou storage</div>
+          <div class="qs-then"><a href="dados.html">dados.html</a></div>
+          <div class="qs-desc">Leitura obrigatória antes de qualquer mudança de schema.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Criar UI nova</div>
+          <div class="qs-then"><a href="design-system.html">design-system.html</a></div>
+          <div class="qs-desc">Tokens e componentes corretos para manter consistência visual.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Adicionar uma calculadora</div>
+          <div class="qs-then"><a href="contribuindo.html">contribuindo.html</a></div>
+          <div class="qs-desc">Seção dedicada ao passo a passo de nova calculadora.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Depurar um problema</div>
+          <div class="qs-then"><a href="contribuindo.html">contribuindo.html → depuração</a></div>
+          <div class="qs-desc">Técnicas e estratégias para debug da aplicação.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+      <span>SaldoMais</span>
+    </div>
+    <p class="footer-text">
+      Documentação técnica interna &mdash; Licença GPL v3
+      &mdash; <a href="../index.html">Abrir aplicação</a>
+    </p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
+
+</body>
+</html>

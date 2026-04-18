@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design System — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script defer>document.addEventListener('DOMContentLoaded',()=>{if(typeof lucide!=='undefined')lucide.createIcons();if(typeof hljs!=='undefined')hljs.highlightAll();});</script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    Saldo<span class="accent">Mais</span>
+  </a>
+  <span class="sep">/</span>
+  <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
+  <div class="spacer"></div>
+  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+</nav>
+
+<header class="doc-hero">
+  <div class="doc-hero-inner">
+    <div class="doc-hero-icon"><i data-lucide="palette"></i></div>
+    <div>
+      <div class="doc-hero-num">Documento 05 de 07</div>
+      <h1>Design System</h1>
+      <p class="doc-hero-lead">Tokens de design (variáveis CSS), componentes de UI reutilizáveis, convenções de estilo e comportamento responsivo — referência para manter consistência visual ao criar ou modificar telas.</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc-wrap">
+
+  <aside class="doc-toc">
+    <p class="toc-title">Nesta página</p>
+    <nav>
+      <a href="#tokens-cor">Tokens de cor</a>
+      <a href="#tipografia">Tipografia</a>
+      <a href="#layout">Layout</a>
+      <a href="#card">Card</a>
+      <a href="#stat-card">Stat Card</a>
+      <a href="#botoes">Botões</a>
+      <a href="#inputs">Inputs e Selects</a>
+      <a href="#barras">Barras de progresso</a>
+      <a href="#slider">Slider de percentual</a>
+      <a href="#toast">Toast de notificação</a>
+      <a href="#modais">Modais</a>
+      <a href="#loading">Loading overlay</a>
+      <a href="#animacoes">Animações</a>
+      <a href="#responsividade">Responsividade</a>
+      <a href="#zindex">Z-index</a>
+    </nav>
+  </aside>
+
+  <article class="doc-content">
+
+    <section id="tokens-cor">
+      <h2>Tokens de cor</h2>
+      <p>Definidos como CSS custom properties em <code>:root</code> em <code>css/index.css</code>. Toda a interface usa exclusivamente essas variáveis — não há valores de cor hardcoded fora delas.</p>
+      <pre><code class="language-css">:root {
+  /* Backgrounds */
+  --bg:     #0b0b0c;                   /* fundo principal */
+  --bg-2:   rgba(255,255,255,0.03);    /* camada elevada (sidebar, cabeçalho) */
+  --card:   rgba(255,255,255,0.04);    /* cards e painéis */
+  --border: rgba(255,255,255,0.08);    /* bordas de todos os elementos */
+
+  /* Tipografia */
+  --text:   #f5f5f5;   /* texto primário */
+  --muted:  #a1a1aa;   /* texto secundário, labels, legendas */
+
+  /* Semântica */
+  --accent: #f59e0b;   /* âmbar — destaque, botão primário, slider thumb */
+  --danger: #ef4444;   /* vermelho — erro, limite excedido, ação destrutiva */
+  --warn:   #fb923c;   /* laranja — alerta, gasto parcial, acima de 80% */
+  --ok:     #22c55e;   /* verde — sucesso, dentro do orçamento */
+}</code></pre>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>--bg</code></td><td><span class="swatch" style="background:#0b0b0c;border-color:rgba(255,255,255,0.3)"></span><code>#0b0b0c</code></td><td>Fundo principal da aplicação</td></tr>
+            <tr><td><code>--accent</code></td><td><span class="swatch" style="background:#f59e0b"></span><code>#f59e0b</code></td><td>Destaque, botão primário, links</td></tr>
+            <tr><td><code>--ok</code></td><td><span class="swatch" style="background:#22c55e"></span><code>#22c55e</code></td><td>Sucesso, dentro do orçamento</td></tr>
+            <tr><td><code>--warn</code></td><td><span class="swatch" style="background:#fb923c"></span><code>#fb923c</code></td><td>Alerta, gasto entre 80–100%</td></tr>
+            <tr><td><code>--danger</code></td><td><span class="swatch" style="background:#ef4444"></span><code>#ef4444</code></td><td>Erro, limite excedido</td></tr>
+            <tr><td><code>--text</code></td><td><span class="swatch" style="background:#f5f5f5"></span><code>#f5f5f5</code></td><td>Texto primário</td></tr>
+            <tr><td><code>--muted</code></td><td><span class="swatch" style="background:#a1a1aa"></span><code>#a1a1aa</code></td><td>Texto secundário, labels</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-note">
+        <div><strong>PDF:</strong> <code>PDF_COLORS</code> em <code>core.js</code> contém os mesmos conceitos em RGB para uso com jsPDF.</div>
+      </div>
+    </section>
+
+    <section id="tipografia">
+      <h2>Tipografia</h2>
+      <p>Fonte única: <strong>Inter</strong> (Google Fonts), pesos 400, 500 e 600.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Contexto</th><th>Tamanho</th><th>Peso</th></tr></thead>
+          <tbody>
+            <tr><td>Título de tela (<code>h2</code>)</td><td>28px</td><td>600</td></tr>
+            <tr><td>Subtítulo de seção (<code>h3</code>)</td><td>18px</td><td>600</td></tr>
+            <tr><td>Label de input</td><td>14px</td><td>500</td></tr>
+            <tr><td>Texto de card</td><td>14px</td><td>400</td></tr>
+            <tr><td>Valor de stat card</td><td>24px</td><td>700</td></tr>
+            <tr><td>Helper / legenda</td><td>12px</td><td>400</td></tr>
+            <tr><td>Atalho de teclado (<code>kbd</code>)</td><td>10px</td><td>400</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="layout">
+      <h2>Layout</h2>
+      <h3>Estrutura principal</h3>
+      <pre><code class="language-plaintext">.app (display: flex; height: 100vh)
+  ├── aside.sidebar    (width: 230px, fixo)
+  └── main.content     (flex: 1, overflow-y: auto)</code></pre>
+      <p>A sidebar usa <code>backdrop-filter: blur(20px)</code> sobre <code>--bg-2</code>, criando efeito de vidro fosco. Não há scroll na sidebar.</p>
+
+      <h3>Grid de dashboard</h3>
+      <p><code>.dashboard-content</code> usa <code>grid-template-columns: 1.2fr 1fr</code>. Colapsa para coluna única em <code>@media (max-width: 768px)</code>.</p>
+
+      <h3>Grid de calculadoras</h3>
+      <p><code>.calc-grid</code> usa <code>grid-template-columns: 1fr 1fr</code>. Colapsa para coluna única em <code>@media (max-width: 900px)</code>.</p>
+    </section>
+
+    <section id="card">
+      <h2>Card</h2>
+      <pre><code class="language-css">.card {
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,255,255,0.15);
+}</code></pre>
+      <p>Eleva levemente no hover via <code>translateY</code>. Usado como container para formulários, painéis e seções do dashboard.</p>
+    </section>
+
+    <section id="stat-card">
+      <h2>Stat Card</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Classe</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <tr><td><code>.stat-card</code></td><td>Container com flexbox coluna</td></tr>
+            <tr><td><code>.stat-label</code></td><td>Texto uppercase, <code>--muted</code>, 13px</td></tr>
+            <tr><td><code>.stat-value</code></td><td>Valor principal, 24px, bold</td></tr>
+            <tr><td><code>.stat-bar</code></td><td>Barra de progresso (fundo)</td></tr>
+            <tr><td><code>.stat-bar-fill</code></td><td>Preenchimento com gradiente <code>accent→warn</code></td></tr>
+            <tr><td><code>.stat-subtitle</code></td><td>Texto auxiliar, 12px, <code>--muted</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-note">
+        <div>O card de "Disponível" tem <code>border-color</code> e <code>background</code> dinâmicos aplicados inline: verde se positivo, vermelho se negativo.</div>
+      </div>
+    </section>
+
+    <section id="botoes">
+      <h2>Botões</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Classe</th><th>Aparência</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>.btn-primary</code></td><td><code>--accent</code>, texto preto</td><td>Ação principal</td></tr>
+            <tr><td><code>.btn-danger</code></td><td><code>--danger</code>, texto branco</td><td>Ação destrutiva</td></tr>
+            <tr><td><code>.btn-export-pdf</code></td><td>Transparente, borda amber</td><td>Exportar PDF</td></tr>
+            <tr><td><code>.btn-backup</code></td><td>Transparente, borda sutil</td><td>Backup/restore</td></tr>
+            <tr><td><code>.btn-salvar-percentuais</code></td><td><code>--accent</code>, bold</td><td>Salvar percentuais</td></tr>
+            <tr><td><code>.btn-adicionar-cat</code></td><td><code>--accent</code>, bold</td><td>Adicionar categoria</td></tr>
+            <tr><td><code>.btn-editar-cat</code></td><td><code>--accent</code>, texto preto</td><td>Editar categoria</td></tr>
+            <tr><td><code>.btn-deletar-cat</code></td><td><code>--danger</code>, texto branco</td><td>Remover categoria</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="inputs">
+      <h2>Inputs e Selects</h2>
+      <pre><code class="language-css">input, select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+input:focus, select:focus {
+  border-color: rgba(245,158,11,0.5);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+  background: rgba(255,255,255,0.05);
+}</code></pre>
+      <p>O foco usa um anel amber sutil. Em mobile (<code>@media (max-width: 768px)</code>), <code>font-size: 16px</code> é aplicado para evitar zoom automático do iOS.</p>
+    </section>
+
+    <section id="barras">
+      <h2>Barras de progresso</h2>
+      <p>Dois componentes de barra distintos:</p>
+      <ul>
+        <li><strong><code>.stat-bar / .stat-bar-fill</code></strong> — no stat card de "Total Gasto": gradiente <code>accent→warn</code>, animação de <code>width</code> 0.4s.</li>
+        <li><strong><code>.barra / .barra-fill</code></strong> — barras de status por categoria: cor aplicada inline dinamicamente. Verde &lt; 80% | laranja 80–100% | vermelho &gt; 100%. A barra é limitada a <code>min(percentualGasto, 100)</code> visualmente.</li>
+      </ul>
+    </section>
+
+    <section id="slider">
+      <h2>Slider de percentual</h2>
+      <pre><code class="language-css">.percentual-slider {
+  -webkit-appearance: none;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+}
+.percentual-slider::-webkit-slider-thumb {
+  width: 16px; height: 16px;
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(245,158,11,0.4);
+}</code></pre>
+      <p>Estilos cross-browser para <code>::-webkit-slider-thumb</code> e <code>::-moz-range-thumb</code>. O thumb cresce no hover (<code>scale(1.2)</code>).</p>
+    </section>
+
+    <section id="toast">
+      <h2>Toast de notificação</h2>
+      <pre><code class="language-css">.notification-toast {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(10px);
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+.notification-toast.show {
+  opacity: 1; transform: translateY(0);
+}</code></pre>
+      <p>Aparece no canto inferior direito com fade + slide. Desaparece após 2500ms via <code>setTimeout</code> em <code>notificar()</code>.</p>
+    </section>
+
+    <section id="modais">
+      <h2>Modais</h2>
+      <p>Os dois modais (<code>#confirmModal</code> e <code>#editarCategoriaModal</code>) compartilham <code>.confirm-modal</code>:</p>
+      <pre><code class="language-css">.confirm-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(5px);
+  z-index: 9997;
+}
+.confirm-modal.show {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}</code></pre>
+      <p>O container interno (<code>.confirm-container</code>) é um card com <code>max-width: 400px</code> e <code>box-shadow</code> profundo.</p>
+    </section>
+
+    <section id="loading">
+      <h2>Loading overlay</h2>
+      <pre><code class="language-css">.loading-overlay {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #0b0b0c 0%, #1a1a1e 50%, #0b0b0c 100%);
+  z-index: 9999;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.loading-overlay.show {
+  opacity: 1; pointer-events: auto;
+}</code></pre>
+      <p>Contém logo animado (<code>logoFloat</code>), anel spinner (<code>spinRing</code>) e texto com ellipsis (<code>dotAnimation</code>).</p>
+    </section>
+
+    <section id="animacoes">
+      <h2>Animações</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Uso</th><th>Comportamento</th></tr></thead>
+          <tbody>
+            <tr><td><code>spinRing</code></td><td>Anel do loading</td><td>Rotação 360° infinita, 2s linear</td></tr>
+            <tr><td><code>logoFloat</code></td><td>Logo do loading</td><td>TranslateY -8px + scale 1.05, 3s ease-in-out</td></tr>
+            <tr><td><code>fadeInOut</code></td><td>Texto do loading</td><td>Opacidade 0.6→1→0.6, 1.5s</td></tr>
+            <tr><td><code>dotAnimation</code></td><td>Ellipsis do loading</td><td>content steps: '' → '.' → '..' → '...'</td></tr>
+            <tr><td><code>fadeSlideIn</code></td><td>Resultado das calculadoras</td><td>opacity 0→1, translateY 10px→0, 0.28s</td></tr>
+            <tr><td><code>fadeSlideOut</code></td><td>Fechamento do resultado</td><td>opacity 1→0, translateY 0→-8px, 0.2s</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="responsividade">
+      <h2>Responsividade</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Breakpoint</th><th>Mudanças</th></tr></thead>
+          <tbody>
+            <tr><td><code>≤ 900px</code></td><td><code>.dashboard-grid</code> e <code>.calc-grid</code> colapsam para 1 coluna</td></tr>
+            <tr><td><code>≤ 768px</code></td><td>Sidebar oculta (translateX -100%), mobile header exibido, <code>.dashboard-content</code> colapsa, <code>.nav-shortcut</code> oculto, <code>font-size: 16px</code> nos inputs</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Mobile header</strong> (<code>#hamburgerBtn</code> + logo) fica fixo no topo com <code>height: 56px</code>. O conteúdo principal tem <code>padding-top: 72px</code> para não ficar sob o header.</p>
+      <p><strong>Sidebar mobile:</strong> abre via <code>.sidebar.open</code> com overlay <code>#sidebarOverlay</code>. Fecha ao clicar no overlay ou em qualquer <code>.nav-btn</code>.</p>
+    </section>
+
+    <section id="zindex">
+      <h2>Z-index</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Elemento</th><th>z-index</th></tr></thead>
+          <tbody>
+            <tr><td><code>.loading-overlay</code></td><td>9999</td></tr>
+            <tr><td><code>.notification-toast</code></td><td>9998</td></tr>
+            <tr><td><code>.confirm-modal</code></td><td>9997</td></tr>
+            <tr><td><code>.sidebar</code> (mobile)</td><td>200</td></tr>
+            <tr><td><code>.mobile-header</code></td><td>100</td></tr>
+            <tr><td><code>.sidebar-overlay</code></td><td>99</td></tr>
+            <tr><td><code>.calc-table th</code> (sticky)</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <nav class="doc-nav">
+      <a href="calculadoras.html" class="doc-nav-link">
+        <span class="doc-nav-label"><i data-lucide="arrow-left"></i> Anterior</span>
+        <span class="doc-nav-title">Calculadoras</span>
+      </a>
+      <a href="funcionalidades.html" class="doc-nav-link next">
+        <span class="doc-nav-label">Próximo <i data-lucide="arrow-right"></i></span>
+        <span class="doc-nav-title">Funcionalidades</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    <span>SaldoMais</span>
+  </div>
+  <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
+</footer>
+
+</body>
+</html>

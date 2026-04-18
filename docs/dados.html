@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dados & Storage — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script defer>document.addEventListener('DOMContentLoaded',()=>{if(typeof lucide!=='undefined')lucide.createIcons();if(typeof hljs!=='undefined')hljs.highlightAll();});</script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    Saldo<span class="accent">Mais</span>
+  </a>
+  <span class="sep">/</span>
+  <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
+  <div class="spacer"></div>
+  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+</nav>
+
+<header class="doc-hero">
+  <div class="doc-hero-inner">
+    <div class="doc-hero-icon"><i data-lucide="database"></i></div>
+    <div>
+      <div class="doc-hero-num">Documento 03 de 07</div>
+      <h1>Dados &amp; Storage</h1>
+      <p class="doc-hero-lead">Estruturas de dados persistidas no <code>localStorage</code>, relacionamentos entre entidades, chaves de acesso, regras de integridade e formato do arquivo de backup.</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc-wrap">
+
+  <aside class="doc-toc">
+    <p class="toc-title">Nesta página</p>
+    <nav>
+      <a href="#persistencia">Camada de persistência</a>
+      <a href="#chaves">Chaves do localStorage</a>
+      <a href="#categoria">Entidade: Categoria</a>
+      <a href="#orcamento">Entidade: Orçamento</a>
+      <a href="#lancamento">Entidade: Lançamento</a>
+      <a href="#relacionamentos">Relacionamentos</a>
+      <a href="#ids">IDs com Date.now()</a>
+      <a href="#backup">Formato do backup</a>
+      <a href="#isolamento">Isolamento por mês</a>
+    </nav>
+  </aside>
+
+  <article class="doc-content">
+
+    <section id="persistencia">
+      <h2>Camada de persistência</h2>
+      <p>O SaldoMais não tem backend. Todos os dados ficam no <code>localStorage</code> do navegador sob o domínio/origem que serve os arquivos. Dados são perdidos se o usuário limpar o armazenamento do navegador ou abrir o app em outro dispositivo sem importar backup.</p>
+      <p><strong>Limite prático:</strong> O <code>localStorage</code> suporta ~5–10 MB dependendo do navegador. Para o volume esperado (dezenas de categorias, centenas de lançamentos), esse limite não é uma preocupação real.</p>
+
+      <h3>Acesso via helpers</h3>
+      <pre><code class="language-javascript">const get = key => JSON.parse(localStorage.getItem(key)) || [];
+const set = (key, val) => localStorage.setItem(key, JSON.stringify(val));</code></pre>
+      <div class="callout callout-note">
+        <div><code>get</code> sempre retorna um array — nunca <code>null</code>. Se o item não existir ou o JSON for inválido, retorna <code>[]</code>.</div>
+      </div>
+    </section>
+
+    <section id="chaves">
+      <h2>Chaves do <code>localStorage</code></h2>
+      <p>Definidas em <code>core.js</code> como <code>STORAGE</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Constante</th><th>Chave</th><th>Entidade</th></tr></thead>
+          <tbody>
+            <tr><td><code>STORAGE.categorias</code></td><td><code>saldomain_categorias</code></td><td>Categorias de gasto</td></tr>
+            <tr><td><code>STORAGE.orcamentos</code></td><td><code>saldomain_orcamentos</code></td><td>Orçamentos mensais</td></tr>
+            <tr><td><code>STORAGE.lancamentos</code></td><td><code>saldomain_lancamentos</code></td><td>Transações registradas</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="categoria">
+      <h2>Entidade: Categoria</h2>
+      <pre><code class="language-typescript">{
+  id: number,          // timestamp Unix (Date.now() + índice na criação)
+  nome: string,        // nome único (case-insensitive), máx. 30 caracteres
+  percentual: number,  // inteiro 0-100, % do orçamento alocado
+  cor_hex: string      // cor hexadecimal, ex: "#f59e0b"
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>A <strong>soma dos percentuais</strong> de todas as categorias deve ser <code>100</code> para que os limites sejam calculados corretamente. O app impede salvar percentuais que não somem 100.</li>
+        <li><code>nome</code> é único (comparação case-insensitive). O app rejeita duplicatas na criação e edição.</li>
+        <li>Novas categorias criadas pelo usuário recebem <code>percentual: 0</code> — o usuário deve ajustar manualmente os sliders.</li>
+      </ul>
+    </section>
+
+    <section id="orcamento">
+      <h2>Entidade: Orçamento</h2>
+      <pre><code class="language-typescript">{
+  id: number,                 // timestamp Unix gerado na criação
+  mes_referencia: string,     // formato "YYYY-MM", ex: "2026-04"
+  valor_total: number         // valor em reais (float), ex: 5000.00
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>Existe no máximo <strong>um orçamento por <code>mes_referencia</code></strong>. Se o usuário salvar o orçamento num mês que já tem registro, o <code>valor_total</code> é atualizado (upsert).</li>
+        <li><code>resetarMes()</code> zera <code>valor_total</code> para <code>0</code> mas não remove o registro — o orçamento do mês ainda existe, com valor zero.</li>
+      </ul>
+    </section>
+
+    <section id="lancamento">
+      <h2>Entidade: Lançamento</h2>
+      <pre><code class="language-typescript">{
+  id: number,               // timestamp Unix gerado na criação
+  id_orcamento: number,     // FK → Orçamento.id
+  id_categoria: number,     // FK → Categoria.id
+  valor: number,            // valor em reais (float), sempre > 0
+  descricao: string         // texto livre, obrigatório
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li><code>id_orcamento</code> referencia o orçamento do mês em que o lançamento foi criado.</li>
+        <li>Ao <strong>deletar uma categoria</strong>, todos os lançamentos com aquele <code>id_categoria</code> são removidos em cascata.</li>
+        <li>Não existe edição de lançamento — apenas exclusão e recriação.</li>
+      </ul>
+    </section>
+
+    <section id="relacionamentos">
+      <h2>Relacionamentos</h2>
+      <pre><code class="language-plaintext">Categoria (1) ──── (N) Lançamento
+Orçamento (1) ──── (N) Lançamento</code></pre>
+      <p>Não há foreign key enforced — as relações são resolvidas em memória nas funções de render e cálculo, sempre via <code>find()</code> ou <code>filter()</code> nos arrays lidos do storage.</p>
+
+      <h3>Exemplo: join para calcular gasto por categoria</h3>
+      <pre><code class="language-javascript">const o    = orcamentoAtual();
+const cats = get(STORAGE.categorias);
+const lanc = get(STORAGE.lancamentos).filter(l => l.id_orcamento === o.id);
+
+cats.forEach(c => {
+  const limite = o.valor_total * c.percentual / 100;
+  const gasto  = lanc
+    .filter(l => l.id_categoria === c.id)
+    .reduce((s, l) => s + l.valor, 0);
+});</code></pre>
+    </section>
+
+    <section id="ids">
+      <h2>IDs com <code>Date.now()</code></h2>
+      <p>Todos os IDs são gerados via <code>Date.now()</code> no momento da criação. Isso garante unicidade na prática (sem concorrência num app single-user), mas não é um UUID.</p>
+      <div class="callout callout-warn">
+        <div><strong>Risco de colisão:</strong> existe se dois registros forem criados no mesmo milissegundo. Nas categorias padrão isso é contornado com <code>Date.now() + índice</code>.</div>
+      </div>
+    </section>
+
+    <section id="backup">
+      <h2>Formato do arquivo de backup</h2>
+      <pre><code class="language-json">{
+  "_versao": 1,
+  "_exportado_em": "2026-04-18T14:30:00.000Z",
+  "categorias": [
+    { "id": 1713369600000, "nome": "Custos fixos", "percentual": 30, "cor_hex": "#f59e0b" }
+  ],
+  "orcamentos": [
+    { "id": 1713369601000, "mes_referencia": "2026-04", "valor_total": 5000 }
+  ],
+  "lancamentos": [
+    { "id": 1713369602000, "id_orcamento": 1713369601000, "id_categoria": 1713369600000, "valor": 150, "descricao": "Mercado" }
+  ]
+}</code></pre>
+      <div class="callout callout-danger">
+        <div><strong>Atenção:</strong> A importação <strong>sobrescreve completamente</strong> o storage — não faz merge. Dados existentes são perdidos. A validação verifica apenas a existência das chaves; não valida estrutura interna.</div>
+      </div>
+    </section>
+
+    <section id="isolamento">
+      <h2>Isolamento de dados por mês</h2>
+      <p>O app não filtra dados históricos por padrão — todos os lançamentos de todos os meses ficam no mesmo array. O isolamento acontece sempre que se filtra por <code>id_orcamento</code>:</p>
+      <pre><code class="language-javascript">// Apenas lançamentos do mês atual:
+get(STORAGE.lancamentos).filter(l => l.id_orcamento === orcamentoAtual().id)</code></pre>
+      <p>Isso significa que <code>get(STORAGE.lancamentos)</code> cresce indefinidamente com o tempo. Não há mecanismo de arquivamento automático — apenas o backup/restore e o <code>resetarMes()</code> (que afeta somente o mês atual).</p>
+    </section>
+
+    <nav class="doc-nav">
+      <a href="modulos.html" class="doc-nav-link">
+        <span class="doc-nav-label"><i data-lucide="arrow-left"></i> Anterior</span>
+        <span class="doc-nav-title">Módulos JS</span>
+      </a>
+      <a href="calculadoras.html" class="doc-nav-link next">
+        <span class="doc-nav-label">Próximo <i data-lucide="arrow-right"></i></span>
+        <span class="doc-nav-title">Calculadoras</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    <span>SaldoMais</span>
+  </div>
+  <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,4 +1,20 @@
-# 💰 SaldoMais — Gastos claros, decisões inteligentes.
+<div align="center">
+
+<img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" width="80" height="80" style="border-radius:18px;" />
+
+# SaldoMais
+
+**Gastos claros, decisões inteligentes.**
+
+![Vanilla JS](https://img.shields.io/badge/Vanilla_JS-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![Zero deps](https://img.shields.io/badge/build-zero_dependências-22c55e?style=flat-square)
+![localStorage](https://img.shields.io/badge/storage-localStorage-f59e0b?style=flat-square)
+![Dark theme](https://img.shields.io/badge/tema-dark_only-1a1a1e?style=flat-square&logoColor=white)
+![License](https://img.shields.io/badge/licença-GPL_v3-blue?style=flat-square)
+
+</div>
+
+---
 
 Aplicação web de **gestão de finanças pessoais** construída com HTML, CSS e JavaScript puro. Permite definir orçamentos mensais, categorizar despesas, acompanhar gastos em tempo real, usar calculadoras financeiras e exportar relatórios em PDF — tudo sem backend, com dados persistidos via `localStorage`.
 

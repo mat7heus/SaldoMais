@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadoras — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script defer>document.addEventListener('DOMContentLoaded',()=>{if(typeof lucide!=='undefined')lucide.createIcons();if(typeof hljs!=='undefined')hljs.highlightAll();});</script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    Saldo<span class="accent">Mais</span>
+  </a>
+  <span class="sep">/</span>
+  <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
+  <div class="spacer"></div>
+  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+</nav>
+
+<header class="doc-hero">
+  <div class="doc-hero-inner">
+    <div class="doc-hero-icon"><i data-lucide="calculator"></i></div>
+    <div>
+      <div class="doc-hero-num">Documento 04 de 07</div>
+      <h1>Calculadoras Financeiras</h1>
+      <p class="doc-hero-lead">Fórmulas matemáticas, parâmetros de entrada, estrutura de retorno, edge cases tratados e o padrão de separação entre lógica pura e UI nas 8 calculadoras.</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc-wrap">
+
+  <aside class="doc-toc">
+    <p class="toc-title">Nesta página</p>
+    <nav>
+      <a href="#padrao">Padrão de arquitetura</a>
+      <a href="#calc1">1. Juros Compostos</a>
+      <a href="#calc2">2. CDB / CDI</a>
+      <a href="#calc3">3. Aporte para Meta</a>
+      <a href="#calc4">4. Renda de Dividendos</a>
+      <a href="#calc5">5. Financiamento Price</a>
+      <a href="#calc6">6. Rotativo do Cartão</a>
+      <a href="#calc7">7. À Vista vs Parcelado</a>
+      <a href="#calc8">8. Quitar a Dívida</a>
+    </nav>
+  </aside>
+
+  <article class="doc-content">
+
+    <section id="padrao">
+      <h2>Padrão de arquitetura</h2>
+      <p>Cada calculadora é implementada em dois níveis:</p>
+      <ul>
+        <li><strong>Função pura (<code>calcXxx</code>)</strong> — recebe apenas números, sem acesso ao DOM. Determinística e testável isoladamente.</li>
+        <li><strong>Função de UI (<code>calcularXxx</code>)</strong> — lê os inputs do DOM via <code>parseBRCalc()</code>, valida os dados, chama a função pura e injeta o HTML de resultado.</li>
+      </ul>
+      <p>Esse padrão permite testar as fórmulas sem depender do browser e facilita reutilizar a lógica matemática em outros contextos.</p>
+
+      <h3>Parser de entrada</h3>
+      <pre><code class="language-javascript">parseBRCalc(str: string): number
+// Aceita formato brasileiro ("1.000,50") ou americano ("1000.50").
+// Detecta o separador decimal com base na posição relativa de "." e ",".</code></pre>
+    </section>
+
+    <section id="calc1">
+      <h2>1. Juros Compostos</h2>
+      <p><strong>Função:</strong> <code>calcJurosCompostos(capital, aporte, taxaAnual, periodo)</code></p>
+      <p>Simula a evolução de um investimento com capital inicial, aportes mensais opcionais e taxa anual.</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">i_mensal = (1 + taxaAnual)^(1/12) - 1
+
+// A cada mês m:
+saldo_m = saldo_(m-1) * (1 + i) + aporte</code></pre>
+
+      <h3>Parâmetros</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parâmetro</th><th>Tipo</th><th>Unidade</th></tr></thead>
+          <tbody>
+            <tr><td><code>capital</code></td><td>number</td><td>R$</td></tr>
+            <tr><td><code>aporte</code></td><td>number</td><td>R$ (0 se não houver)</td></tr>
+            <tr><td><code>taxaAnual</code></td><td>number</td><td>decimal (ex: 0.12 para 12%)</td></tr>
+            <tr><td><code>periodo</code></td><td>number</td><td>meses</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{
+  saldo: number,
+  totalInvestido: number,
+  totalJuros: number,
+  linhas: Array&lt;{ mes: number, aporte: number, jurosMes: number, montante: number }&gt;
+}</code></pre>
+    </section>
+
+    <section id="calc2">
+      <h2>2. Simulador CDB / CDI</h2>
+      <p><strong>Função:</strong> <code>calcCDBCDI(valor, taxaCDI, percentual, prazo)</code></p>
+      <p>Calcula o rendimento líquido de um CDB pós-fixado indexado ao CDI.</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">taxaEfetiva_aa = taxaCDI * (percentual / 100) / 100
+taxaDiaria     = (1 + taxaEfetiva_aa)^(1/252) - 1
+rendBruto      = valor * ((1 + taxaDiaria)^prazo - 1)
+
+ir       = rendBruto * aliquota
+valorLiq = valor + rendBruto - ir</code></pre>
+
+      <h3>IR regressivo (renda fixa)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prazo (dias corridos)</th><th>Alíquota</th></tr></thead>
+          <tbody>
+            <tr><td>≤ 180</td><td>22,5%</td></tr>
+            <tr><td>181 – 360</td><td>20,0%</td></tr>
+            <tr><td>361 – 720</td><td>17,5%</td></tr>
+            <tr><td>&gt; 720</td><td>15,0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{ rendBruto: number, ir: number, valorLiq: number, aliquota: number }</code></pre>
+    </section>
+
+    <section id="calc3">
+      <h2>3. Aporte para Meta</h2>
+      <p><strong>Função:</strong> <code>calcAporteMeta(meta, prazo, taxaMensal)</code></p>
+      <p>Calcula o valor de aporte mensal necessário para atingir um objetivo financeiro no prazo definido.</p>
+
+      <h3>Fórmula — PMT de anuidade ordinária</h3>
+      <pre><code class="language-plaintext">PMT = meta * i / ((1 + i)^n - 1)</code></pre>
+      <p>Onde <code>i</code> é a taxa mensal e <code>n</code> é o número de meses.</p>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{ pmt: number, totalAportado: number, totalJuros: number }</code></pre>
+    </section>
+
+    <section id="calc4">
+      <h2>4. Renda de Dividendos</h2>
+      <p><strong>Função:</strong> <code>calcDividendYield(patrimonio, yieldAnual)</code></p>
+      <p>Estima a renda passiva gerada por um patrimônio com base no dividend yield anual declarado.</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">rendaAnual  = patrimonio * (yieldAnual / 100)
+rendaMensal = rendaAnual / 12</code></pre>
+      <div class="callout callout-note">
+        <div>Cálculo simples sem considerar reinvestimento ou variação do patrimônio.</div>
+      </div>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{ rendaAnual: number, rendaMensal: number }</code></pre>
+    </section>
+
+    <section id="calc5">
+      <h2>5. Financiamento (Tabela Price)</h2>
+      <p><strong>Função:</strong> <code>calcFinanciamentoPrice(pv, taxaMensal, n)</code></p>
+      <p>Calcula parcelas constantes de um financiamento pelo método Price (amortização francesa).</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">parcela = PV * i / (1 - (1 + i)^-n)
+
+// Tabela de amortização (por parcela k):
+juros_k = saldo_(k-1) * i
+amort_k = parcela - juros_k
+saldo_k = max(0, saldo_(k-1) - amort_k)</code></pre>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{
+  parcela: number,
+  totalPago: number,
+  totalJuros: number,
+  linhas: Array&lt;{ parcela: number, prestacao: number, amort: number, juros: number, saldo: number }&gt;
+}</code></pre>
+    </section>
+
+    <section id="calc6">
+      <h2>6. Rotativo do Cartão de Crédito</h2>
+      <p><strong>Função:</strong> <code>calcRotativoCartao(divida, taxaMensal, pagamento)</code></p>
+      <p>Simula a evolução de uma dívida no rotativo com pagamento fixo mensal.</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">// A cada mês:
+juros     = saldo * taxaMensal
+pag       = min(pagamento, saldo + juros)
+novoSaldo = max(0, saldo + juros - pag)</code></pre>
+
+      <h3>Edge cases</h3>
+      <div class="callout callout-danger">
+        <div><strong>Pagamento impossível:</strong> Se <code>pagamento &lt;= juros do primeiro mês</code>, a dívida nunca será quitada. A função retorna <code>{ impossivel: true, jurosPrimeiro }</code> sem simular.</div>
+      </div>
+      <ul>
+        <li>Máximo de 1200 iterações (100 anos). Se atingido, <code>maxAtingido: true</code>.</li>
+        <li>A tabela de resultado contém apenas os primeiros 24 meses.</li>
+      </ul>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">// Caso impossível:
+{ impossivel: true, jurosPrimeiro: number }
+
+// Caso normal:
+{
+  meses: number, totalPago: number, totalJuros: number, maxAtingido: boolean,
+  linhas: Array&lt;{ mes: number, saldo: number, juros: number, pag: number, novoSaldo: number }&gt;
+}</code></pre>
+    </section>
+
+    <section id="calc7">
+      <h2>7. À Vista vs Parcelado</h2>
+      <p><strong>Função:</strong> <code>calcAVistaVsParcelado(avista, parcelaValor, nParcelas, taxaMensal)</code></p>
+      <p>Compara o custo real de pagar à vista versus parcelado, considerando o custo de oportunidade do capital.</p>
+
+      <h3>Fórmula — Valor presente das parcelas</h3>
+      <pre><code class="language-plaintext">PV_parcelas = parcelaValor * (1 - (1 + i)^-n) / i</code></pre>
+      <p>Se <code>PV_parcelas &lt; avista</code>: parcelado é mais vantajoso (o capital rende mais do que o custo implícito das parcelas).</p>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{
+  pvParcelas: number,
+  totalParcelado: number,
+  parceladoMelhor: boolean,
+  diferenca: number
+}</code></pre>
+    </section>
+
+    <section id="calc8">
+      <h2>8. Vale a Pena Quitar a Dívida?</h2>
+      <p><strong>Função:</strong> <code>calcQuitarDivida(saldo, taxaDivida, parcelas, desconto, disponivel, taxaInvest)</code></p>
+      <p>Compara quitar a dívida antecipadamente (com desconto) vs. manter o dinheiro investido pelo mesmo período.</p>
+
+      <h3>Fórmula</h3>
+      <pre><code class="language-plaintext">saldoDesconto  = saldo * (1 - desconto / 100)
+pmtOriginal    = saldo * taxaDivida / (1 - (1+taxaDivida)^-parcelas)
+totalOriginal  = pmtOriginal * parcelas
+rendPerdido    = disponivel * ((1 + taxaInvest)^parcelas - 1)
+
+// Cenário A — Quitação total (disponivel >= saldoDesconto):
+economia = totalOriginal - saldoDesconto
+
+// Cenário B — Quitação parcial (disponivel &lt; saldoDesconto):
+novoSaldo  = saldoDesconto - disponivel
+pmtNovo    = novoSaldo * taxaDivida / (1 - (1+taxaDivida)^-parcelas)
+economia   = totalOriginal - (disponivel + pmtNovo * parcelas)</code></pre>
+      <p>A recomendação é <code>quitarMelhor = economia &gt; rendPerdido</code>.</p>
+
+      <h3>Retorno</h3>
+      <pre><code class="language-typescript">{
+  saldoDesconto: number,
+  economia: number,
+  rendimentoPerdido: number,
+  cenario: 'A' | 'B',
+  infoCenario: string,
+  diferenca: number,
+  quitarMelhor: boolean
+}</code></pre>
+    </section>
+
+    <nav class="doc-nav">
+      <a href="dados.html" class="doc-nav-link">
+        <span class="doc-nav-label"><i data-lucide="arrow-left"></i> Anterior</span>
+        <span class="doc-nav-title">Dados &amp; Storage</span>
+      </a>
+      <a href="design-system.html" class="doc-nav-link next">
+        <span class="doc-nav-label">Próximo <i data-lucide="arrow-right"></i></span>
+        <span class="doc-nav-title">Design System</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    <span>SaldoMais</span>
+  </div>
+  <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
+</footer>
+
+</body>
+</html>
