@@ -39,12 +39,43 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  transition: width 0.25s ease, padding 0.25s ease;
+  overflow: hidden;
 }
 
+/* ── Sidebar collapse button ─────────────────────────── */
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.sidebar-collapse-btn:hover {
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.18);
+}
+.sidebar-collapse-btn i,
+.sidebar-collapse-btn svg { width: 15px; height: 15px; transition: transform 0.25s ease; overflow: visible; display: block; }
+
+.sidebar.collapsed .sidebar-collapse-btn svg { transform: rotate(180deg); }
+
+/* ── Sidebar header layout ───────────────────────────── */
 .sidebar-header {
   margin-bottom: 30px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logo-container {
@@ -52,6 +83,46 @@ body {
   align-items: center;
   gap: 11px;
   cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Sidebar collapsed (desktop only) ───────────────── */
+.sidebar.collapsed {
+  width: 72px;
+  padding: 20px 12px;
+}
+
+.sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+
+.sidebar.collapsed .logo-container {
+  flex: none;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+  margin-left: 0;
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-shortcut {
+  display: none;
+}
+
+.sidebar.collapsed .nav-btn {
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  align-items: center;
 }
 
 .logo-icon {
@@ -1363,14 +1434,26 @@ button:active {
   line-height: 1.5;
 }
 
+.confirm-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 .confirm-container button {
+  flex: 1;
   border: none;
   border-radius: 8px;
   padding: 12px 16px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .confirm-container button:hover {
@@ -1388,8 +1471,28 @@ button:active {
 }
 
 #confirmNo {
-  background: #6b7280;
-  color: white;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+
+#editarCategoriaTitulo {
+  margin: 0 0 15px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+#editarCategoriaInput {
+  margin-bottom: 15px;
+}
+
+#editarCategoriaConfirm {
+  background: var(--accent);
+  color: black;
+}
+
+#editarCategoriaCancel {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
 }
 
 /* SCREEN */
@@ -2049,6 +2152,10 @@ button:active {
     font-size: 15px;
     font-weight: 700;
     color: var(--text);
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
   }
 
   .sidebar {

@@ -1,3 +1,18 @@
+// ─── PLATFORM ────────────────────────────────────────────────────────────────
+
+const isMac = navigator.platform.startsWith('Mac');
+const modKey = isMac ? '⌥' : 'Alt+';
+
+function atualizarAtalhos() {
+  if (!isMac) return;
+  document.querySelectorAll('.nav-shortcut').forEach(el => {
+    el.textContent = el.textContent.replace('Alt+', '⌥');
+  });
+  document.querySelectorAll('[title]').forEach(el => {
+    el.title = el.title.replace(/Alt\+/g, '⌥');
+  });
+}
+
 // ─── RENDER ORCHESTRATION ────────────────────────────────────────────────────
 
 function renderAll(){
@@ -91,6 +106,36 @@ function setupEventDelegation(){
   }
 }
 
+// ─── SIDEBAR COLLAPSE (desktop) ──────────────────────────────────────────────
+
+function setupSidebarToggle() {
+  const btn     = document.getElementById('sidebarCollapseBtn');
+  const sidebar = document.querySelector('.sidebar');
+  if (!btn || !sidebar) return;
+
+  const STORAGE_KEY = 'saldomain_sidebar_collapsed';
+  const collapsed   = localStorage.getItem(STORAGE_KEY) === 'true';
+
+  function aplicarEstado(isCollapsed) {
+    sidebar.classList.toggle('collapsed', isCollapsed);
+    btn.title = isCollapsed ? `Expandir menu (${modKey}B)` : `Recolher menu (${modKey}B)`;
+    localStorage.setItem(STORAGE_KEY, isCollapsed);
+  }
+
+  aplicarEstado(collapsed);
+
+  btn.addEventListener('click', () => {
+    aplicarEstado(!sidebar.classList.contains('collapsed'));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.altKey && e.code === 'KeyB') {
+      e.preventDefault();
+      aplicarEstado(!sidebar.classList.contains('collapsed'));
+    }
+  });
+}
+
 // ─── MOBILE MENU ─────────────────────────────────────────────────────────────
 
 function setupMobileMenu() {
@@ -130,11 +175,11 @@ document.addEventListener('input', function(e) {
   e.target.value = digits ? (new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(digits)/100)) : '';
 });
 
-// Alt+1-4 para navegar entre telas
+// Alt/Option+1-4 para navegar entre telas
 document.addEventListener('keydown', function(e) {
   if (!e.altKey) return;
-  const screenMap = { '1': 'dashboard', '2': 'lancamentos', '3': 'categorias', '4': 'calculadoras' };
-  const screen = screenMap[e.key];
+  const codeMap = { 'Digit1': 'dashboard', 'Digit2': 'lancamentos', 'Digit3': 'categorias', 'Digit4': 'calculadoras' };
+  const screen = codeMap[e.code];
   if (!screen) return;
   e.preventDefault();
   document.querySelector(`.nav-btn[data-screen="${screen}"]`)?.click();
@@ -151,7 +196,9 @@ function init(){
     setupEventDelegation();
     navegar();
     setupMobileMenu();
+    setupSidebarToggle();
     atualizarDataMes();
+    atualizarAtalhos();
     renderComplete();
   } catch (error) {
     if (window.lucide) lucide.createIcons();

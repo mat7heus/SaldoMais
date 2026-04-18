@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contribuindo — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script defer>document.addEventListener('DOMContentLoaded',()=>{if(typeof lucide!=='undefined')lucide.createIcons();if(typeof hljs!=='undefined')hljs.highlightAll();});</script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    Saldo<span class="accent">Mais</span>
+  </a>
+  <span class="sep">/</span>
+  <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
+  <div class="spacer"></div>
+  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+</nav>
+
+<header class="doc-hero">
+  <div class="doc-hero-inner">
+    <div class="doc-hero-icon"><i data-lucide="git-pull-request"></i></div>
+    <div>
+      <div class="doc-hero-num">Documento 07 de 07</div>
+      <h1>Contribuindo</h1>
+      <p class="doc-hero-lead">Setup do ambiente, convenções do projeto e guias passo a passo para adicionar novas telas, calculadoras, modificar o schema de dados e depurar a aplicação.</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc-wrap">
+
+  <aside class="doc-toc">
+    <p class="toc-title">Nesta página</p>
+    <nav>
+      <a href="#setup">Setup do ambiente</a>
+      <a href="#estrutura">Estrutura de arquivos</a>
+      <a href="#conv-js">Convenções: JavaScript</a>
+      <a href="#conv-css">Convenções: CSS</a>
+      <a href="#conv-html">Convenções: HTML</a>
+      <a href="#nova-tela">Adicionando nova tela</a>
+      <a href="#nova-calc">Adicionando nova calculadora</a>
+      <a href="#schema">Modificando o schema</a>
+      <a href="#depuracao">Depuração</a>
+      <a href="#testes">Testes</a>
+    </nav>
+  </aside>
+
+  <article class="doc-content">
+
+    <section id="setup">
+      <h2>Setup do ambiente</h2>
+      <p>Não há dependências de build, npm ou bundler. O projeto roda diretamente no browser.</p>
+      <pre><code class="language-bash">git clone https://github.com/mat7heus/SaldoMais.git
+cd SaldoMais</code></pre>
+      <p>Abra <code>index.html</code> diretamente no browser (duplo clique) ou sirva via HTTP local:</p>
+      <pre><code class="language-bash"># Python 3
+python3 -m http.server 8080
+
+# Node (npx)
+npx serve .</code></pre>
+      <div class="callout callout-note">
+        <div><strong>file:// vs HTTP:</strong> O protocolo <code>file://</code> funciona para a maioria das funcionalidades, mas o cabeçalho do PDF faz <code>fetch</code> para buscar o logo — isso falha em <code>file://</code> por restrições de CORS. Use um servidor HTTP local para testar o PDF com logo.</div>
+      </div>
+    </section>
+
+    <section id="estrutura">
+      <h2>Estrutura de arquivos</h2>
+      <pre><code class="language-plaintext">SaldoMais/
+├── index.html          # Único arquivo HTML — estrutura do app
+├── css/
+│   └── index.css       # Todos os estilos da aplicação
+├── js/
+│   ├── core.js         # Fundação: constantes, DOM, storage, utils
+│   ├── lancamentos.js  # Orçamentos e transações
+│   ├── categorias.js   # CRUD de categorias e percentuais
+│   ├── dashboard.js    # Dashboard e gráfico
+│   ├── calculadoras.js # 8 calculadoras financeiras
+│   ├── backup.js       # Exportar/importar JSON
+│   ├── pdf.js          # Geração de relatório PDF
+│   └── app.js          # Orquestração e inicialização
+└── docs/               # Documentação técnica</code></pre>
+    </section>
+
+    <section id="conv-js">
+      <h2>Convenções: JavaScript</h2>
+      <ul>
+        <li><strong>Sem módulos ES</strong> — o projeto usa escopo global. Não use <code>import</code>/<code>export</code>.</li>
+        <li><strong>Ordem de carregamento importa</strong> — <code>core.js</code> deve ser o primeiro, <code>app.js</code> o último. Ao adicionar um novo arquivo, insira a tag <code>&lt;script defer&gt;</code> na posição correta.</li>
+        <li><strong>Nomenclatura em camelCase e português</strong> — ex: <code>adicionarLancamento</code>, <code>renderCategoriasLista</code>.</li>
+        <li><strong>Separadores de seção</strong> — use o padrão <code>// ─── NOME DA SEÇÃO ───</code> para demarcar grupos de funções.</li>
+        <li><strong>Render total</strong> — ao modificar dados, chame <code>renderComplete()</code> no final. Não faça atualizações parciais de DOM fora das funções de render.</li>
+      </ul>
+    </section>
+
+    <section id="conv-css">
+      <h2>Convenções: CSS</h2>
+      <ul>
+        <li><strong>Use variáveis CSS</strong> — nunca hardcode cores. Consulte os tokens em <a href="design-system.html">design-system.html</a>.</li>
+        <li><strong>border-radius padrão:</strong> 14px para cards/containers, 10px para inputs/botões, 8px para elementos menores.</li>
+        <li><strong>Transições:</strong> 0.2s–0.25s ease para a maioria dos elementos interativos.</li>
+        <li><strong>backdrop-filter: blur(20px)</strong> nos panels elevados (cards, sidebar, modais).</li>
+      </ul>
+    </section>
+
+    <section id="conv-html">
+      <h2>Convenções: HTML</h2>
+      <ul>
+        <li>Novos elementos interativos dinâmicos devem usar <code>data-action</code> + <code>data-id</code> para event delegation em vez de <code>onclick</code> inline (exceto nas calculadoras, que já usam <code>onclick</code> diretamente por simplicidade).</li>
+        <li>Ícones Lucide: use <code>&lt;i data-lucide="nome-do-icone" size="N"&gt;&lt;/i&gt;</code>. Lembre de chamar <code>lucide.createIcons()</code> após injetar HTML com ícones.</li>
+      </ul>
+    </section>
+
+    <section id="nova-tela">
+      <h2>Adicionando uma nova tela</h2>
+      <ol>
+        <li>Crie um <code>&lt;section id="nova-tela" class="screen"&gt;</code> em <code>index.html</code></li>
+        <li>Adicione um botão de navegação na <code>.sidebar-nav</code>:
+          <pre><code class="language-html">&lt;button data-screen="nova-tela" class="nav-btn" title="Descrição (Alt+N)"&gt;
+  &lt;span class="nav-icon"&gt;&lt;i data-lucide="icone"&gt;&lt;/i&gt;&lt;/span&gt;
+  &lt;span class="nav-label"&gt;Nome&lt;/span&gt;
+  &lt;kbd class="nav-shortcut"&gt;Alt+N&lt;/kbd&gt;
+&lt;/button&gt;</code></pre>
+        </li>
+        <li>Registre o atalho em <code>app.js</code>:
+          <pre><code class="language-javascript">const screenMap = {
+  '1': 'dashboard', '2': 'lancamentos',
+  '3': 'categorias', '4': 'calculadoras',
+  'N': 'nova-tela'
+};</code></pre>
+        </li>
+        <li>Se precisar de re-render na navegação, adicione hook em <code>navegar()</code> em <code>core.js</code>:
+          <pre><code class="language-javascript">if (btn.dataset.screen === "nova-tela") renderNovaTela();</code></pre>
+        </li>
+      </ol>
+    </section>
+
+    <section id="nova-calc">
+      <h2>Adicionando uma nova calculadora</h2>
+      <ol>
+        <li>Crie a <strong>função matemática pura</strong> em <code>calculadoras.js</code>:
+          <pre><code class="language-javascript">function calcMinhaCalc(param1, param2) {
+  // lógica sem acesso ao DOM
+  return { resultado1, resultado2 };
+}</code></pre>
+        </li>
+        <li>Crie a <strong>função de UI</strong> em <code>calculadoras.js</code>:
+          <pre><code class="language-javascript">function calcularMinhaCalc() {
+  const param1 = parseBRCalc(document.getElementById('mc-param1').value);
+  if (param1 &lt;= 0) { notificar('Mensagem de erro'); return; }
+  const r = calcMinhaCalc(param1, param2);
+  document.getElementById('mc-cards').innerHTML = `...`;
+  mostrarResultado('mc-resultado');
+  if (window.lucide) lucide.createIcons();
+}</code></pre>
+        </li>
+        <li>Adicione o HTML do card em <code>index.html</code> dentro do <code>.calc-grid</code>:
+          <pre><code class="language-html">&lt;div class="calc-card"&gt;
+  &lt;div class="calc-card-header"&gt;...&lt;/div&gt;
+  &lt;div class="input-group"&gt;...&lt;/div&gt;
+  &lt;button onclick="calcularMinhaCalc()" class="btn-primary"&gt;Calcular&lt;/button&gt;
+  &lt;div id="mc-resultado" class="calc-result" style="display:none;"&gt;
+    &lt;div class="calc-result-cards" id="mc-cards"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+        </li>
+        <li>Para que <kbd>Enter</kbd> dispare o cálculo, adicione ao mapeamento em <code>calculadoras.js</code>:
+          <pre><code class="language-javascript">const calcMap = [
+  // ... existentes ...
+  ['mc-param1', calcularMinhaCalc],
+];</code></pre>
+        </li>
+      </ol>
+    </section>
+
+    <section id="schema">
+      <h2>Modificando o schema de dados</h2>
+      <div class="callout callout-danger">
+        <div><strong>Antes de qualquer alteração no schema:</strong> Backups existentes de usuários ficarão incompatíveis se você renomear ou remover campos. A importação de backup não valida estrutura interna — dados antigos serão carregados silenciosamente com campos faltando.</div>
+      </div>
+      <p>Se precisar evoluir o schema:</p>
+      <ol>
+        <li>Mantenha compatibilidade com os campos existentes</li>
+        <li>Adicione novos campos com valor default (os registros antigos não os terão)</li>
+        <li>Atualize <code>_versao</code> no formato de backup</li>
+        <li>Documente a mudança em <a href="dados.html">dados.html</a></li>
+      </ol>
+    </section>
+
+    <section id="depuracao">
+      <h2>Depuração</h2>
+      <p>Todos os dados estão acessíveis no DevTools do browser:</p>
+      <pre><code class="language-javascript">// Ver categorias
+JSON.parse(localStorage.getItem('saldomain_categorias'))
+
+// Ver orçamentos
+JSON.parse(localStorage.getItem('saldomain_orcamentos'))
+
+// Ver lançamentos
+JSON.parse(localStorage.getItem('saldomain_lancamentos'))
+
+// Limpar tudo (apaga todos os dados)
+localStorage.clear()</code></pre>
+      <p>O gráfico Chart.js é acessível via <code>window.graficoChart</code> para inspeção ou destruição manual.</p>
+      <div class="callout callout-note">
+        <div>Erros de render são capturados pelo <code>try/catch</code> em <code>renderAll()</code> e <code>init()</code> — verifique o console para mensagens de erro silenciosas.</div>
+      </div>
+    </section>
+
+    <section id="testes">
+      <h2>Testes</h2>
+      <p>O projeto não tem suite de testes automatizados. As funções matemáticas puras são candidatas naturais a testes unitários — elas não têm efeitos colaterais e retornam objetos determinísticos.</p>
+      <p>Para testar funções puras manualmente no console:</p>
+      <pre><code class="language-javascript">calcJurosCompostos(1000, 200, 0.12, 12)
+// → { saldo: ..., totalInvestido: ..., totalJuros: ..., linhas: [...] }
+
+calcCDBCDI(10000, 10.5, 110, 365)
+// → { rendBruto: ..., ir: ..., valorLiq: ..., aliquota: 0.175 }</code></pre>
+    </section>
+
+    <nav class="doc-nav">
+      <a href="funcionalidades.html" class="doc-nav-link">
+        <span class="doc-nav-label"><i data-lucide="arrow-left"></i> Anterior</span>
+        <span class="doc-nav-title">Funcionalidades</span>
+      </a>
+      <a href="index.html" class="doc-nav-link next">
+        <span class="doc-nav-label">Voltar ao índice <i data-lucide="arrow-right"></i></span>
+        <span class="doc-nav-title">Documentação</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    <span>SaldoMais</span>
+  </div>
+  <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
+</footer>
+
+</body>
+</html>

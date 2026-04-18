@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitetura — SaldoMais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="doc.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script defer>document.addEventListener('DOMContentLoaded',()=>{if(typeof lucide!=='undefined')lucide.createIcons();if(typeof hljs!=='undefined')hljs.highlightAll();});</script>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    Saldo<span class="accent">Mais</span>
+  </a>
+  <span class="sep">/</span>
+  <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
+  <div class="spacer"></div>
+  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+</nav>
+
+<header class="doc-hero">
+  <div class="doc-hero-inner">
+    <div class="doc-hero-icon"><i data-lucide="cpu"></i></div>
+    <div>
+      <div class="doc-hero-num">Documento 01 de 07</div>
+      <h1>Arquitetura</h1>
+      <p class="doc-hero-lead">Como o SaldoMais é estruturado internamente — organização dos módulos, modelo de escopo, ordem de carregamento, fluxo de inicialização e padrões de design recorrentes no codebase.</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc-wrap">
+
+  <aside class="doc-toc">
+    <p class="toc-title">Nesta página</p>
+    <nav>
+      <a href="#modelo-execucao">Modelo de execução</a>
+      <a href="#dependencias">Dependências entre módulos</a>
+      <a href="#fluxo-init">Fluxo de inicialização</a>
+      <a href="#padrao-render">Padrão de renderização</a>
+      <a href="#loading-delay">Padrão withLoadingDelay</a>
+      <a href="#modais-promise">Modais baseados em Promise</a>
+      <a href="#event-delegation">Event delegation</a>
+      <a href="#navegacao">Navegação entre telas</a>
+      <a href="#atalhos">Atalhos de teclado</a>
+      <a href="#bibliotecas">Bibliotecas externas</a>
+    </nav>
+  </aside>
+
+  <article class="doc-content">
+
+    <section id="modelo-execucao">
+      <h2>Modelo de execução</h2>
+      <p>O SaldoMais é uma <strong>Single Page Application (SPA) sem framework e sem bundler</strong>. Todo o JavaScript é carregado via tags <code>&lt;script defer&gt;</code> no <code>index.html</code> e compartilha o <strong>escopo global (<code>window</code>)</strong> — não há módulos ES, CommonJS ou similar. Funções definidas em um arquivo são acessíveis em todos os outros.</p>
+      <p>Isso tem uma implicação direta: <strong>a ordem de carregamento dos scripts importa</strong>.</p>
+      <pre><code class="language-html">&lt;script src="./js/core.js"         defer&gt;&lt;/script&gt;
+&lt;script src="./js/lancamentos.js"  defer&gt;&lt;/script&gt;
+&lt;script src="./js/categorias.js"   defer&gt;&lt;/script&gt;
+&lt;script src="./js/dashboard.js"    defer&gt;&lt;/script&gt;
+&lt;script src="./js/calculadoras.js" defer&gt;&lt;/script&gt;
+&lt;script src="./js/backup.js"       defer&gt;&lt;/script&gt;
+&lt;script src="./js/pdf.js"          defer&gt;&lt;/script&gt;
+&lt;script src="./js/app.js"          defer&gt;&lt;/script&gt;</code></pre>
+      <p><code>core.js</code> deve ser sempre o primeiro — ele define as constantes (<code>STORAGE</code>, <code>PDF_COLORS</code>, <code>MESES</code>), as referências DOM e as funções utilitárias usadas por todos os outros. <code>app.js</code> deve ser o último — ele chama <code>init()</code>, que depende de funções definidas nos demais arquivos.</p>
+    </section>
+
+    <section id="dependencias">
+      <h2>Dependências entre módulos</h2>
+      <pre><code class="language-plaintext">core.js
+  ├── lancamentos.js
+  ├── categorias.js
+  ├── dashboard.js
+  ├── calculadoras.js
+  ├── backup.js
+  └── pdf.js
+          └── app.js  (orquestra todos)</code></pre>
+      <p>Nenhum módulo importa outro explicitamente — a dependência é implícita via escopo global. Se uma função de <code>lancamentos.js</code> chama <code>formatarMoeda()</code>, ela assume que <code>core.js</code> já foi executado antes.</p>
+    </section>
+
+    <section id="fluxo-init">
+      <h2>Fluxo de inicialização</h2>
+      <p><code>app.js</code> termina com a chamada direta a <code>init()</code>, que executa na ordem:</p>
+      <pre><code class="language-plaintext">init()
+  ├── mostrarLoading()          — exibe spinner de carregamento
+  ├── criarCategorias()         — seed de categorias padrão (só na primeira execução)
+  ├── setupModals()             — registra listeners dos modais
+  ├── setupButtons()            — registra listeners dos botões + máscaras de moeda
+  ├── setupEventDelegation()    — event delegation para listas dinâmicas
+  ├── navegar()                 — registra listeners de navegação entre telas
+  ├── setupMobileMenu()         — hamburger + overlay do menu mobile
+  ├── atualizarDataMes()        — preenche "Abril de 2026" no header
+  └── renderComplete()          — renderiza todas as telas e o dashboard</code></pre>
+    </section>
+
+    <section id="padrao-render">
+      <h2>Padrão de renderização</h2>
+      <p>Todo estado de UI deriva do <code>localStorage</code>. Não há estado em memória que precise ser sincronizado — quando um dado muda, o padrão é:</p>
+      <ol>
+        <li>Ler do storage</li>
+        <li>Modificar o array</li>
+        <li>Persistir no storage</li>
+        <li>Chamar <code>renderComplete()</code> (ou <code>renderAll()</code>) para reconstruir toda a UI</li>
+      </ol>
+      <pre><code class="language-plaintext">renderComplete()
+  ├── renderAll()
+  │     ├── renderSelect()           — popula o &lt;select&gt; de categorias
+  │     ├── renderLancamentos()      — lista de transações do mês
+  │     ├── renderOrcamentoInput()   — preenche o input de orçamento
+  │     ├── renderCategorias()       — editor de sliders de percentual
+  │     └── renderCategoriasLista()  — lista com ações de editar/remover
+  └── renderDashboard()             — cards de resumo + gráfico + barras</code></pre>
+      <div class="callout callout-note">
+        <div><strong>Nota:</strong> O padrão de re-render total é deliberado: simplicidade sobre performance. O volume de dados é pequeno (dezenas a centenas de registros), então reconstruir o HTML a cada operação é aceitável.</div>
+      </div>
+    </section>
+
+    <section id="loading-delay">
+      <h2>Padrão <code>withLoadingDelay</code></h2>
+      <p>Operações que modificam dados são envolvidas em <code>withLoadingDelay(fn, delay?)</code>. Ela exibe o spinner e executa <code>fn</code> após o delay (padrão: 100ms), criando feedback visual mesmo quando a operação é instantânea.</p>
+      <pre><code class="language-javascript">withLoadingDelay(() => {
+  set(STORAGE.lancamentos, lista);
+  renderComplete();
+});</code></pre>
+      <p>O spinner tem auto-hide de 1500ms — <code>mostrarLoading</code> chama <code>setTimeout(ocultarLoading, 1500)</code>.</p>
+    </section>
+
+    <section id="modais-promise">
+      <h2>Modais baseados em Promise</h2>
+      <p>Os dois modais (<code>confirmModal</code> e <code>editarCategoriaModal</code>) usam uma Promise manual em vez de <code>window.confirm</code>. O painel armazena um <code>_resolve</code> no elemento DOM:</p>
+      <pre><code class="language-javascript">function confirmar(msg) {
+  return new Promise(resolve => {
+    modal._resolve = result => {
+      modal.classList.remove("show");
+      modal._resolve = null;
+      resolve(result);
+    };
+    modal.classList.add("show");
+  });
+}</code></pre>
+      <p>Quando o usuário clica em Confirmar ou Cancelar, <code>modal._resolve(true/false)</code> é chamado e a Promise resolve. Isso permite <code>async/await</code> em funções como <code>deletarLancamento</code> e <code>abrirEditorCategoria</code>.</p>
+    </section>
+
+    <section id="event-delegation">
+      <h2>Event delegation</h2>
+      <p>Elementos de lista são renderizados dinamicamente (não existem no DOM no momento do <code>setupButtons</code>), então os listeners são registrados no container pai com <code>data-action</code> para identificar a ação:</p>
+      <pre><code class="language-html">&lt;button data-action="deletar-lancamento" data-id="1234567"&gt;...&lt;/button&gt;</code></pre>
+      <pre><code class="language-javascript">listaLancamentos.addEventListener("click", e => {
+  const btn = e.target.closest("[data-action='deletar-lancamento']");
+  if (btn) deletarLancamento(Number(btn.dataset.id));
+});</code></pre>
+      <p>O mesmo padrão é usado para sliders de percentual (<code>percentual-slider</code>, <code>percentual-input</code>) e ações de categoria (<code>editar-categoria</code>, <code>deletar-categoria</code>).</p>
+    </section>
+
+    <section id="navegacao">
+      <h2>Navegação entre telas</h2>
+      <p>Todas as telas são <code>&lt;section class="screen"&gt;</code> no DOM o tempo todo. A navegação consiste em remover/adicionar a classe <code>active</code> — não há roteamento, hash de URL ou recriação de DOM.</p>
+      <pre><code class="language-javascript">document.querySelectorAll("[data-screen]").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(btn.dataset.screen).classList.add("active");
+  };
+});</code></pre>
+      <p>Ao navegar para <code>dashboard</code> ou <code>categorias</code>, as respectivas funções de render são chamadas para refletir dados atualizados.</p>
+    </section>
+
+    <section id="atalhos">
+      <h2>Atalhos de teclado</h2>
+      <p>Registrados com <code>keydown</code> no <code>document</code> em <code>app.js</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Atalho</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>Alt+1</kbd></td><td>Dashboard</td></tr>
+            <tr><td><kbd>Alt+2</kbd></td><td>Lançamentos</td></tr>
+            <tr><td><kbd>Alt+3</kbd></td><td>Categorias</td></tr>
+            <tr><td><kbd>Alt+4</kbd></td><td>Calculadoras</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Em <code>calculadoras.js</code>, <kbd>Enter</kbd> dentro de um input dispara o cálculo do card correspondente via mapeamento <code>inputId → função</code>.</p>
+    </section>
+
+    <section id="bibliotecas">
+      <h2>Bibliotecas externas (CDN)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Biblioteca</th><th>Versão</th><th>Global exposto</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Chart.js</strong></td><td>latest</td><td><code>Chart</code></td><td>Gráfico doughnut no dashboard</td></tr>
+            <tr><td><strong>jsPDF</strong></td><td>2.5.1</td><td><code>window.jspdf</code></td><td>Geração de PDF client-side</td></tr>
+            <tr><td><strong>Lucide</strong></td><td>latest</td><td><code>lucide</code></td><td>Ícones SVG via <code>lucide.createIcons()</code></td></tr>
+            <tr><td><strong>Inter</strong></td><td>—</td><td>—</td><td>Tipografia (Google Fonts)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-note">
+        <div><strong>Atenção:</strong> Lucide precisa ser chamado manualmente após cada render que injeta ícones via <code>&lt;i data-lucide="..."&gt;</code>. Isso acontece ao final de toda função de render que produz HTML com ícones.</div>
+      </div>
+    </section>
+
+    <nav class="doc-nav">
+      <a href="index.html" class="doc-nav-link">
+        <span class="doc-nav-label"><i data-lucide="arrow-left"></i> Anterior</span>
+        <span class="doc-nav-title">Índice</span>
+      </a>
+      <a href="modulos.html" class="doc-nav-link next">
+        <span class="doc-nav-label">Próximo <i data-lucide="arrow-right"></i></span>
+        <span class="doc-nav-title">Módulos JS</span>
+      </a>
+    </nav>
+
+  </article>
+</div>
+
+<footer class="footer">
+  <div class="footer-brand">
+    <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
+    <span>SaldoMais</span>
+  </div>
+  <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
+</footer>
+
+</body>
+</html>

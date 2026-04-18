@@ -45,25 +45,24 @@
 <div id="confirmModal" class="confirm-modal">
   <div class="confirm-container">
     <p id="confirmMessage"></p>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button id="confirmYes" style="flex:1;">Confirmar</button>
-      <button id="confirmNo" style="flex:1;background:#6b7280;">Cancelar</button>
+    <div class="confirm-btn-row">
+      <button id="confirmYes">Confirmar</button>
+      <button id="confirmNo">Cancelar</button>
     </div>
   </div>
 </div>
 
 <div id="editarCategoriaModal" class="confirm-modal">
   <div class="confirm-container">
-    <h3 id="editarCategoriaTitulo" style="margin:0 0 15px 0;font-size:16px;">Editar Nome da Categoria</h3>
-    <input 
-      id="editarCategoriaInput" 
-      type="text" 
-      placeholder="Digite o novo nome" 
-      style="width:100%;padding:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;box-sizing:border-box;margin-bottom:15px;"
+    <h3 id="editarCategoriaTitulo">Editar Nome da Categoria</h3>
+    <input
+      id="editarCategoriaInput"
+      type="text"
+      placeholder="Digite o novo nome"
     >
-    <div style="display:flex;gap:10px;">
-      <button id="editarCategoriaConfirm" style="flex:1;background:var(--accent);color:black;border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="check" size="18"></i> Atualizar</button>
-      <button id="editarCategoriaCancel" style="flex:1;background:#6b7280;color:var(--text);border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:500;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="x" size="18"></i> Cancelar</button>
+    <div class="confirm-btn-row">
+      <button id="editarCategoriaConfirm"><i data-lucide="check" size="18"></i> Atualizar</button>
+      <button id="editarCategoriaCancel"><i data-lucide="x" size="18"></i> Cancelar</button>
     </div>
   </div>
 </div>
@@ -95,6 +94,9 @@
           <span class="logo-tagline">Gastos claros, decisões inteligentes.</span>
         </div>
       </div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher menu (Alt+B)">
+        <i data-lucide="chevrons-left"></i>
+      </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -121,6 +123,10 @@
     </nav>
 
     <div class="sidebar-footer">
+      <a href="docs/index.html" class="nav-btn" title="Documentação técnica">
+        <span class="nav-icon"><i data-lucide="book-open"></i></span>
+        <span class="nav-label">Documentação</span>
+      </a>
       <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Contribua com o SaldoMais no GitHub">
         <span class="nav-icon"><i data-lucide="git-branch"></i></span>
         <span class="nav-label">Contribua</span>
