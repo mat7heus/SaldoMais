@@ -48,12 +48,6 @@ function setupButtons(){
     ?.addEventListener("change", importarBackup);
   document.getElementById("btnAdicionarCategoria")
     ?.addEventListener("click", adicionarNovaCategoria);
-  document.getElementById("logoBtnSidebar")
-    ?.addEventListener("click", () => {
-      mostrarLoading();
-      setTimeout(() => document.querySelector('.nav-btn[data-screen=dashboard]')?.click(), 400);
-    });
-
   // Category hint: update when category or value changes
   categoriaSelect?.addEventListener("change", atualizarCatHint);
   valorInput?.addEventListener("input", atualizarCatHint);
