@@ -26,6 +26,7 @@
   <script src="./js/calculadoras.js" defer></script>
   <script src="./js/backup.js" defer></script>
   <script src="./js/pdf.js" defer></script>
+  <script src="./js/gastos-fixos.js" defer></script>
   <script src="./js/app.js" defer></script>
 </head>
 <body>
@@ -155,6 +156,11 @@
         <span class="nav-icon"><i data-lucide="calculator"></i></span>
         <span class="nav-label">Calculadoras</span>
         <kbd class="nav-shortcut">Alt+4</kbd>
+      </button>
+      <button data-screen="gastos-fixos" class="nav-btn" title="Cadastrar despesas recorrentes (Alt+5)">
+        <span class="nav-icon"><i data-lucide="repeat"></i></span>
+        <span class="nav-label">Gastos Fixos</span>
+        <kbd class="nav-shortcut">Alt+5</kbd>
       </button>
     </nav>
 
@@ -566,6 +572,45 @@
         </div>
       </div>
 
+    </section>
+
+    <!-- GASTOS FIXOS -->
+    <section id="gastos-fixos" class="screen">
+      <div class="dashboard-header">
+        <h2>Gastos Fixos</h2>
+        <p class="dashboard-subtitle">Despesas recorrentes aplicadas automaticamente no orçamento mensal</p>
+      </div>
+
+      <div class="lancamento-form">
+        <div class="input-group">
+          <label for="gfNome" style="display:flex;align-items:center;gap:8px;"><i data-lucide="file-text" size="16"></i> Nome da Despesa</label>
+          <input id="gfNome" placeholder="Ex: Aluguel, Internet, Streaming..." autocomplete="off">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex:1;">
+            <label for="gfValor" style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor</label>
+            <input id="gfValor" type="text" inputmode="decimal" class="input-moeda" placeholder="Ex: 1.200,00">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="gfCategoriaSelect" style="display:flex;align-items:center;gap:8px;"><i data-lucide="tag" size="16"></i> Categoria</label>
+            <select id="gfCategoriaSelect"></select>
+          </div>
+        </div>
+
+        <button id="btnAdicionarGastoFixo" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i data-lucide="plus-circle" size="18"></i> Adicionar Gasto Fixo
+        </button>
+      </div>
+
+      <div class="lancamentos-section">
+        <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Despesas Fixas Cadastradas</h3>
+        <div class="gf-info-banner">
+          <i data-lucide="info" size="14"></i>
+          Estas despesas são inseridas automaticamente quando você salva um novo orçamento mensal.
+        </div>
+        <div id="listaGastosFixos" class="lista-lancamentos"></div>
+      </div>
     </section>
 
     <footer class="screen-footer">
