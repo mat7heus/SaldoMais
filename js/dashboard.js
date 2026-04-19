@@ -1,5 +1,19 @@
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
+function animarValor(el, valorFinal){
+  if(!el) return;
+  const duracao = 650;
+  const inicio  = Date.now();
+  function tick(){
+    const prog  = Math.min((Date.now() - inicio) / duracao, 1);
+    const eased = 1 - Math.pow(1 - prog, 3);
+    el.textContent = formatarMoeda(valorFinal * eased);
+    if(prog < 1) requestAnimationFrame(tick);
+    else el.textContent = formatarMoeda(valorFinal);
+  }
+  requestAnimationFrame(tick);
+}
+
 function renderDashboard(){
   const o = orcamentoAtual();
   if(!o || o.valor_total <= 0){
@@ -22,19 +36,28 @@ function renderDashboard(){
   renderResumoGeral(cats, lanc, o);
 
   categoriasStatus.innerHTML = cats.map(c => {
-    const gasto          = lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0);
-    const limite         = o.valor_total * c.percentual / 100;
-    const percentualGasto = (gasto / limite) * 100;
-    const cor = percentualGasto > 100 ? "#ef4444" : percentualGasto > 80 ? "#fb923c" : "#22c55e";
+    const gasto           = lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0);
+    const limite          = o.valor_total * c.percentual / 100;
+    const pct             = Math.min((gasto / limite) * 100, 100);
+    const over            = gasto > limite;
+    const nearLimit       = !over && pct >= 80;
+    const cor             = over ? "var(--danger)" : nearLimit ? "var(--warn)" : "var(--ok)";
+    const badgeBg         = over ? "rgba(239,68,68,0.15)" : nearLimit ? "rgba(251,146,60,0.15)" : "rgba(34,197,94,0.12)";
+    const pctDisplay      = over ? `${((gasto / limite)*100).toFixed(0)}%` : `${pct.toFixed(0)}%`;
+
     return `
       <div class="categoria-status">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span style="font-weight:500;">${c.nome}</span>
-          <span style="color:var(--muted);font-size:12px;">${formatarMoeda(gasto)} / ${formatarMoeda(limite)}</span>
+        <div class="cat-status-header">
+          <span class="cat-status-name" style="display:flex;align-items:center;gap:7px;">
+            <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.cor_hex};flex-shrink:0;"></span>
+            ${c.nome}
+          </span>
+          <span class="cat-status-pct-badge" style="background:${badgeBg};color:${cor};">${pctDisplay}</span>
         </div>
         <div class="barra">
-          <div class="barra-fill" style="width:${Math.min(percentualGasto,100)}%;background:${cor};"></div>
+          <div class="barra-fill" style="width:${Math.min((gasto/limite)*100,100)}%;background:${cor};transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);"></div>
         </div>
+        <div class="cat-status-amounts">${formatarMoeda(gasto)} <span style="opacity:0.5;">de</span> ${formatarMoeda(limite)}</div>
       </div>`;
   }).join("");
 
@@ -49,6 +72,7 @@ function renderResumoGeral(cats, lanc, o){
   const totalGasto      = lanc.reduce((s, l) => s + l.valor, 0);
   const totalRestante   = o.valor_total - totalGasto;
   const percentualUsado = (totalGasto / o.valor_total) * 100;
+  const qtdLancamentos  = lanc.length;
 
   let categoriasAlert = 0;
   cats.forEach(c => {
@@ -60,30 +84,35 @@ function renderResumoGeral(cats, lanc, o){
   resumoGeral.innerHTML = `
     <div class="stat-card">
       <span class="stat-label">Total Disponível</span>
-      <span class="stat-value">${formatarMoeda(o.valor_total)}</span>
-      <span class="stat-subtitle">Seu orçamento do mês</span>
+      <span class="stat-value" id="sv-total">R$ 0,00</span>
+      <span class="stat-subtitle">Orçamento do mês</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">Total Gasto</span>
-      <span class="stat-value">${formatarMoeda(totalGasto)}</span>
+      <span class="stat-value" id="sv-gasto">R$ 0,00</span>
       <div class="stat-bar">
         <div class="stat-bar-fill" style="width:${Math.min(percentualUsado,100)}%"></div>
       </div>
-      <span class="stat-subtitle">${percentualUsado.toFixed(1)}% do orçamento</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="stat-subtitle">${percentualUsado.toFixed(1)}% utilizado</span>
+        <span class="stat-count"><i data-lucide="receipt" size="11"></i> ${qtdLancamentos} ${qtdLancamentos === 1 ? 'lançamento' : 'lançamentos'}</span>
+      </div>
     </div>
-    <div class="stat-card" style="border-color:${totalRestante>0?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'};background:${totalRestante>0?'rgba(34,197,94,0.06)':'rgba(239,68,68,0.06)'};">
+    <div class="stat-card" style="border-color:${totalRestante>0?'rgba(34,197,94,0.28)':'rgba(239,68,68,0.28)'};background:${totalRestante>0?'rgba(34,197,94,0.05)':'rgba(239,68,68,0.05)'};">
       <span class="stat-label">Disponível</span>
-      <span class="stat-value" style="color:${totalRestante>0?'var(--ok)':'var(--danger)'}">
-        ${formatarMoeda(totalRestante)}
-      </span>
+      <span class="stat-value" id="sv-rest" style="color:${totalRestante>0?'var(--ok)':'var(--danger)'}">R$ 0,00</span>
       <span class="stat-subtitle">${totalRestante>0?'Ainda pode gastar':'Orçamento ultrapassado'}</span>
     </div>
     ${categoriasAlert > 0 ? `
-      <div class="stat-card" style="border-color:#fb923c40;background:rgba(251,146,60,0.1);">
+      <div class="stat-card" style="border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.07);">
         <span class="stat-label">Atenção</span>
         <span class="stat-value" style="color:var(--warn);">${categoriasAlert}</span>
-        <span class="stat-subtitle">categoria(s) com limite ultrapassado</span>
+        <span class="stat-subtitle">categoria${categoriasAlert>1?'s':''} com limite ultrapassado</span>
       </div>` : ''}`;
+
+  animarValor(document.getElementById("sv-total"), o.valor_total);
+  animarValor(document.getElementById("sv-gasto"), totalGasto);
+  animarValor(document.getElementById("sv-rest"),  totalRestante);
 }
 
 function renderGrafico(cats, lanc, o){

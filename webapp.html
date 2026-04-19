@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaldoMais | Gastos claros, decisões inteligentes.</title>
+
+  <link rel="icon" href="images/saldomais-icon.png" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="./css/index.css">
+
+  <script src="./js/core.js" defer></script>
+  <script src="./js/lancamentos.js" defer></script>
+  <script src="./js/categorias.js" defer></script>
+  <script src="./js/dashboard.js" defer></script>
+  <script src="./js/calculadoras.js" defer></script>
+  <script src="./js/backup.js" defer></script>
+  <script src="./js/pdf.js" defer></script>
+  <script src="./js/app.js" defer></script>
+</head>
+<body>
+
+<div id="loading" class="loading-overlay">
+  <img src="images/saldomais-icon.png" alt="SaldoMais" class="loading-logo" />
+  <div class="loading-name">Saldo<span class="accent">Mais</span></div>
+  <div class="loading-bar-track">
+    <div class="loading-bar-fill"></div>
+  </div>
+  <span class="loading-hint">Carregando…</span>
+</div>
+
+<div id="notificationToast" class="notification-toast"></div>
+
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-container">
+    <p id="confirmMessage"></p>
+    <div class="confirm-btn-row">
+      <button id="confirmYes">Confirmar</button>
+      <button id="confirmNo">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="editarCategoriaModal" class="confirm-modal">
+  <div class="confirm-container">
+    <h3 id="editarCategoriaTitulo">Editar Nome da Categoria</h3>
+    <input
+      id="editarCategoriaInput"
+      type="text"
+      placeholder="Digite o novo nome"
+    >
+    <div class="confirm-btn-row">
+      <button id="editarCategoriaConfirm"><i data-lucide="check" size="18"></i> Atualizar</button>
+      <button id="editarCategoriaCancel"><i data-lucide="x" size="18"></i> Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="avisoExcessoModal" class="aviso-excesso-overlay">
+  <div class="aviso-excesso-card">
+    <div class="aviso-excesso-icone"><i data-lucide="alert-triangle"></i></div>
+    <h3 class="aviso-excesso-titulo">Limite Ultrapassado</h3>
+    <p id="avisoExcessoMsg" class="aviso-excesso-msg"></p>
+    <button id="avisoExcessoOk" class="aviso-excesso-btn">Entendido</button>
+  </div>
+</div>
+
+<div id="editarLancamentoModal" class="confirm-modal">
+  <div class="confirm-container" style="max-width:460px;">
+    <h3 id="editarLancTitulo" style="margin:0 0 4px;font-size:16px;color:var(--text);">Editar Lançamento</h3>
+    <div class="input-group" style="margin-top:16px;">
+      <label style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;"><i data-lucide="file-text" size="14"></i> Descrição</label>
+      <input id="editLancDesc" type="text" placeholder="Descrição do gasto" autocomplete="off" style="margin-top:6px;">
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="input-group" style="flex:1;margin-top:12px;">
+        <label style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;"><i data-lucide="banknote" size="14"></i> Valor</label>
+        <input id="editLancValor" type="text" inputmode="decimal" class="input-moeda" placeholder="Ex: 150,50" style="margin-top:6px;">
+      </div>
+      <div class="input-group" style="flex:1;margin-top:12px;">
+        <label style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;"><i data-lucide="calendar" size="14"></i> Data</label>
+        <input id="editLancData" type="date" style="margin-top:6px;">
+      </div>
+    </div>
+    <div class="input-group" style="margin-top:12px;">
+      <label style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;"><i data-lucide="tag" size="14"></i> Categoria</label>
+      <select id="editLancCategoria" style="margin-top:6px;"></select>
+    </div>
+    <div class="confirm-btn-row">
+      <button id="editarLancamentoConfirm" style="background:var(--accent);color:#000;"><i data-lucide="check" size="16"></i> Salvar</button>
+      <button id="editarLancamentoCancel" style="background:rgba(255,255,255,0.08);color:var(--text);"><i data-lucide="x" size="16"></i> Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- Barra superior mobile -->
+  <div class="mobile-header">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu">
+      <i data-lucide="menu"></i>
+    </button>
+    <div class="mobile-logo">
+      <img src="images/saldomais-icon.png" alt="SaldoMais" class="mobile-logo-img">
+      <span class="mobile-logo-brand">SaldoMais</span>
+    </div>
+  </div>
+
+  <!-- Overlay que fecha o menu ao clicar fora -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-container" id="logoBtnSidebar">
+        <div class="logo-icon">
+          <img src="images/saldomais-icon.png" alt="SaldoMais" class="logo-img">
+        </div>
+        <div class="logo-text">
+          <span class="logo-brand">SaldoMais</span>
+          <span class="logo-tagline">Gastos claros, decisões inteligentes.</span>
+        </div>
+      </div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher menu (Alt+B)">
+        <i data-lucide="chevrons-left"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento (Alt+1)">
+        <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
+        <span class="nav-label">Dashboard</span>
+        <kbd class="nav-shortcut">Alt+1</kbd>
+      </button>
+      <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas (Alt+2)">
+        <span class="nav-icon"><i data-lucide="circle-dollar-sign"></i></span>
+        <span class="nav-label">Lançamentos</span>
+        <kbd class="nav-shortcut">Alt+2</kbd>
+      </button>
+      <button data-screen="categorias" class="nav-btn" title="Personalizar categorias (Alt+3)">
+        <span class="nav-icon"><i data-lucide="tags"></i></span>
+        <span class="nav-label">Categorias</span>
+        <kbd class="nav-shortcut">Alt+3</kbd>
+      </button>
+      <button data-screen="calculadoras" class="nav-btn" title="Ferramentas de cálculo financeiro (Alt+4)">
+        <span class="nav-icon"><i data-lucide="calculator"></i></span>
+        <span class="nav-label">Calculadoras</span>
+        <kbd class="nav-shortcut">Alt+4</kbd>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="docs/index.html" class="nav-btn" title="Documentação técnica">
+        <span class="nav-icon"><i data-lucide="book-open"></i></span>
+        <span class="nav-label">Documentação</span>
+      </a>
+      <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Contribua com o SaldoMais no GitHub">
+        <span class="nav-icon"><i data-lucide="git-branch"></i></span>
+        <span class="nav-label">Contribua</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="screen active">
+      <div class="dashboard-header">
+        <h2>Dashboard - Seu Orçamento</h2>
+        <p class="dashboard-subtitle" id="mesAtualText"></p>
+      </div>
+
+      <div class="dashboard-setup">
+        <div class="input-group">
+          <label for="orcamentoInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="wallet" size="16"></i> Orçamento do Mês</label>
+          <input id="orcamentoInput" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
+          <div class="input-helper">Digite o valor total disponível para este mês</div>
+        </div>
+        <div class="button-group">
+          <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
+          <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
+        </div>
+        <button id="btnExportPdf" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
+        <div class="btn-backup-group">
+          <button id="btnExportBackup" class="btn-backup" title="Exportar todos os dados como JSON">
+            <i data-lucide="download" size="14"></i> Exportar Backup
+          </button>
+          <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
+            <i data-lucide="upload" size="14"></i> Importar Backup
+            <input type="file" id="inputImportBackup" accept=".json" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div id="resumoGeral" class="resumo-geral"></div>
+
+      <div class="dashboard-content">
+        <div class="chart-container">
+          <h3>Distribuição de Gastos</h3>
+          <div style="width: 100%; flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
+            <canvas id="grafico"></canvas>
+          </div>
+          <div id="grafico-legenda" class="grafico-legenda-custom"></div>
+        </div>
+        <div id="categoriasStatus" class="categorias-container"></div>
+      </div>
+    </section>
+
+    <!-- LANÇAMENTOS -->
+    <section id="lancamentos" class="screen">
+      <div class="dashboard-header">
+        <h2>Adicionar Despesa</h2>
+        <p class="dashboard-subtitle">Registre seus gastos por categoria</p>
+      </div>
+
+      <div class="lancamento-form">
+        <div class="input-group">
+          <label for="desc" style="display:flex;align-items:center;gap:8px;"><i data-lucide="file-text" size="16"></i> Descrição</label>
+          <input id="desc" placeholder="Ex: Mercado, Netflix, Gasolina..." autocomplete="off">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex:1;">
+            <label for="valorInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor</label>
+            <input id="valorInput" type="text" inputmode="decimal" placeholder="Ex: 150,50">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="categoriaSelect" style="display:flex;align-items:center;gap:8px;"><i data-lucide="tag" size="16"></i> Categoria</label>
+            <select id="categoriaSelect"></select>
+            <div id="catHint" class="cat-hint"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="dataInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="calendar" size="16"></i> Data do Lançamento</label>
+          <input id="dataInput" type="date">
+        </div>
+
+        <button id="addLancamento" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="plus-circle" size="18"></i> Adicionar Despesa</button>
+      </div>
+
+      <div class="lancamentos-section">
+        <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Despesas do Mês</h3>
+        <div id="listaLancamentos" class="lista-lancamentos"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section id="categorias" class="screen">
+      <div class="dashboard-header">
+        <h2>Minhas Categorias</h2>
+        <p class="dashboard-subtitle">Crie, edite ou remova suas categorias</p>
+      </div>
+      
+      <div class="categorias-manager">
+        <div class="nova-categoria-form">
+          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="plus" size="18"></i> Adicionar Nova Categoria</h4>
+          <div class="form-nova-cat">
+            <input id="novaCategoriaNome" type="text" placeholder="Nome da Categoria" maxlength="30" class="cat-input-nome">
+            <input id="novaCategoriaCor" type="color" value="#f59e0b" class="cat-input-cor" title="Selecione uma cor">
+            <button id="btnAdicionarCategoria" class="btn-adicionar-cat">Adicionar</button>
+          </div>
+        </div>
+
+        <div class="categorias-lista-editor">
+          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list" size="18"></i> Categorias Existentes</h4>
+          <div id="categoriasListaEditor" class="categorias-lista"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="configuracoes" class="screen">
+      <div class="dashboard-header">
+        <h2>Configurações</h2>
+        <p class="dashboard-subtitle">Ajuste os percentuais do seu orçamento</p>
+      </div>
+      <div id="listaCategorias" class="lista-categorias"></div>
+    </section>
+
+    <!-- CALCULADORAS -->
+    <section id="calculadoras" class="screen">
+      <div class="dashboard-header">
+        <h2>Calculadoras</h2>
+        <p class="dashboard-subtitle">Ferramentas para simular investimentos e analisar dívidas</p>
+      </div>
+
+      <!-- Seção Investimentos -->
+      <div class="calc-section">
+        <div class="calc-section-header">
+          <span class="calc-section-icon"><i data-lucide="trending-up"></i></span>
+          <h3>Investimentos</h3>
+        </div>
+        <div class="calc-grid">
+
+          <!-- Juros Compostos -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="percent"></i></span>
+              <div>
+                <h4 class="calc-card-title">Juros Compostos</h4>
+                <p class="calc-card-desc">Simule a evolução de um investimento com aportes mensais opcionais.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="jc-capital">Capital Inicial (R$)</label>
+              <input type="text" inputmode="decimal" id="jc-capital" class="input-moeda" placeholder="Ex: 1.000,00">
+            </div>
+            <div class="input-group">
+              <label for="jc-aporte">Aporte Mensal (R$)</label>
+              <input type="text" inputmode="decimal" id="jc-aporte" class="input-moeda" placeholder="Ex: 200,00 (opcional)">
+            </div>
+            <div class="input-group">
+              <label for="jc-taxa">Taxa de Juros Anual (%)</label>
+              <input type="text" inputmode="decimal" id="jc-taxa" placeholder="Ex: 12,00">
+            </div>
+            <div class="input-group">
+              <label for="jc-periodo">Período (meses)</label>
+              <input type="number" id="jc-periodo" placeholder="Ex: 12" min="1" max="600">
+            </div>
+            <button onclick="calcularJurosCompostos()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="jc-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="jc-cards"></div>
+              <div class="calc-table-wrapper">
+                <table class="calc-table" id="jc-tabela"></table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulador CDB / CDI -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="landmark"></i></span>
+              <div>
+                <h4 class="calc-card-title">Simulador CDB / CDI</h4>
+                <p class="calc-card-desc">Calcule o rendimento líquido de um CDB com base no % do CDI.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="cdi-valor">Valor Investido (R$)</label>
+              <input type="text" inputmode="decimal" id="cdi-valor" class="input-moeda" placeholder="Ex: 5.000,00">
+            </div>
+            <div class="input-group">
+              <label for="cdi-taxa">CDI Atual (% a.a.)</label>
+              <input type="text" inputmode="decimal" id="cdi-taxa" placeholder="Ex: 10,50">
+            </div>
+            <div class="input-group">
+              <label for="cdi-percentual">% do CDI do CDB</label>
+              <input type="text" inputmode="decimal" id="cdi-percentual" placeholder="Ex: 110">
+            </div>
+            <div class="input-group">
+              <label for="cdi-prazo">Prazo (dias corridos)</label>
+              <input type="number" id="cdi-prazo" placeholder="Ex: 365" min="1">
+            </div>
+            <button onclick="calcularCDBCDI()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="cdi-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="cdi-cards"></div>
+              <div id="cdi-ir-info"></div>
+            </div>
+          </div>
+
+          <!-- Aporte para Meta -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="target"></i></span>
+              <div>
+                <h4 class="calc-card-title">Aporte para Meta</h4>
+                <p class="calc-card-desc">Descubra quanto você precisa aportar por mês para atingir um objetivo.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="meta-valor">Valor da Meta (R$)</label>
+              <input type="text" inputmode="decimal" id="meta-valor" class="input-moeda" placeholder="Ex: 50.000,00">
+            </div>
+            <div class="input-group">
+              <label for="meta-prazo">Prazo (meses)</label>
+              <input type="number" id="meta-prazo" placeholder="Ex: 36" min="1">
+            </div>
+            <div class="input-group">
+              <label for="meta-taxa">Taxa Mensal Estimada (%)</label>
+              <input type="text" inputmode="decimal" id="meta-taxa" placeholder="Ex: 1,00">
+            </div>
+            <button onclick="calcularAporteMeta()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="meta-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="meta-cards"></div>
+            </div>
+          </div>
+
+          <!-- Renda de Dividendos -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="coins"></i></span>
+              <div>
+                <h4 class="calc-card-title">Renda de Dividendos</h4>
+                <p class="calc-card-desc">Estime a renda passiva mensal gerada por um patrimônio investido.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="dy-patrimonio">Patrimônio Investido (R$)</label>
+              <input type="text" inputmode="decimal" id="dy-patrimonio" class="input-moeda" placeholder="Ex: 100.000,00">
+            </div>
+            <div class="input-group">
+              <label for="dy-yield">Dividend Yield Anual (%)</label>
+              <input type="text" inputmode="decimal" id="dy-yield" placeholder="Ex: 8,00">
+            </div>
+            <button onclick="calcularDividendYield()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="dy-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="dy-cards"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Seção Consumo & Dívidas -->
+      <div class="calc-section">
+        <div class="calc-section-header">
+          <span class="calc-section-icon calc-section-icon-warn"><i data-lucide="credit-card"></i></span>
+          <h3>Consumo &amp; Dívidas</h3>
+        </div>
+        <div class="calc-grid">
+
+          <!-- Financiamento Price -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="home"></i></span>
+              <div>
+                <h4 class="calc-card-title">Simulador de Financiamento (Tabela Price)</h4>
+                <p class="calc-card-desc">Calcule o valor das parcelas e o custo total de um financiamento.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="price-valor">Valor Financiado (R$)</label>
+              <input type="text" inputmode="decimal" id="price-valor" class="input-moeda" placeholder="Ex: 30.000,00">
+            </div>
+            <div class="input-group">
+              <label for="price-taxa">Taxa de Juros Mensal (%)</label>
+              <input type="text" inputmode="decimal" id="price-taxa" placeholder="Ex: 1,50">
+            </div>
+            <div class="input-group">
+              <label for="price-parcelas">Número de Parcelas</label>
+              <input type="number" id="price-parcelas" placeholder="Ex: 48" min="1" max="480">
+            </div>
+            <button onclick="calcularFinanciamentoPrice()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="price-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="price-cards"></div>
+              <div class="calc-table-wrapper">
+                <table class="calc-table" id="price-tabela"></table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rotativo do Cartão de Crédito -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="alert-triangle"></i></span>
+              <div>
+                <h4 class="calc-card-title">Rotativo do Cartão de Crédito</h4>
+                <p class="calc-card-desc">Veja o custo real de pagar apenas o mínimo do cartão de crédito.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="rot-divida">Dívida Atual (R$)</label>
+              <input type="text" inputmode="decimal" id="rot-divida" class="input-moeda" placeholder="Ex: 2.000,00">
+            </div>
+            <div class="input-group">
+              <label for="rot-taxa">Taxa de Juros Mensal (%)</label>
+              <input type="text" inputmode="decimal" id="rot-taxa" placeholder="Ex: 15,00">
+            </div>
+            <div class="input-group">
+              <label for="rot-minimo">Pagamento Mensal (R$)</label>
+              <input type="text" inputmode="decimal" id="rot-minimo" class="input-moeda" placeholder="Ex: 100,00">
+            </div>
+            <button onclick="calcularRotativoCartao()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="rot-resultado" class="calc-result" style="display:none;">
+              <div id="rot-alerta"></div>
+              <div class="calc-result-cards" id="rot-cards"></div>
+              <div class="calc-table-wrapper">
+                <table class="calc-table" id="rot-tabela"></table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vale a Pena Quitar a Dívida? -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="hand-coins"></i></span>
+              <div>
+                <h4 class="calc-card-title">Vale a Pena Quitar a Dívida?</h4>
+                <p class="calc-card-desc">Compare se é melhor quitar sua dívida antecipadamente (com desconto) ou manter o dinheiro investido pelo mesmo período.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="qd-saldo">Saldo Devedor Atual (R$)</label>
+              <input type="text" inputmode="decimal" id="qd-saldo" class="input-moeda" placeholder="Ex: 5.000,00">
+            </div>
+            <div class="input-group">
+              <label for="qd-taxa-divida">Taxa de Juros Mensal da Dívida (%)</label>
+              <input type="text" inputmode="decimal" id="qd-taxa-divida" placeholder="Ex: 8,00">
+            </div>
+            <div class="input-group">
+              <label for="qd-parcelas">Parcelas Restantes</label>
+              <input type="number" id="qd-parcelas" placeholder="Ex: 12" min="1">
+            </div>
+            <div class="input-group">
+              <label for="qd-desconto">Desconto para Quitação Antecipada (%)</label>
+              <input type="text" inputmode="decimal" id="qd-desconto" placeholder="Ex: 30,00">
+              <div class="input-helper">Verifique na sua instituição financeira (ex: Nubank)</div>
+            </div>
+            <div class="input-group">
+              <label for="qd-disponivel">Valor Disponível para Quitar (R$)</label>
+              <input type="text" inputmode="decimal" id="qd-disponivel" class="input-moeda" placeholder="Ex: 3.000,00">
+            </div>
+            <div class="input-group">
+              <label for="qd-taxa-invest">Taxa Mensal do Seu Investimento (%)</label>
+              <input type="text" inputmode="decimal" id="qd-taxa-invest" placeholder="Ex: 1,00">
+            </div>
+            <button onclick="calcularQuitarDivida()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="qd-resultado" class="calc-result" style="display:none;">
+              <div class="calc-result-cards" id="qd-cards"></div>
+              <div id="qd-cenario"></div>
+              <div id="qd-recomendacao"></div>
+            </div>
+          </div>
+
+          <!-- À Vista vs Parcelado -->
+          <div class="calc-card">
+            <div class="calc-card-header">
+              <span class="calc-card-icon"><i data-lucide="scale"></i></span>
+              <div>
+                <h4 class="calc-card-title">À Vista vs Parcelado</h4>
+                <p class="calc-card-desc">Compare se vale a pena pagar à vista ou parcelar considerando seu rendimento.</p>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="avp-vista">Preço à Vista (R$)</label>
+              <input type="text" inputmode="decimal" id="avp-vista" class="input-moeda" placeholder="Ex: 900,00">
+            </div>
+            <div class="input-group">
+              <label for="avp-parcelas-valor">Valor de Cada Parcela (R$)</label>
+              <input type="text" inputmode="decimal" id="avp-parcelas-valor" class="input-moeda" placeholder="Ex: 100,00">
+            </div>
+            <div class="input-group">
+              <label for="avp-n-parcelas">Número de Parcelas</label>
+              <input type="number" id="avp-n-parcelas" placeholder="Ex: 10" min="2">
+            </div>
+            <div class="input-group">
+              <label for="avp-rendimento">Taxa Mensal do Seu Investimento (%)</label>
+              <input type="text" inputmode="decimal" id="avp-rendimento" placeholder="Ex: 1,00">
+            </div>
+            <button onclick="calcularAVistaVsParcelado()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
+            <div id="avp-resultado" class="calc-result" style="display:none;">
+              <div id="avp-conclusao"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <footer class="screen-footer">
+      <p>Feito com ❤️ sob o sol escaldante de Salvador</p>
+      <p>Feito por <a href="https://www.linkedin.com/in/mat7heus/" target="_blank" rel="noopener noreferrer" class="screen-footer-link">Matheus</a></p>
+    </footer>
+
+  </main>
+
+</div>
+
+</body>
+</html>

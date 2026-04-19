@@ -397,6 +397,41 @@ kbd {
 .footer-brand span { font-weight: 600; color: var(--accent); font-size: 13px; }
 .footer-text { font-size: 12px; color: var(--muted); }
 
+/* ── Loading screen ───────────────────────────────────────────── */
+.loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #050505;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.loader.hidden { opacity: 0; visibility: hidden; }
+.loader-logo {
+  width: 72px; height: 72px; border-radius: 20px;
+  box-shadow: 0 0 0 1px rgba(245,158,11,0.25), 0 0 50px rgba(245,158,11,0.25);
+  animation: loaderPulse 1.6s ease-in-out infinite;
+}
+@keyframes loaderPulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(245,158,11,0.25), 0 0 30px rgba(245,158,11,0.15); }
+  50%       { box-shadow: 0 0 0 1px rgba(245,158,11,0.45), 0 0 60px rgba(245,158,11,0.35); }
+}
+.loader-name { font-size: 18px; font-weight: 600; letter-spacing: -0.4px; color: var(--text); }
+.loader-name .accent { color: var(--accent); }
+.loader-bar-track {
+  width: 140px; height: 2px;
+  background: rgba(255,255,255,0.07); border-radius: 999px; overflow: hidden;
+}
+.loader-bar-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #fcd34d);
+  box-shadow: 0 0 8px rgba(245,158,11,0.6);
+  transition: width 0.4s ease;
+}
+.loader-hint {
+  font-size: 11px; color: var(--muted); letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.5;
+}
+
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .doc-wrap {

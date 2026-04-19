@@ -51,8 +51,12 @@ function setupButtons(){
   document.getElementById("logoBtnSidebar")
     ?.addEventListener("click", () => {
       mostrarLoading();
-      setTimeout(() => document.querySelector('.nav-btn[data-screen=dashboard]')?.click(), 1500);
+      setTimeout(() => document.querySelector('.nav-btn[data-screen=dashboard]')?.click(), 400);
     });
+
+  // Category hint: update when category or value changes
+  categoriaSelect?.addEventListener("change", atualizarCatHint);
+  valorInput?.addEventListener("input", atualizarCatHint);
 
   setupCurrencyMask(orcamentoInput);
   setupCurrencyMask(valorInput);
@@ -69,10 +73,12 @@ function setupCurrencyMask(el){
 // ─── EVENT DELEGATION ────────────────────────────────────────────────────────
 
 function setupEventDelegation(){
-  // Lançamentos: deletar
+  // Lançamentos: deletar e editar
   listaLancamentos?.addEventListener("click", e => {
-    const btn = e.target.closest("[data-action='deletar-lancamento']");
-    if(btn) deletarLancamento(Number(btn.dataset.id));
+    const delBtn = e.target.closest("[data-action='deletar-lancamento']");
+    if(delBtn){ deletarLancamento(Number(delBtn.dataset.id)); return; }
+    const editBtn = e.target.closest("[data-action='editar-lancamento']");
+    if(editBtn) editarLancamentoHandler(Number(editBtn.dataset.id));
   });
 
   // Categorias lista editor (screen categorias)
@@ -199,6 +205,11 @@ function init(){
     setupSidebarToggle();
     atualizarDataMes();
     atualizarAtalhos();
+
+    // Set today as default date in transaction form
+    const dataInput = document.getElementById("dataInput");
+    if(dataInput) dataInput.value = new Date().toISOString().split('T')[0];
+
     renderComplete();
   } catch (error) {
     if (window.lucide) lucide.createIcons();

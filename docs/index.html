@@ -238,6 +238,14 @@
 </head>
 <body>
 
+  <!-- ── Loading screen ──── -->
+  <div class="loader" id="loader">
+    <img src="../images/saldomais-icon.png" alt="SaldoMais" class="loader-logo" />
+    <div class="loader-name">Saldo<span class="accent">Mais</span></div>
+    <div class="loader-bar-track"><div class="loader-bar-fill" id="loaderBar"></div></div>
+    <span class="loader-hint">Carregando…</span>
+  </div>
+
   <nav class="topnav">
     <div class="brand">
       <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais logo" />
@@ -250,7 +258,7 @@
       <a href="design-system.html">Design System</a>
       <a href="contribuindo.html">Contribuindo</a>
     </div>
-    <a href="../index.html" class="btn-app">
+    <a href="../webapp.html" class="btn-app">
       <i data-lucide="arrow-right"></i>
       Abrir App
     </a>
@@ -444,11 +452,18 @@
     </div>
     <p class="footer-text">
       Documentação técnica interna &mdash; Licença GPL v3
-      &mdash; <a href="../index.html">Abrir aplicação</a>
+      &mdash; <a href="../webapp.html">Abrir aplicação</a>
     </p>
   </footer>
 
   <script>
+    (function(){
+      var l=document.getElementById('loader'),b=document.getElementById('loaderBar'),p=0;
+      function s(v){p=Math.min(v,100);b.style.width=p+'%';}
+      s(20);var r=setInterval(function(){if(p<80)s(p+8);else clearInterval(r);},80);
+      function done(){clearInterval(r);s(100);setTimeout(function(){l.classList.add('hidden');},340);}
+      if(document.readyState==='complete'){done();}else{window.addEventListener('load',done);setTimeout(done,2500);}
+    })();
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     });

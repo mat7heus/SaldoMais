@@ -14,15 +14,23 @@
 </head>
 <body>
 
+  <!-- ── Loading screen ──── -->
+  <div class="loader" id="loader">
+    <img src="../images/saldomais-icon.png" alt="SaldoMais" class="loader-logo" />
+    <div class="loader-name">Saldo<span class="accent">Mais</span></div>
+    <div class="loader-bar-track"><div class="loader-bar-fill" id="loaderBar"></div></div>
+    <span class="loader-hint">Carregando&hellip;</span>
+  </div>
+
 <nav class="topnav">
-  <a href="../index.html" class="brand">
+  <a href="../webapp.html" class="brand">
     <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
     Saldo<span class="accent">Mais</span>
   </a>
   <span class="sep">/</span>
   <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
   <div class="spacer"></div>
-  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+  <a href="../webapp.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
 </nav>
 
 <header class="doc-hero">
@@ -85,7 +93,8 @@
 
       <h3>Fluxo de adição</h3>
       <ol>
-        <li>Preenche descrição (<code>#desc</code>), valor (<code>#valorInput</code>) e categoria (<code>#categoriaSelect</code>)</li>
+        <li>Preenche descrição (<code>#desc</code>), valor (<code>#valorInput</code>), categoria (<code>#categoriaSelect</code>) e data (<code>#dataInput</code>, padrão = hoje)</li>
+        <li>O hint de orçamento (<code>#catHint</code>) atualiza em tempo real ao mudar categoria ou valor, exibindo o saldo disponível na categoria selecionada</li>
         <li>Clica em "Adicionar Despesa" → <code>adicionarLancamento()</code></li>
         <li>Validações em sequência (aborta na primeira falha):
           <ul>
@@ -95,7 +104,7 @@
             <li><code>total_gasto_na_categoria + novo_valor &lt;= limite_da_categoria</code></li>
           </ul>
         </li>
-        <li>Cria o objeto, adiciona ao array, limpa os inputs, persiste e chama <code>renderComplete()</code></li>
+        <li>Cria o objeto com campo <code>data</code>, adiciona ao array, limpa os inputs, persiste e chama <code>renderComplete()</code></li>
       </ol>
 
       <h3>Cálculo do limite por categoria</h3>
@@ -103,7 +112,21 @@
 const gastoAtual = lancamentos
   .filter(l => l.id_categoria === cat.id && l.id_orcamento === orcamento.id)
   .reduce((s, l) => s + l.valor, 0);</code></pre>
-      <p>Se <code>gastoAtual + novoValor &gt; limite</code>, o lançamento é rejeitado com <code>notificar("Limite excedido nesta categoria")</code>.</p>
+      <p>Se <code>gastoAtual + novoValor &gt; limite</code>, o lançamento é rejeitado com <code>notificar("Limite excedido nesta categoria", 'error')</code>.</p>
+
+      <h3>Edição de lançamento</h3>
+      <p>Cada item da lista possui botão de edição (<code>data-action="editar-lancamento"</code>) que abre o modal <code>#editarLancamentoModal</code>.</p>
+      <ul>
+        <li><code>editarLancamento(id)</code> em <code>core.js</code> — Promise-based, pré-popula o modal com os dados atuais</li>
+        <li><code>editarLancamentoHandler(id)</code> em <code>lancamentos.js</code> — recebe o resultado, revalida o limite da (nova) categoria excluindo o próprio registro, persiste e re-renderiza</li>
+        <li>Na validação do limite de edição, o lançamento original é excluído do cálculo de gasto atual para evitar dupla contagem</li>
+      </ul>
+
+      <h3>Ordenação e exibição</h3>
+      <ul>
+        <li>Lançamentos são ordenados por <code>data</code> decrescente (mais recentes no topo), com desempate por <code>id</code></li>
+        <li>Cada item exibe: ponto colorido da categoria, descrição, nome da categoria, data formatada (<code>DD/MM/YYYY</code>), valor e ações (editar/deletar)</li>
+      </ul>
 
       <h3>Exclusão e limpeza</h3>
       <ul>
@@ -156,17 +179,26 @@ const gastoAtual = lancamentos
       <p>Se <code>orcamentoAtual()</code> retornar <code>undefined</code> ou <code>valor_total &lt;= 0</code>, exibe empty state no lugar dos cards.</p>
 
       <h3>Cards de resumo</h3>
+      <p>Os valores dos cards são animados com <code>animarValor(el, valorFinal)</code> — interpolação ease-out cúbica de R$ 0,00 até o valor real em ~650 ms usando <code>requestAnimationFrame</code>.</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Card</th><th>Valor</th><th>Variação visual</th></tr></thead>
           <tbody>
-            <tr><td>Total Disponível</td><td><code>valor_total</code></td><td>Sempre neutro</td></tr>
-            <tr><td>Total Gasto</td><td>Soma dos lançamentos</td><td>Barra de progresso (accent→warn)</td></tr>
-            <tr><td>Disponível</td><td><code>valor_total - totalGasto</code></td><td>Verde se ≥ 0, vermelho se &lt; 0</td></tr>
+            <tr><td>Total Disponível</td><td><code>valor_total</code></td><td>Animação de entrada</td></tr>
+            <tr><td>Total Gasto</td><td>Soma dos lançamentos + count de lançamentos</td><td>Barra de progresso + animação</td></tr>
+            <tr><td>Disponível</td><td><code>valor_total - totalGasto</code></td><td>Verde se ≥ 0, vermelho se &lt; 0 + animação</td></tr>
             <tr><td>Atenção (opcional)</td><td>Count de categorias acima do limite</td><td>Aparece somente se count &gt; 0</td></tr>
           </tbody>
         </table>
       </div>
+
+      <h3>Barras de status por categoria</h3>
+      <p>Cada barra exibe: ponto colorido, nome da categoria, badge com percentual utilizado, barra preenchida e linha de valores (gasto / limite). O badge e a barra usam cores semânticas:</p>
+      <ul>
+        <li>Verde (<code>--ok</code>): abaixo de 80%</li>
+        <li>Laranja (<code>--warn</code>): entre 80% e 100%</li>
+        <li>Vermelho (<code>--danger</code>): acima de 100%</li>
+      </ul>
 
       <h3>Gráfico de distribuição</h3>
       <ul>
@@ -282,5 +314,13 @@ const gastoAtual = lancamentos
   <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
 </footer>
 
-</body>
+<script>
+(function(){
+  var l=document.getElementById("loader"),b=document.getElementById("loaderBar"),p=0;
+  function s(v){p=Math.min(v,100);b.style.width=p+"%";}
+  s(20);var r=setInterval(function(){if(p<80)s(p+8);else clearInterval(r);},80);
+  function done(){clearInterval(r);s(100);setTimeout(function(){l.classList.add("hidden");},340);}
+  if(document.readyState==="complete"){done();}else{window.addEventListener("load",done);setTimeout(done,2500);}
+})();
+</script></body>
 </html>

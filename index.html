@@ -1,539 +1,1357 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SaldoMais | Gastos claros, decisões inteligentes.</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="images/saldomais-icon.png" type="image/png">
+  <title>SaldoMais — Gastos claros, decisões inteligentes.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <style>
+    :root {
+      --bg:     #0b0b0c;
+      --card:   rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text:   #f5f5f5;
+      --muted:  #a1a1aa;
+      --accent: #f59e0b;
+      --ok:     #22c55e;
+      --danger: #ef4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    html { scroll-behavior: smooth; }
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    body {
+      background: radial-gradient(circle at top, #111 0%, #050505 100%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-  <!-- Ícones Lucide -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+    /* ── Custom scrollbar ──────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.35); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(245,158,11,0.6); }
 
-  <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    /* ── Scroll progress ───────────────────────────────────── */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #fcd34d);
+      z-index: 300;
+      box-shadow: 0 0 10px rgba(245,158,11,0.7);
+      transition: width 0.08s linear;
+    }
 
-  <link rel="stylesheet" href="./css/index.css">
 
-  <script src="./js/core.js" defer></script>
-  <script src="./js/lancamentos.js" defer></script>
-  <script src="./js/categorias.js" defer></script>
-  <script src="./js/dashboard.js" defer></script>
-  <script src="./js/calculadoras.js" defer></script>
-  <script src="./js/backup.js" defer></script>
-  <script src="./js/pdf.js" defer></script>
-  <script src="./js/app.js" defer></script>
+    /* ── Scroll animations ─────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      filter: blur(6px);
+      transition: opacity 0.65s ease, transform 0.65s ease, filter 0.65s ease;
+      will-change: opacity, transform, filter;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); filter: blur(0); }
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.16s; }
+    .reveal-delay-3 { transition-delay: 0.24s; }
+    .reveal-delay-4 { transition-delay: 0.32s; }
+    .reveal-delay-5 { transition-delay: 0.40s; }
+    .reveal-delay-6 { transition-delay: 0.48s; }
+
+    /* ── Nav ───────────────────────────────────────────────── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11,11,12,0.85);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 32px;
+      transition: background 0.3s;
+    }
+    .topnav.scrolled { background: rgba(11,11,12,0.96); }
+    .topnav .brand {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 15px; color: var(--text);
+      letter-spacing: -0.3px; text-decoration: none;
+    }
+    .topnav .brand:hover { text-decoration: none; }
+    .topnav .brand img {
+      width: 26px; height: 26px; border-radius: 7px;
+      box-shadow: 0 0 10px rgba(245,158,11,0.22);
+    }
+    .topnav .brand .accent { color: var(--accent); }
+    .topnav .spacer { flex: 1; }
+    .topnav .nav-links {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .topnav .nav-links a {
+      font-size: 13px; color: var(--muted);
+      transition: color 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .topnav .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.28);
+      border-radius: 999px; font-size: 10px; font-weight: 600;
+      color: var(--accent); letter-spacing: 0.03em; white-space: nowrap;
+    }
+    .btn-app {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; background: var(--accent); color: #0b0b0c;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      transition: opacity 0.2s, transform 0.2s; text-decoration: none;
+    }
+    .btn-app:hover { opacity: 0.88; text-decoration: none; transform: translateY(-1px); }
+    .btn-app i { width: 13px; height: 13px; }
+
+    /* ── Hero ──────────────────────────────────────────────── */
+    .hero {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 110px 32px 90px;
+      position: relative; overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 620px;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.12) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+    .hero-orb {
+      position: absolute; top: 40%; left: 50%;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.05) 0%, transparent 70%);
+      animation: orbFloat 14s ease-in-out infinite;
+      pointer-events: none; z-index: 0;
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(-50%, -50%) translate(0, 0); }
+      33%       { transform: translate(-50%, -50%) translate(50px, -35px); }
+      66%       { transform: translate(-50%, -50%) translate(-35px, 25px); }
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
+      pointer-events: none; z-index: 0;
+    }
+    /* Floating ambient numbers */
+    .hero-float {
+      position: absolute; font-size: 11px; font-weight: 500;
+      color: var(--accent); opacity: 0.09;
+      font-family: 'JetBrains Mono', monospace;
+      pointer-events: none; z-index: 0;
+      animation: floatDrift ease-in-out infinite;
+    }
+    @keyframes floatDrift {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25%       { transform: translateY(-14px) translateX(6px); }
+      50%       { transform: translateY(-6px) translateX(-9px); }
+      75%       { transform: translateY(-20px) translateX(4px); }
+    }
+    .hero-logo {
+      width: 92px; height: 92px; border-radius: 24px;
+      box-shadow:
+        0 0 0 1px rgba(245,158,11,0.22),
+        0 0 60px rgba(245,158,11,0.32),
+        0 20px 60px rgba(0,0,0,0.75);
+      margin-bottom: 30px; position: relative; z-index: 1;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 14px; position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .eyebrow-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+      50%       { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+    }
+    .hero-title {
+      font-size: 72px; font-weight: 600; letter-spacing: -4px;
+      line-height: 1.0; margin-bottom: 18px;
+      position: relative; z-index: 1;
+    }
+    .hero-title .accent {
+      background: linear-gradient(90deg, #f59e0b 0%, #fcd34d 30%, #fb923c 60%, #f59e0b 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmerText 3.5s linear infinite;
+    }
+    @keyframes shimmerText {
+      0%   { background-position: 0% center; }
+      100% { background-position: 250% center; }
+    }
+    .hero-subtitle {
+      font-size: 16px; color: var(--muted);
+      min-height: 28px; margin-bottom: 28px;
+      line-height: 1.7; position: relative; z-index: 1;
+    }
+    .type-cursor {
+      color: var(--accent); font-weight: 300;
+      animation: blink 0.85s step-end infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    /* Trust row */
+    .trust-row {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 36px;
+      position: relative; z-index: 1;
+    }
+    .trust-item {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--muted);
+    }
+    .trust-item i { width: 13px; height: 13px; color: var(--ok); }
+    .trust-sep { color: var(--border); font-size: 16px; }
+    /* CTA buttons */
+    .hero-cta {
+      display: flex; gap: 10px; justify-content: center;
+      flex-wrap: wrap; position: relative; z-index: 1;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px; background: var(--accent); color: #0b0b0c;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      opacity: 0.9; text-decoration: none; transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(245,158,11,0.38);
+    }
+    .btn-primary i { width: 16px; height: 16px; }
+    .btn-primary.pulse { animation: pulseCta 2.8s ease infinite; }
+    @keyframes pulseCta {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.38); }
+      60%       { box-shadow: 0 0 0 12px rgba(245,158,11,0); }
+    }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px; background: var(--card); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(245,158,11,0.30);
+      background: rgba(245,158,11,0.05);
+      text-decoration: none; transform: translateY(-2px); color: var(--text);
+    }
+    .btn-ghost i { width: 16px; height: 16px; }
+    /* Scroll hint */
+    .scroll-hint {
+      position: absolute; bottom: 22px; left: 50%;
+      transform: translateX(-50%); color: var(--muted);
+      opacity: 0.35; z-index: 1; pointer-events: none;
+      animation: scrollBounce 2.2s ease-in-out infinite;
+    }
+    .scroll-hint i { width: 18px; height: 18px; }
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ── Ticker/Marquee ────────────────────────────────────── */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(245,158,11,0.025);
+      padding: 10px 0;
+      position: relative; z-index: 1;
+    }
+    .ticker-wrap::before,
+    .ticker-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 80px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .ticker-wrap::before { left: 0; background: linear-gradient(90deg, #080809, transparent); }
+    .ticker-wrap::after  { right: 0; background: linear-gradient(-90deg, #080809, transparent); }
+    .ticker {
+      display: flex; gap: 0; white-space: nowrap;
+      animation: tickerScroll 28s linear infinite;
+    }
+    .ticker-wrap:hover .ticker { animation-play-state: paused; }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0 28px; font-size: 12px; font-weight: 500; color: var(--muted);
+    }
+    .ticker-item i { width: 12px; height: 12px; color: var(--accent); flex-shrink: 0; }
+    .ticker-dot { color: rgba(245,158,11,0.3); }
+
+    /* ── Shared ────────────────────────────────────────────── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+    }
+    .section-heading {
+      font-size: 22px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.4px;
+    }
+    .section-sub { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
+
+    /* ── App Mockup ────────────────────────────────────────── */
+    .preview-section { padding: 72px 0 80px; }
+    .preview-wrapper { position: relative; max-width: 860px; margin: 0 auto; }
+    .preview-glow {
+      position: absolute; inset: -40px;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.08) 0%, transparent 70%);
+      pointer-events: none; border-radius: 999px;
+    }
+    .browser-frame {
+      background: #141415;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px; overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(245,158,11,0.08),
+        0 32px 80px rgba(0,0,0,0.7),
+        0 8px 32px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .browser-chrome {
+      background: #1a1a1b;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+    }
+    .browser-dots { display: flex; gap: 6px; }
+    .browser-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .browser-dots span:nth-child(1) { background: #ef4444; opacity: 0.7; }
+    .browser-dots span:nth-child(2) { background: #f59e0b; opacity: 0.7; }
+    .browser-dots span:nth-child(3) { background: #22c55e; opacity: 0.7; }
+    .browser-url {
+      flex: 1; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 6px;
+      padding: 4px 12px; font-size: 11px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .browser-url i { width: 11px; height: 11px; color: var(--ok); flex-shrink: 0; }
+    .mock-app { display: flex; height: 400px; overflow: hidden; }
+    .mock-sidebar {
+      width: 180px; background: #0f0f10;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
+    }
+    .mock-logo {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 8px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;
+    }
+    .mock-logo img { width: 22px; height: 22px; border-radius: 6px; }
+    .mock-logo span { font-size: 13px; font-weight: 600; color: var(--accent); }
+    .mock-nav-item {
+      display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+      border-radius: 8px; font-size: 12px; color: var(--muted);
+    }
+    .mock-nav-item.active { background: rgba(245,158,11,0.10); color: var(--accent); }
+    .mock-nav-item i { width: 14px; height: 14px; flex-shrink: 0; }
+    .mock-main { flex: 1; padding: 20px 22px; overflow: hidden; background: #0b0b0c; }
+    .mock-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;
+    }
+    .mock-header-title { font-size: 15px; font-weight: 600; }
+    .mock-header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .mock-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+    }
+    .mock-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .mock-card-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+    .mock-card-value { font-size: 16px; font-weight: 600; letter-spacing: -0.5px; }
+    .mock-card-value.green { color: var(--ok); }
+    .mock-card-value.amber { color: var(--accent); }
+    .mock-card-value.red   { color: var(--danger); }
+    .mock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mock-chart-box, .mock-cats-box {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 14px;
+    }
+    .mock-chart-label, .mock-cats-label {
+      font-size: 11px; font-weight: 500; margin-bottom: 12px; color: var(--muted);
+    }
+    .mock-donut {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: conic-gradient(
+        #f59e0b 0deg 130deg, #22c55e 130deg 210deg,
+        #3b82f6 210deg 270deg, #a855f7 270deg 360deg
+      );
+      margin: 0 auto 8px; position: relative;
+      transform: scale(0.5); opacity: 0;
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+    }
+    .mock-donut.animated { transform: scale(1); opacity: 1; }
+    .mock-donut::after {
+      content: ''; position: absolute; inset: 16px;
+      background: #0b0b0c; border-radius: 50%;
+    }
+    .mock-legend { display: flex; flex-direction: column; gap: 4px; }
+    .mock-legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 10px; color: var(--muted);
+    }
+    .mock-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .mock-cat-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 9px;
+    }
+    .mock-cat-name { font-size: 10px; color: var(--muted); width: 62px; flex-shrink: 0; }
+    .mock-cat-bar-bg {
+      flex: 1; height: 5px; background: rgba(255,255,255,0.07);
+      border-radius: 999px; overflow: hidden;
+    }
+    .mock-cat-bar-fill { height: 100%; border-radius: 999px; width: 0; }
+    .mock-cat-pct { font-size: 10px; color: var(--muted); width: 26px; text-align: right; flex-shrink: 0; }
+
+    /* ── Features ──────────────────────────────────────────── */
+    .features-section { padding: 72px 0 0; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+      transform-style: preserve-3d;
+      cursor: default;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(245,158,11,0.07) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .feature-card:hover { border-color: rgba(245,158,11,0.28); box-shadow: 0 10px 32px rgba(245,158,11,0.06); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 38px; height: 38px; background: rgba(245,158,11,0.10);
+      border: 1px solid rgba(245,158,11,0.20); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); flex-shrink: 0;
+    }
+    .feature-icon i { width: 18px; height: 18px; }
+    .feature-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+    .feature-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; flex: 1; }
+
+    /* ── How it works ──────────────────────────────────────── */
+    .howto-section { padding: 80px 0; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .step-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 24px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .step-card:hover { border-color: rgba(245,158,11,0.25); transform: translateY(-3px); }
+    .step-num {
+      font-size: 64px; font-weight: 600; letter-spacing: -3px;
+      color: rgba(245,158,11,0.07);
+      position: absolute; top: 10px; right: 16px;
+      font-family: 'JetBrains Mono', monospace; line-height: 1; pointer-events: none;
+    }
+    .step-icon-wrap {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.22);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); margin-bottom: 16px;
+    }
+    .step-icon-wrap i { width: 20px; height: 20px; }
+    .step-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.2px; }
+    .step-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* ── Privacy ───────────────────────────────────────────── */
+    .privacy-section { padding: 80px 0; }
+    .privacy-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
+    }
+    .privacy-title {
+      font-size: 28px; font-weight: 600; letter-spacing: -0.8px;
+      line-height: 1.2; margin-bottom: 16px;
+    }
+    .privacy-title .accent { color: var(--accent); }
+    .privacy-lead { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 28px; }
+    .privacy-pillars { display: flex; flex-direction: column; gap: 12px; }
+    .pillar {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 16px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 12px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .pillar:hover { border-color: rgba(245,158,11,0.22); transform: translateX(4px); }
+    .pillar-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pillar-icon.green { background: rgba(34,197,94,0.10); color: var(--ok); border: 1px solid rgba(34,197,94,0.20); }
+    .pillar-icon.amber { background: rgba(245,158,11,0.10); color: var(--accent); border: 1px solid rgba(245,158,11,0.20); }
+    .pillar-icon i { width: 16px; height: 16px; }
+    .pillar-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .pillar-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+    .privacy-visual { display: flex; flex-direction: column; gap: 12px; }
+    .privacy-stat {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px 24px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .privacy-stat:hover { border-color: rgba(34,197,94,0.25); transform: translateX(-4px); }
+    .privacy-stat::before {
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 120px; height: 120px;
+      background: radial-gradient(ellipse at top right, rgba(34,197,94,0.07) 0%, transparent 65%);
+    }
+    .privacy-stat-num {
+      font-size: 38px; font-weight: 600; letter-spacing: -1.5px;
+      color: var(--ok); line-height: 1; margin-bottom: 4px;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+    }
+    .privacy-stat-label { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .privacy-stat.amber:hover { border-color: rgba(245,158,11,0.25); }
+    .privacy-stat.amber::before {
+      background: radial-gradient(ellipse at top right, rgba(245,158,11,0.07) 0%, transparent 65%);
+    }
+    .privacy-stat.amber .privacy-stat-num { color: var(--accent); }
+
+    /* ── Comparison ────────────────────────────────────────── */
+    .comparison-section { padding: 72px 0 80px; }
+    .comparison-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
+    .comparison-table { width: 100%; border-collapse: collapse; }
+    .comparison-table th {
+      padding: 14px 20px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
+      border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap;
+    }
+    .comparison-table th.highlight {
+      color: var(--accent);
+      background: linear-gradient(180deg, rgba(245,158,11,0.07) 0%, rgba(245,158,11,0.03) 100%);
+    }
+    .comparison-table td {
+      padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px; color: var(--muted); vertical-align: top; line-height: 1.6;
+    }
+    .comparison-table td.highlight {
+      background: rgba(245,158,11,0.03); color: var(--text); font-weight: 500;
+    }
+    .comparison-table tbody tr:last-child td { border-bottom: none; }
+    .comparison-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+    .comparison-table tbody tr:hover td.highlight { background: rgba(245,158,11,0.055); }
+    .check   { color: var(--ok); font-size: 15px; }
+    .cross   { color: var(--danger); font-size: 15px; }
+    .partial { color: var(--accent); font-size: 13px; }
+    .th-badge {
+      display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+    }
+    .th-badge .crown {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; background: rgba(245,158,11,0.15);
+      border-radius: 4px; font-size: 10px;
+    }
+
+    /* ── Contribute ────────────────────────────────────────── */
+    .contribute-section { padding: 72px 0; }
+    .contribute-inner {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 56px 48px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .contribute-inner::before {
+      content: ''; position: absolute; top: -60px; left: 50%;
+      transform: translateX(-50%); width: 700px; height: 350px;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.09) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .contribute-inner::after {
+      content: ''; position: absolute; inset: 0; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .contribute-title { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; margin-bottom: 12px; position: relative; z-index: 1; }
+    .contribute-title .accent { color: var(--accent); }
+    .contribute-lead { font-size: 14px; color: var(--muted); max-width: 460px; margin: 0 auto 36px; line-height: 1.7; position: relative; z-index: 1; }
+    .contribute-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; position: relative; z-index: 1; }
+    .contribute-stats { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .cstat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .cstat-val { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; color: var(--accent); }
+    .cstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ── FAQ ───────────────────────────────────────────────── */
+    .faq-section { padding: 72px 0 80px; }
+    .faq-list { display: flex; flex-direction: column; gap: 6px; max-width: 760px; }
+    .faq-item {
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; background: var(--card);
+      transition: border-color 0.2s;
+    }
+    .faq-item:hover { border-color: rgba(245,158,11,0.22); }
+    .faq-question {
+      width: 100%; background: none; border: none; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 16px 20px; text-align: left; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      transition: color 0.2s;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-chevron { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.3s, color 0.2s; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--accent); }
+    .faq-answer {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.38s ease, padding 0.38s ease;
+      padding: 0 20px; font-size: 13px; color: var(--muted); line-height: 1.7;
+    }
+    .faq-item.open .faq-answer { max-height: 220px; padding: 0 20px 18px; }
+
+    /* ── Footer ────────────────────────────────────────────── */
+    .footer { border-top: 1px solid var(--border); padding: 28px 32px; text-align: center; }
+    .footer-brand {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-bottom: 6px;
+    }
+    .footer-brand img { width: 20px; height: 20px; border-radius: 5px; }
+    .footer-brand span { font-weight: 600; color: var(--accent); font-size: 13px; }
+    .footer-text { font-size: 12px; color: var(--muted); }
+    .footer-text a { color: var(--muted); transition: color 0.2s; }
+    .footer-text a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Loading screen ───────────────────────────────────── */
+    .loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #050505;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 28px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-logo {
+      width: 72px; height: 72px; border-radius: 20px;
+      box-shadow: 0 0 0 1px rgba(245,158,11,0.25), 0 0 50px rgba(245,158,11,0.25);
+      animation: loaderPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes loaderPulse {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(245,158,11,0.25), 0 0 30px rgba(245,158,11,0.15); }
+      50%       { box-shadow: 0 0 0 1px rgba(245,158,11,0.45), 0 0 60px rgba(245,158,11,0.35); }
+    }
+    .loader-name {
+      font-size: 18px; font-weight: 600; letter-spacing: -0.4px; color: var(--text);
+    }
+    .loader-name .accent { color: var(--accent); }
+    .loader-bar-track {
+      width: 140px; height: 2px;
+      background: rgba(255,255,255,0.07); border-radius: 999px; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%; border-radius: 999px;
+      background: linear-gradient(90deg, #f59e0b, #fcd34d);
+      box-shadow: 0 0 8px rgba(245,158,11,0.6);
+      transition: width 0.4s ease;
+    }
+    .loader-hint {
+      font-size: 11px; color: var(--muted); letter-spacing: 0.08em;
+      text-transform: uppercase; opacity: 0.5;
+    }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .mock-sidebar { display: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .topnav { padding: 12px 20px; }
+      .topnav .nav-links { display: none; }
+      .hero { padding: 72px 20px 72px; }
+      .hero-title { font-size: 46px; letter-spacing: -2px; }
+      .hero-subtitle { font-size: 15px; }
+      .trust-row { gap: 10px; }
+      .container { padding: 0 20px; }
+      .features-section { padding: 48px 0 0; }
+      .privacy-inner { grid-template-columns: 1fr; gap: 32px; }
+      .contribute-inner { padding: 36px 24px; }
+      .contribute-stats { gap: 20px; }
+      .steps-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">
-  <div class="loading-container">
-    <div class="loading-logo-wrapper">
-      <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="loading-logo">
-      <div class="loading-spinner-ring"></div>
+  <!-- ── Loading screen ──────────────────────────────────── -->
+  <div class="loader" id="loader">
+    <img src="images/saldomais-icon.png" alt="SaldoMais" class="loader-logo" />
+    <div class="loader-name">Saldo<span class="accent">Mais</span></div>
+    <div class="loader-bar-track">
+      <div class="loader-bar-fill" id="loaderBar"></div>
     </div>
-    <p class="loading-text">Carregando<span class="loading-dots"></span></p>
-  </div>
-</div>
-
-<div id="notificationToast" class="notification-toast"></div>
-
-<div id="confirmModal" class="confirm-modal">
-  <div class="confirm-container">
-    <p id="confirmMessage"></p>
-    <div class="confirm-btn-row">
-      <button id="confirmYes">Confirmar</button>
-      <button id="confirmNo">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div id="editarCategoriaModal" class="confirm-modal">
-  <div class="confirm-container">
-    <h3 id="editarCategoriaTitulo">Editar Nome da Categoria</h3>
-    <input
-      id="editarCategoriaInput"
-      type="text"
-      placeholder="Digite o novo nome"
-    >
-    <div class="confirm-btn-row">
-      <button id="editarCategoriaConfirm"><i data-lucide="check" size="18"></i> Atualizar</button>
-      <button id="editarCategoriaCancel"><i data-lucide="x" size="18"></i> Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="app">
-
-  <!-- Barra superior mobile -->
-  <div class="mobile-header">
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu">
-      <i data-lucide="menu"></i>
-    </button>
-    <div class="mobile-logo">
-      <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="mobile-logo-img">
-      <span class="mobile-logo-brand">SaldoMais</span>
-    </div>
+    <span class="loader-hint">Carregando…</span>
   </div>
 
-  <!-- Overlay que fecha o menu ao clicar fora -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="scroll-progress" id="scrollProgress"></div>
 
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-container" id="logoBtnSidebar">
-        <div class="logo-icon">
-          <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" class="logo-img">
-        </div>
-        <div class="logo-text">
-          <span class="logo-brand">SaldoMais</span>
-          <span class="logo-tagline">Gastos claros, decisões inteligentes.</span>
-        </div>
-      </div>
-      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Recolher menu (Alt+B)">
-        <i data-lucide="chevrons-left"></i>
-      </button>
-    </div>
-
-    <nav class="sidebar-nav">
-      <button data-screen="dashboard" class="nav-btn active" title="Visão geral do seu orçamento (Alt+1)">
-        <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
-        <span class="nav-label">Dashboard</span>
-        <kbd class="nav-shortcut">Alt+1</kbd>
-      </button>
-      <button data-screen="lancamentos" class="nav-btn" title="Adicionar despesas (Alt+2)">
-        <span class="nav-icon"><i data-lucide="circle-dollar-sign"></i></span>
-        <span class="nav-label">Lançamentos</span>
-        <kbd class="nav-shortcut">Alt+2</kbd>
-      </button>
-      <button data-screen="categorias" class="nav-btn" title="Personalizar categorias (Alt+3)">
-        <span class="nav-icon"><i data-lucide="tags"></i></span>
-        <span class="nav-label">Categorias</span>
-        <kbd class="nav-shortcut">Alt+3</kbd>
-      </button>
-      <button data-screen="calculadoras" class="nav-btn" title="Ferramentas de cálculo financeiro (Alt+4)">
-        <span class="nav-icon"><i data-lucide="calculator"></i></span>
-        <span class="nav-label">Calculadoras</span>
-        <kbd class="nav-shortcut">Alt+4</kbd>
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <a href="docs/index.html" class="nav-btn" title="Documentação técnica">
-        <span class="nav-icon"><i data-lucide="book-open"></i></span>
-        <span class="nav-label">Documentação</span>
-      </a>
-      <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="nav-btn" title="Contribua com o SaldoMais no GitHub">
-        <span class="nav-icon"><i data-lucide="git-branch"></i></span>
-        <span class="nav-label">Contribua</span>
+  <!-- ── Nav ─────────────────────────────────────────────── -->
+  <nav class="topnav" id="topnav">
+    <a href="index.html" class="brand">
+      <img src="images/saldomais-icon.png" alt="SaldoMais" />
+      Saldo<span class="accent">Mais</span>
+    </a>
+    <div class="spacer"></div>
+    <div class="nav-links">
+      <a href="docs/index.html">Documentação</a>
+      <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer">
+        GitHub
+        <span class="nav-badge">v1.0 · Novidades</span>
       </a>
     </div>
-  </aside>
+    <a href="webapp.html" class="btn-app">
+      <i data-lucide="arrow-right"></i>
+      Abrir App
+    </a>
+  </nav>
 
-  <main class="content">
+  <!-- ── Hero ────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-orb"></div>
+    <div class="hero-grid"></div>
 
-    <!-- DASHBOARD -->
-    <section id="dashboard" class="screen active">
-      <div class="dashboard-header">
-        <h2>Dashboard - Seu Orçamento</h2>
-        <p class="dashboard-subtitle" id="mesAtualText"></p>
-      </div>
+    <!-- Ambient floating numbers -->
+    <div class="hero-float" style="top:18%;left:7%;animation-duration:16s;animation-delay:0s">R$ 1.249</div>
+    <div class="hero-float" style="top:28%;left:83%;animation-duration:19s;animation-delay:-5s">−R$ 34,90</div>
+    <div class="hero-float" style="top:65%;left:8%;animation-duration:14s;animation-delay:-8s">+R$ 520</div>
+    <div class="hero-float" style="top:55%;left:79%;animation-duration:21s;animation-delay:-3s">68%</div>
+    <div class="hero-float" style="top:78%;left:48%;animation-duration:18s;animation-delay:-11s">R$ 3.000</div>
+    <div class="hero-float" style="top:40%;left:3%;animation-duration:23s;animation-delay:-7s">−R$ 89</div>
+    <div class="hero-float" style="top:82%;left:88%;animation-duration:17s;animation-delay:-2s">92%</div>
 
-      <div class="dashboard-setup">
-        <div class="input-group">
-          <label for="orcamentoInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="wallet" size="16"></i> Orçamento do Mês</label>
-          <input id="orcamentoInput" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
-          <div class="input-helper">Digite o valor total disponível para este mês</div>
-        </div>
-        <div class="button-group">
-          <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
-          <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
-        </div>
-        <button id="btnExportPdf" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
-        <div class="btn-backup-group">
-          <button id="btnExportBackup" class="btn-backup" title="Exportar todos os dados como JSON">
-            <i data-lucide="download" size="14"></i> Exportar Backup
-          </button>
-          <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
-            <i data-lucide="upload" size="14"></i> Importar Backup
-            <input type="file" id="inputImportBackup" accept=".json" style="display:none">
-          </label>
-        </div>
-      </div>
+    <img src="images/saldomais-icon.png" alt="SaldoMais" class="hero-logo" />
 
-      <div id="resumoGeral" class="resumo-geral"></div>
+    <p class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      Controle financeiro pessoal
+    </p>
 
-      <div class="dashboard-content">
-        <div class="chart-container">
-          <h3>Distribuição de Gastos</h3>
-          <div style="width: 100%; flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
-            <canvas id="grafico"></canvas>
+    <h1 class="hero-title">Saldo<span class="accent">Mais</span></h1>
+
+    <p class="hero-subtitle">
+      <span id="typedText"></span><span class="type-cursor">|</span>
+    </p>
+
+    <div class="trust-row">
+      <span class="trust-item"><i data-lucide="shield-check"></i> Zero dados enviados</span>
+      <span class="trust-sep">·</span>
+      <span class="trust-item"><i data-lucide="wifi-off"></i> Offline-first*</span>
+      <span class="trust-sep">·</span>
+      <span class="trust-item"><i data-lucide="code-2"></i> 100% Open Source</span>
+    </div>
+
+    <div class="hero-cta">
+      <a href="webapp.html" class="btn-primary pulse">
+        <i data-lucide="layout-dashboard"></i>
+        Abrir o App
+      </a>
+      <a href="docs/index.html" class="btn-ghost">
+        <i data-lucide="book-open"></i>
+        Documentação
+      </a>
+      <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+        <i data-lucide="git-branch"></i>
+        GitHub
+      </a>
+    </div>
+
+    <div class="scroll-hint">
+      <i data-lucide="chevron-down"></i>
+    </div>
+  </section>
+
+
+  <!-- ── App Preview ──────────────────────────────────────── -->
+  <section class="preview-section">
+    <div class="container">
+      <div class="preview-wrapper reveal">
+        <div class="preview-glow"></div>
+        <div class="browser-frame" id="browserFrame">
+          <div class="browser-chrome">
+            <div class="browser-dots"><span></span><span></span><span></span></div>
+            <div class="browser-url">
+              <i data-lucide="lock"></i>
+              saldomais · dashboard
+            </div>
           </div>
-          <div id="grafico-legenda" class="grafico-legenda-custom"></div>
-        </div>
-        <div id="categoriasStatus" class="categorias-container"></div>
-      </div>
-    </section>
-
-    <!-- LANÇAMENTOS -->
-    <section id="lancamentos" class="screen">
-      <div class="dashboard-header">
-        <h2>Adicionar Despesa</h2>
-        <p class="dashboard-subtitle">Registre seus gastos por categoria</p>
-      </div>
-
-      <div class="lancamento-form">
-        <div class="input-group">
-          <label for="desc" style="display:flex;align-items:center;gap:8px;"><i data-lucide="file-text" size="16"></i> Descrição</label>
-          <input id="desc" placeholder="Ex: Mercado, Netflix, Gasolina..." autocomplete="off">
-        </div>
-
-        <div class="input-row">
-          <div class="input-group" style="flex:1;">
-            <label for="valorInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor</label>
-            <input id="valorInput" type="text" inputmode="decimal" placeholder="Ex: 150,50">
+          <div class="mock-app">
+            <nav class="mock-sidebar">
+              <div class="mock-logo">
+                <img src="images/saldomais-icon.png" alt="" />
+                <span>SaldoMais</span>
+              </div>
+              <div class="mock-nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</div>
+              <div class="mock-nav-item"><i data-lucide="circle-dollar-sign"></i> Lançamentos</div>
+              <div class="mock-nav-item"><i data-lucide="tags"></i> Categorias</div>
+              <div class="mock-nav-item"><i data-lucide="calculator"></i> Calculadoras</div>
+            </nav>
+            <main class="mock-main">
+              <div class="mock-header">
+                <div>
+                  <div class="mock-header-title">Dashboard — Seu Orçamento</div>
+                  <div class="mock-header-sub">Abril 2025</div>
+                </div>
+              </div>
+              <div class="mock-cards">
+                <div class="mock-card">
+                  <div class="mock-card-label">Orçamento</div>
+                  <div class="mock-card-value amber">R$ 5.000</div>
+                </div>
+                <div class="mock-card">
+                  <div class="mock-card-label">Gasto</div>
+                  <div class="mock-card-value red">R$ 3.240</div>
+                </div>
+                <div class="mock-card">
+                  <div class="mock-card-label">Disponível</div>
+                  <div class="mock-card-value green">R$ 1.760</div>
+                </div>
+              </div>
+              <div class="mock-row">
+                <div class="mock-chart-box">
+                  <div class="mock-chart-label">Distribuição</div>
+                  <div class="mock-donut" id="mockDonut"></div>
+                  <div class="mock-legend">
+                    <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#f59e0b"></span>Alimentação 36%</div>
+                    <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#22c55e"></span>Transporte 22%</div>
+                    <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#3b82f6"></span>Lazer 17%</div>
+                    <div class="mock-legend-item"><span class="mock-legend-dot" style="background:#a855f7"></span>Outros 25%</div>
+                  </div>
+                </div>
+                <div class="mock-cats-box">
+                  <div class="mock-cats-label">Status por Categoria</div>
+                  <div class="mock-cat-row">
+                    <span class="mock-cat-name">Alimentação</span>
+                    <div class="mock-cat-bar-bg"><div class="mock-cat-bar-fill" data-width="72%" style="background:#f59e0b"></div></div>
+                    <span class="mock-cat-pct">72%</span>
+                  </div>
+                  <div class="mock-cat-row">
+                    <span class="mock-cat-name">Transporte</span>
+                    <div class="mock-cat-bar-bg"><div class="mock-cat-bar-fill" data-width="55%" style="background:#22c55e"></div></div>
+                    <span class="mock-cat-pct">55%</span>
+                  </div>
+                  <div class="mock-cat-row">
+                    <span class="mock-cat-name">Lazer</span>
+                    <div class="mock-cat-bar-bg"><div class="mock-cat-bar-fill" data-width="90%" style="background:#ef4444"></div></div>
+                    <span class="mock-cat-pct">90%</span>
+                  </div>
+                  <div class="mock-cat-row">
+                    <span class="mock-cat-name">Saúde</span>
+                    <div class="mock-cat-bar-bg"><div class="mock-cat-bar-fill" data-width="30%" style="background:#3b82f6"></div></div>
+                    <span class="mock-cat-pct">30%</span>
+                  </div>
+                  <div class="mock-cat-row">
+                    <span class="mock-cat-name">Educação</span>
+                    <div class="mock-cat-bar-bg"><div class="mock-cat-bar-fill" data-width="45%" style="background:#a855f7"></div></div>
+                    <span class="mock-cat-pct">45%</span>
+                  </div>
+                </div>
+              </div>
+            </main>
           </div>
-          <div class="input-group" style="flex:1;">
-            <label for="categoriaSelect" style="display:flex;align-items:center;gap:8px;"><i data-lucide="tag" size="16"></i> Categoria</label>
-            <select id="categoriaSelect"></select>
-          </div>
-        </div>
-
-        <button id="addLancamento" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="plus-circle" size="18"></i> Adicionar Despesa</button>
-      </div>
-
-      <div class="lancamentos-section">
-        <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Despesas do Mês</h3>
-        <div id="listaLancamentos" class="lista-lancamentos"></div>
-      </div>
-    </section>
-
-    <!-- CATEGORIAS -->
-    <section id="categorias" class="screen">
-      <div class="dashboard-header">
-        <h2>Minhas Categorias</h2>
-        <p class="dashboard-subtitle">Crie, edite ou remova suas categorias</p>
-      </div>
-      
-      <div class="categorias-manager">
-        <div class="nova-categoria-form">
-          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="plus" size="18"></i> Adicionar Nova Categoria</h4>
-          <div class="form-nova-cat">
-            <input id="novaCategoriaNome" type="text" placeholder="Nome da Categoria" maxlength="30" class="cat-input-nome">
-            <input id="novaCategoriaCor" type="color" value="#f59e0b" class="cat-input-cor" title="Selecione uma cor">
-            <button id="btnAdicionarCategoria" class="btn-adicionar-cat">Adicionar</button>
-          </div>
-        </div>
-
-        <div class="categorias-lista-editor">
-          <h4 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list" size="18"></i> Categorias Existentes</h4>
-          <div id="categoriasListaEditor" class="categorias-lista"></div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- CONFIG -->
-    <section id="configuracoes" class="screen">
-      <div class="dashboard-header">
-        <h2>Configurações</h2>
-        <p class="dashboard-subtitle">Ajuste os percentuais do seu orçamento</p>
-      </div>
-      <div id="listaCategorias" class="lista-categorias"></div>
-    </section>
+  <hr class="divider" />
 
-    <!-- CALCULADORAS -->
-    <section id="calculadoras" class="screen">
-      <div class="dashboard-header">
-        <h2>Calculadoras</h2>
-        <p class="dashboard-subtitle">Ferramentas para simular investimentos e analisar dívidas</p>
-      </div>
+  <!-- ── Features ────────────────────────────────────────── -->
+  <section class="features-section">
+    <div class="container">
+      <p class="section-eyebrow reveal">Funcionalidades</p>
+      <h2 class="section-heading reveal reveal-delay-1">Tudo que você precisa</h2>
+      <p class="section-sub reveal reveal-delay-2">Simples, rápido e privado. Seus dados ficam no seu dispositivo.</p>
 
-      <!-- Seção Investimentos -->
-      <div class="calc-section">
-        <div class="calc-section-header">
-          <span class="calc-section-icon"><i data-lucide="trending-up"></i></span>
-          <h3>Investimentos</h3>
+      <div class="features-grid">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon"><i data-lucide="layout-dashboard"></i></div>
+          <div class="feature-title">Dashboard</div>
+          <p class="feature-desc">Visão geral do orçamento com gráficos, status por categoria e resumo financeiro do mês.</p>
         </div>
-        <div class="calc-grid">
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon"><i data-lucide="circle-dollar-sign"></i></div>
+          <div class="feature-title">Lançamentos</div>
+          <p class="feature-desc">Registre despesas por categoria com descrição e valor. Histórico completo do mês atual.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon"><i data-lucide="tags"></i></div>
+          <div class="feature-title">Categorias</div>
+          <p class="feature-desc">Crie categorias personalizadas com cores e percentuais do orçamento mensal.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-4">
+          <div class="feature-icon"><i data-lucide="calculator"></i></div>
+          <div class="feature-title">Calculadoras</div>
+          <p class="feature-desc">8 ferramentas financeiras: juros compostos, CDB/CDI, financiamento, dividendos e mais.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-5">
+          <div class="feature-icon"><i data-lucide="file-down"></i></div>
+          <div class="feature-title">Exportação PDF</div>
+          <p class="feature-desc">Gere relatórios mensais em PDF diretamente no navegador, sem precisar de servidor.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-6">
+          <div class="feature-icon"><i data-lucide="hard-drive"></i></div>
+          <div class="feature-title">Backup Local</div>
+          <p class="feature-desc">Exporte e importe seus dados como JSON. Privacidade total — nada sai do dispositivo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-          <!-- Juros Compostos -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="percent"></i></span>
-              <div>
-                <h4 class="calc-card-title">Juros Compostos</h4>
-                <p class="calc-card-desc">Simule a evolução de um investimento com aportes mensais opcionais.</p>
+  <hr class="divider" style="margin-top: 72px;" />
+
+  <!-- ── Como funciona ────────────────────────────────────── -->
+  <section class="howto-section">
+    <div class="container">
+      <p class="section-eyebrow reveal">Como funciona</p>
+      <h2 class="section-heading reveal reveal-delay-1">Simples desde o primeiro uso</h2>
+      <p class="section-sub reveal reveal-delay-2">Sem instalação, sem burocracia, sem conta.</p>
+
+      <div class="steps-grid">
+        <div class="step-card reveal reveal-delay-1">
+          <div class="step-num">01</div>
+          <div class="step-icon-wrap"><i data-lucide="mouse-pointer-2"></i></div>
+          <h3 class="step-title">Abra no navegador</h3>
+          <p class="step-desc">Sem download, sem instalação. Funciona em qualquer browser moderno, no desktop ou mobile. Clicou, abriu.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-2">
+          <div class="step-num">02</div>
+          <div class="step-icon-wrap"><i data-lucide="sliders-horizontal"></i></div>
+          <h3 class="step-title">Configure seu orçamento</h3>
+          <p class="step-desc">Defina seu orçamento mensal e crie categorias personalizadas com limites percentuais e cores.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-3">
+          <div class="step-num">03</div>
+          <div class="step-icon-wrap"><i data-lucide="trending-up"></i></div>
+          <h3 class="step-title">Controle seus gastos</h3>
+          <p class="step-desc">Registre lançamentos, acompanhe o dashboard e tome decisões financeiras mais inteligentes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Privacy ──────────────────────────────────────────── -->
+  <section class="privacy-section">
+    <div class="container">
+      <hr class="divider" style="margin-bottom: 80px;" />
+      <div class="privacy-inner">
+        <div class="privacy-text reveal">
+          <p class="section-eyebrow">Privacidade</p>
+          <h2 class="privacy-title">Seus dados,<br /><span class="accent">sua privacidade.</span></h2>
+          <p class="privacy-lead">A maioria dos apps financeiros vive de vender seus dados ou te cobrar por planos mensais. O SaldoMais funciona de forma completamente diferente.</p>
+          <div class="privacy-pillars">
+            <div class="pillar">
+              <div class="pillar-icon green"><i data-lucide="server-off"></i></div>
+              <div class="pillar-body">
+                <div class="pillar-title">Sem servidor</div>
+                <div class="pillar-desc">Nenhuma requisição para servidores externos. O app roda 100% no seu navegador.</div>
               </div>
             </div>
-            <div class="input-group">
-              <label for="jc-capital">Capital Inicial (R$)</label>
-              <input type="text" inputmode="decimal" id="jc-capital" class="input-moeda" placeholder="Ex: 1.000,00">
-            </div>
-            <div class="input-group">
-              <label for="jc-aporte">Aporte Mensal (R$)</label>
-              <input type="text" inputmode="decimal" id="jc-aporte" class="input-moeda" placeholder="Ex: 200,00 (opcional)">
-            </div>
-            <div class="input-group">
-              <label for="jc-taxa">Taxa de Juros Anual (%)</label>
-              <input type="text" inputmode="decimal" id="jc-taxa" placeholder="Ex: 12,00">
-            </div>
-            <div class="input-group">
-              <label for="jc-periodo">Período (meses)</label>
-              <input type="number" id="jc-periodo" placeholder="Ex: 12" min="1" max="600">
-            </div>
-            <button onclick="calcularJurosCompostos()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="jc-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="jc-cards"></div>
-              <div class="calc-table-wrapper">
-                <table class="calc-table" id="jc-tabela"></table>
+            <div class="pillar">
+              <div class="pillar-icon green"><i data-lucide="user-x"></i></div>
+              <div class="pillar-body">
+                <div class="pillar-title">Sem cadastro</div>
+                <div class="pillar-desc">Não pedimos e-mail, senha ou qualquer informação pessoal. Abriu, usou.</div>
               </div>
             </div>
-          </div>
-
-          <!-- Simulador CDB / CDI -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="landmark"></i></span>
-              <div>
-                <h4 class="calc-card-title">Simulador CDB / CDI</h4>
-                <p class="calc-card-desc">Calcule o rendimento líquido de um CDB com base no % do CDI.</p>
+            <div class="pillar">
+              <div class="pillar-icon amber"><i data-lucide="lock"></i></div>
+              <div class="pillar-body">
+                <div class="pillar-title">Dados no seu dispositivo</div>
+                <div class="pillar-desc">Tudo salvo no localStorage do navegador. Só você tem acesso.</div>
               </div>
             </div>
-            <div class="input-group">
-              <label for="cdi-valor">Valor Investido (R$)</label>
-              <input type="text" inputmode="decimal" id="cdi-valor" class="input-moeda" placeholder="Ex: 5.000,00">
-            </div>
-            <div class="input-group">
-              <label for="cdi-taxa">CDI Atual (% a.a.)</label>
-              <input type="text" inputmode="decimal" id="cdi-taxa" placeholder="Ex: 10,50">
-            </div>
-            <div class="input-group">
-              <label for="cdi-percentual">% do CDI do CDB</label>
-              <input type="text" inputmode="decimal" id="cdi-percentual" placeholder="Ex: 110">
-            </div>
-            <div class="input-group">
-              <label for="cdi-prazo">Prazo (dias corridos)</label>
-              <input type="number" id="cdi-prazo" placeholder="Ex: 365" min="1">
-            </div>
-            <button onclick="calcularCDBCDI()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="cdi-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="cdi-cards"></div>
-              <div id="cdi-ir-info"></div>
-            </div>
-          </div>
-
-          <!-- Aporte para Meta -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="target"></i></span>
-              <div>
-                <h4 class="calc-card-title">Aporte para Meta</h4>
-                <p class="calc-card-desc">Descubra quanto você precisa aportar por mês para atingir um objetivo.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="meta-valor">Valor da Meta (R$)</label>
-              <input type="text" inputmode="decimal" id="meta-valor" class="input-moeda" placeholder="Ex: 50.000,00">
-            </div>
-            <div class="input-group">
-              <label for="meta-prazo">Prazo (meses)</label>
-              <input type="number" id="meta-prazo" placeholder="Ex: 36" min="1">
-            </div>
-            <div class="input-group">
-              <label for="meta-taxa">Taxa Mensal Estimada (%)</label>
-              <input type="text" inputmode="decimal" id="meta-taxa" placeholder="Ex: 1,00">
-            </div>
-            <button onclick="calcularAporteMeta()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="meta-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="meta-cards"></div>
-            </div>
-          </div>
-
-          <!-- Renda de Dividendos -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="coins"></i></span>
-              <div>
-                <h4 class="calc-card-title">Renda de Dividendos</h4>
-                <p class="calc-card-desc">Estime a renda passiva mensal gerada por um patrimônio investido.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="dy-patrimonio">Patrimônio Investido (R$)</label>
-              <input type="text" inputmode="decimal" id="dy-patrimonio" class="input-moeda" placeholder="Ex: 100.000,00">
-            </div>
-            <div class="input-group">
-              <label for="dy-yield">Dividend Yield Anual (%)</label>
-              <input type="text" inputmode="decimal" id="dy-yield" placeholder="Ex: 8,00">
-            </div>
-            <button onclick="calcularDividendYield()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="dy-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="dy-cards"></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Seção Consumo & Dívidas -->
-      <div class="calc-section">
-        <div class="calc-section-header">
-          <span class="calc-section-icon calc-section-icon-warn"><i data-lucide="credit-card"></i></span>
-          <h3>Consumo &amp; Dívidas</h3>
-        </div>
-        <div class="calc-grid">
-
-          <!-- Financiamento Price -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="home"></i></span>
-              <div>
-                <h4 class="calc-card-title">Simulador de Financiamento (Tabela Price)</h4>
-                <p class="calc-card-desc">Calcule o valor das parcelas e o custo total de um financiamento.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="price-valor">Valor Financiado (R$)</label>
-              <input type="text" inputmode="decimal" id="price-valor" class="input-moeda" placeholder="Ex: 30.000,00">
-            </div>
-            <div class="input-group">
-              <label for="price-taxa">Taxa de Juros Mensal (%)</label>
-              <input type="text" inputmode="decimal" id="price-taxa" placeholder="Ex: 1,50">
-            </div>
-            <div class="input-group">
-              <label for="price-parcelas">Número de Parcelas</label>
-              <input type="number" id="price-parcelas" placeholder="Ex: 48" min="1" max="480">
-            </div>
-            <button onclick="calcularFinanciamentoPrice()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="price-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="price-cards"></div>
-              <div class="calc-table-wrapper">
-                <table class="calc-table" id="price-tabela"></table>
+            <div class="pillar">
+              <div class="pillar-icon amber"><i data-lucide="eye-off"></i></div>
+              <div class="pillar-body">
+                <div class="pillar-title">Zero rastreamento</div>
+                <div class="pillar-desc">Sem analytics, sem cookies de terceiros, sem pixels de rastreamento.</div>
               </div>
             </div>
           </div>
-
-          <!-- Rotativo do Cartão de Crédito -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="alert-triangle"></i></span>
-              <div>
-                <h4 class="calc-card-title">Rotativo do Cartão de Crédito</h4>
-                <p class="calc-card-desc">Veja o custo real de pagar apenas o mínimo do cartão de crédito.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="rot-divida">Dívida Atual (R$)</label>
-              <input type="text" inputmode="decimal" id="rot-divida" class="input-moeda" placeholder="Ex: 2.000,00">
-            </div>
-            <div class="input-group">
-              <label for="rot-taxa">Taxa de Juros Mensal (%)</label>
-              <input type="text" inputmode="decimal" id="rot-taxa" placeholder="Ex: 15,00">
-            </div>
-            <div class="input-group">
-              <label for="rot-minimo">Pagamento Mensal (R$)</label>
-              <input type="text" inputmode="decimal" id="rot-minimo" class="input-moeda" placeholder="Ex: 100,00">
-            </div>
-            <button onclick="calcularRotativoCartao()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="rot-resultado" class="calc-result" style="display:none;">
-              <div id="rot-alerta"></div>
-              <div class="calc-result-cards" id="rot-cards"></div>
-              <div class="calc-table-wrapper">
-                <table class="calc-table" id="rot-tabela"></table>
-              </div>
-            </div>
+        </div>
+        <div class="privacy-visual reveal reveal-delay-2">
+          <div class="privacy-stat" id="statBytes">
+            <div class="privacy-stat-num" id="statBytesNum">0</div>
+            <div class="privacy-stat-label">bytes enviados para servidores externos.<br />Seus dados ficam só com você.</div>
           </div>
-
-          <!-- Vale a Pena Quitar a Dívida? -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="hand-coins"></i></span>
-              <div>
-                <h4 class="calc-card-title">Vale a Pena Quitar a Dívida?</h4>
-                <p class="calc-card-desc">Compare se é melhor quitar sua dívida antecipadamente (com desconto) ou manter o dinheiro investido pelo mesmo período.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="qd-saldo">Saldo Devedor Atual (R$)</label>
-              <input type="text" inputmode="decimal" id="qd-saldo" class="input-moeda" placeholder="Ex: 5.000,00">
-            </div>
-            <div class="input-group">
-              <label for="qd-taxa-divida">Taxa de Juros Mensal da Dívida (%)</label>
-              <input type="text" inputmode="decimal" id="qd-taxa-divida" placeholder="Ex: 8,00">
-            </div>
-            <div class="input-group">
-              <label for="qd-parcelas">Parcelas Restantes</label>
-              <input type="number" id="qd-parcelas" placeholder="Ex: 12" min="1">
-            </div>
-            <div class="input-group">
-              <label for="qd-desconto">Desconto para Quitação Antecipada (%)</label>
-              <input type="text" inputmode="decimal" id="qd-desconto" placeholder="Ex: 30,00">
-              <div class="input-helper">Verifique na sua instituição financeira (ex: Nubank)</div>
-            </div>
-            <div class="input-group">
-              <label for="qd-disponivel">Valor Disponível para Quitar (R$)</label>
-              <input type="text" inputmode="decimal" id="qd-disponivel" class="input-moeda" placeholder="Ex: 3.000,00">
-            </div>
-            <div class="input-group">
-              <label for="qd-taxa-invest">Taxa Mensal do Seu Investimento (%)</label>
-              <input type="text" inputmode="decimal" id="qd-taxa-invest" placeholder="Ex: 1,00">
-            </div>
-            <button onclick="calcularQuitarDivida()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="qd-resultado" class="calc-result" style="display:none;">
-              <div class="calc-result-cards" id="qd-cards"></div>
-              <div id="qd-cenario"></div>
-              <div id="qd-recomendacao"></div>
-            </div>
+          <div class="privacy-stat amber" id="statPercent">
+            <div class="privacy-stat-num" id="statPercentNum">100%</div>
+            <div class="privacy-stat-label">client-side. Sem nuvem, sem servidor. Offline quando clonado localmente.</div>
           </div>
-
-          <!-- À Vista vs Parcelado -->
-          <div class="calc-card">
-            <div class="calc-card-header">
-              <span class="calc-card-icon"><i data-lucide="scale"></i></span>
-              <div>
-                <h4 class="calc-card-title">À Vista vs Parcelado</h4>
-                <p class="calc-card-desc">Compare se vale a pena pagar à vista ou parcelar considerando seu rendimento.</p>
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="avp-vista">Preço à Vista (R$)</label>
-              <input type="text" inputmode="decimal" id="avp-vista" class="input-moeda" placeholder="Ex: 900,00">
-            </div>
-            <div class="input-group">
-              <label for="avp-parcelas-valor">Valor de Cada Parcela (R$)</label>
-              <input type="text" inputmode="decimal" id="avp-parcelas-valor" class="input-moeda" placeholder="Ex: 100,00">
-            </div>
-            <div class="input-group">
-              <label for="avp-n-parcelas">Número de Parcelas</label>
-              <input type="number" id="avp-n-parcelas" placeholder="Ex: 10" min="2">
-            </div>
-            <div class="input-group">
-              <label for="avp-rendimento">Taxa Mensal do Seu Investimento (%)</label>
-              <input type="text" inputmode="decimal" id="avp-rendimento" placeholder="Ex: 1,00">
-            </div>
-            <button onclick="calcularAVistaVsParcelado()" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;"><i data-lucide="calculator" size="18"></i> Calcular</button>
-            <div id="avp-resultado" class="calc-result" style="display:none;">
-              <div id="avp-conclusao"></div>
-            </div>
+          <div class="privacy-stat" id="statPrice">
+            <div class="privacy-stat-num" id="statPriceNum">R$0</div>
+            <div class="privacy-stat-label">de assinatura, para sempre. Gratuito e open source.</div>
           </div>
-
         </div>
       </div>
+    </div>
+  </section>
 
-    </section>
+  <hr class="divider" />
 
-    <footer class="screen-footer">
-      <p>Feito com ❤️ sob o sol escaldante de Salvador</p>
-      <p>Feito por <a href="https://www.linkedin.com/in/mat7heus/" target="_blank" rel="noopener noreferrer" class="screen-footer-link">Matheus</a></p>
-    </footer>
+  <!-- ── Comparison ───────────────────────────────────────── -->
+  <section class="comparison-section">
+    <div class="container">
+      <p class="section-eyebrow reveal">Comparativo</p>
+      <h2 class="section-heading reveal reveal-delay-1">SaldoMais vs. apps tradicionais</h2>
+      <p class="section-sub reveal reveal-delay-2">Veja por que a simplicidade e a privacidade fazem toda a diferença.</p>
 
-  </main>
+      <div class="comparison-table-wrap reveal reveal-delay-3">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Recurso</th>
+              <th class="highlight">
+                <span class="th-badge">
+                  <span class="crown">★</span>
+                  SaldoMais
+                </span>
+              </th>
+              <th>Apps Tradicionais</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Anúncios</td>
+              <td class="highlight"><span class="check">✓</span> Nenhum</td>
+              <td><span class="cross">✗</span> Frequentes</td>
+            </tr>
+            <tr>
+              <td>Assinatura mensal</td>
+              <td class="highlight"><span class="check">✓</span> Gratuito</td>
+              <td><span class="cross">✗</span> R$15–60/mês</td>
+            </tr>
+            <tr>
+              <td>Cadastro necessário</td>
+              <td class="highlight"><span class="check">✓</span> Não precisa</td>
+              <td><span class="cross">✗</span> Obrigatório</td>
+            </tr>
+            <tr>
+              <td>Dados enviados ao servidor</td>
+              <td class="highlight"><span class="check">✓</span> Zero bytes</td>
+              <td><span class="cross">✗</span> Tudo</td>
+            </tr>
+            <tr>
+              <td>Funciona offline</td>
+              <td class="highlight"><span class="check">✓</span> Se clonado*</td>
+              <td><span class="partial">~ Parcial</span></td>
+            </tr>
+            <tr>
+              <td>Open Source</td>
+              <td class="highlight"><span class="check">✓</span> GPL v3</td>
+              <td><span class="cross">✗</span> Código fechado</td>
+            </tr>
+            <tr>
+              <td>Rastreamento / Analytics</td>
+              <td class="highlight"><span class="check">✓</span> Nenhum</td>
+              <td><span class="cross">✗</span> Extensivo</td>
+            </tr>
+            <tr>
+              <td>Calculadoras financeiras</td>
+              <td class="highlight"><span class="check">✓</span> 8 integradas</td>
+              <td><span class="partial">~ Poucas ou pagas</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:12px;">* Funciona offline apenas quando o repositório é clonado e aberto localmente. Via URL hospedada requer conexão para carregar.</p>
+    </div>
+  </section>
 
-</div>
+  <hr class="divider" />
+
+  <!-- ── Contribute ───────────────────────────────────────── -->
+  <section class="contribute-section">
+    <div class="container">
+      <div class="contribute-inner reveal">
+        <p class="section-eyebrow">Open Source</p>
+        <h2 class="contribute-title">Construído pela<br /><span class="accent">comunidade</span></h2>
+        <p class="contribute-lead">O SaldoMais é open source e vive de contribuições. Seja reportando um bug, sugerindo uma funcionalidade ou abrindo um PR — toda ajuda é bem-vinda.</p>
+        <div class="contribute-actions">
+          <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            <i data-lucide="star"></i>
+            Dar uma estrela
+          </a>
+          <a href="https://github.com/mat7heus/SaldoMais/fork" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+            <i data-lucide="git-fork"></i>
+            Fork
+          </a>
+          <a href="https://github.com/mat7heus/SaldoMais/issues" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+            <i data-lucide="message-circle"></i>
+            Abrir issue
+          </a>
+        </div>
+        <div class="contribute-stats">
+          <div class="cstat"><span class="cstat-val">GPL v3</span><span class="cstat-label">Licença</span></div>
+          <div class="cstat"><span class="cstat-val">8</span><span class="cstat-label">Módulos JS</span></div>
+          <div class="cstat"><span class="cstat-val">0</span><span class="cstat-label">Dependências</span></div>
+          <div class="cstat"><span class="cstat-val">100%</span><span class="cstat-label">Client-side</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── FAQ ──────────────────────────────────────────────── -->
+  <section class="faq-section">
+    <div class="container">
+      <p class="section-eyebrow reveal">FAQ</p>
+      <h2 class="section-heading reveal reveal-delay-1">Perguntas frequentes</h2>
+      <p class="section-sub reveal reveal-delay-2">Tudo que você precisa saber antes de começar.</p>
+
+      <div class="faq-list reveal reveal-delay-3">
+        <div class="faq-item">
+          <button class="faq-question">Meus dados são seguros?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Sim. Todos os seus dados ficam armazenados exclusivamente no localStorage do seu próprio navegador. Nenhuma informação é enviada para servidores externos. Nem nós, nem terceiros, têm acesso ao que você registra.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">O app funciona sem internet?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Depende de como você acessa. <strong>Se clonar o repositório</strong> e abrir os arquivos diretamente no navegador, tudo funciona sem internet — nenhum dado é enviado externamente. <strong>Se acessar pela URL hospedada</strong>, é necessária conexão com a internet para carregar a página, pois o projeto usa CDN para fontes e ícones. Em ambos os casos, seus dados ficam 100% no localStorage do seu dispositivo.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Posso usar no celular?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Sim. O SaldoMais é responsivo e funciona bem em smartphones e tablets. Basta abrir o endereço no navegador do celular. Você também pode adicioná-lo à tela inicial como um atalho.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Preciso criar uma conta?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Não. Nunca pedimos e-mail, senha ou qualquer informação pessoal. Basta abrir o app e começar a usar. Sem cadastro, sem login, sem fricção.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Posso perder meus dados?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Os dados ficam no localStorage do navegador, então limpar os dados do site os apagaria. Para evitar isso, use o recurso de Exportar Backup (formato JSON) disponível no Dashboard. Você pode reimportar a qualquer momento.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">O SaldoMais é realmente gratuito?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Sim, 100% gratuito — sem plano free limitado, sem trial, sem propaganda. O projeto é open source (GPL v3) e não tem modelo de monetização. É uma ferramenta feita para ser útil, simples assim.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Como faço backup dos meus dados?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">No Dashboard, clique em "Exportar Backup". Um arquivo .json será baixado com todos os seus dados. Para restaurar, clique em "Importar Backup" e selecione o arquivo. Simples e sem depender de nuvem.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Posso contribuir com o projeto?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Claro! O repositório está no GitHub e aceita contribuições. Você pode reportar bugs, sugerir funcionalidades, melhorar a documentação ou abrir pull requests. Veja o guia de contribuição na documentação técnica.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ───────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <img src="images/saldomais-icon.png" alt="SaldoMais" />
+      <span>SaldoMais</span>
+    </div>
+    <p class="footer-text">
+      Feito com ❤️ por <a href="https://www.linkedin.com/in/mat7heus/" target="_blank" rel="noopener noreferrer">Matheus</a>
+      &nbsp;·&nbsp; Licença GPL v3
+      &nbsp;·&nbsp; <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer">GitHub</a>
+      &nbsp;·&nbsp; <a href="docs/index.html">Documentação</a>
+    </p>
+  </footer>
+
+  <script>
+  /* ── Loading screen ─────────────────────────────────────── */
+  (function () {
+    const loader  = document.getElementById('loader');
+    const bar     = document.getElementById('loaderBar');
+    let prog = 0;
+
+    function setProgress(p) {
+      prog = Math.min(p, 100);
+      bar.style.width = prog + '%';
+    }
+
+    // Simulate fast ramp then hold at 80% until window.load
+    setProgress(20);
+    const ramp = setInterval(() => {
+      if (prog < 80) setProgress(prog + 8);
+      else clearInterval(ramp);
+    }, 80);
+
+    function finish() {
+      clearInterval(ramp);
+      setProgress(100);
+      setTimeout(() => loader.classList.add('hidden'), 340);
+    }
+
+    if (document.readyState === 'complete') {
+      finish();
+    } else {
+      window.addEventListener('load', finish);
+      // Safety timeout: never block the user more than 2.5s
+      setTimeout(finish, 2500);
+    }
+  })();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    /* ── Scroll progress ─────────────────────────────────── */
+    const progressBar = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.width = (scrolled / maxScroll * 100) + '%';
+      document.getElementById('topnav').classList.toggle('scrolled', scrolled > 20);
+    }, { passive: true });
+
+
+    /* ── Typewriter ──────────────────────────────────────── */
+    const phrases = [
+      'Gastos claros, decisões inteligentes.',
+      'Seu orçamento, no seu dispositivo.',
+      'Open source, gratuito, offline-first.',
+    ];
+    let pIdx = 0, cIdx = 0, deleting = false;
+    const typedEl = document.getElementById('typedText');
+    function typeStep() {
+      const phrase = phrases[pIdx];
+      if (deleting) {
+        typedEl.textContent = phrase.slice(0, --cIdx);
+        if (cIdx === 0) { deleting = false; pIdx = (pIdx + 1) % phrases.length; setTimeout(typeStep, 500); return; }
+        setTimeout(typeStep, 28);
+      } else {
+        typedEl.textContent = phrase.slice(0, ++cIdx);
+        if (cIdx === phrase.length) { deleting = true; setTimeout(typeStep, 2800); return; }
+        setTimeout(typeStep, 52);
+      }
+    }
+    typeStep();
+
+    /* ── Reveal (blur + fade + slide) ───────────────────── */
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+    /* ── Animated mockup bars & donut ───────────────────── */
+    const mockObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        // bars
+        e.target.querySelectorAll('.mock-cat-bar-fill').forEach((bar, i) => {
+          const w = bar.dataset.width;
+          setTimeout(() => {
+            bar.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
+            bar.style.width = w;
+          }, 350 + i * 130);
+        });
+        // donut pop
+        const donut = e.target.querySelector('.mock-donut');
+        if (donut) setTimeout(() => donut.classList.add('animated'), 200);
+        mockObs.unobserve(e.target);
+      });
+    }, { threshold: 0.35 });
+    const frame = document.getElementById('browserFrame');
+    if (frame) mockObs.observe(frame);
+
+    /* ── Privacy stats animation ─────────────────────────── */
+    let statsAnimated = false;
+    const statsObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting || statsAnimated) return;
+        statsAnimated = true;
+
+        // Count-down: 0 bytes (8192 → 0)
+        const bytesEl = document.getElementById('statBytesNum');
+        const start = 8192, dur = 900, t0 = performance.now();
+        (function animBytes(now) {
+          const p = Math.min((now - t0) / dur, 1);
+          const eased = Math.pow(1 - p, 2);
+          bytesEl.textContent = Math.round(start * eased);
+          if (p < 1) requestAnimationFrame(animBytes);
+        })(performance.now());
+
+        // Count-up: 0 → 100%
+        const pctEl = document.getElementById('statPercentNum');
+        const t1 = performance.now();
+        (function animPct(now) {
+          const p = Math.min((now - t1) / 1100, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          pctEl.textContent = Math.round(100 * eased) + '%';
+          if (p < 1) requestAnimationFrame(animPct);
+        })(performance.now());
+
+        // Spring pop: R$0
+        const priceEl = document.getElementById('statPriceNum');
+        priceEl.style.transform = 'scale(0.5)';
+        priceEl.style.opacity = '0';
+        setTimeout(() => {
+          priceEl.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease';
+          priceEl.style.transform = 'scale(1)';
+          priceEl.style.opacity = '1';
+        }, 400);
+
+        statsObs.unobserve(e.target);
+      });
+    }, { threshold: 0.4 });
+    const statBytesEl = document.getElementById('statBytes');
+    if (statBytesEl) statsObs.observe(statBytesEl);
+
+    /* ── 3D tilt on feature cards ────────────────────────── */
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width  - 0.5;
+        const y = (e.clientY - r.top)  / r.height - 0.5;
+        card.style.transform = `perspective(700px) rotateY(${x * 9}deg) rotateX(${-y * 9}deg) translateZ(4px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+
+    /* ── FAQ accordion ───────────────────────────────────── */
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+  });
+  </script>
 
 </body>
 </html>

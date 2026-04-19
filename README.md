@@ -338,6 +338,7 @@ Em `js/categorias.js`, modifique a função `criarCategorias()` para incluir cat
 - [ ] Média diária de gastos — card no dashboard com gasto médio por dia (total gasto ÷ dias passados no mês)
 - [ ] Projeção de fim de mês — estimativa de saldo final com base no ritmo atual de gastos
 - [ ] Últimos lançamentos no dashboard — widget com os 3–5 gastos mais recentes sem precisar navegar para a tela de Lançamentos
+- [ ] Ferramenta de inserção de gastos fixos — cadastro de despesas recorrentes mensais aplicadas automaticamente
 
 ---
 
