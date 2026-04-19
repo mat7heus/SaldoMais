@@ -2268,6 +2268,52 @@ button:active {
 }
 
 /* =====================
+   GASTOS FIXOS
+   ===================== */
+
+.gf-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.gf-info-banner i,
+.gf-info-banner svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.gf-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 12px 12px;
+  background: rgba(255,255,255,0.02);
+}
+
+.gf-total-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.gf-total-valor {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* =====================
    MOBILE
    ===================== */
 

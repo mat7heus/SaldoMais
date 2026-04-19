@@ -48,6 +48,8 @@ function setupButtons(){
     ?.addEventListener("change", importarBackup);
   document.getElementById("btnAdicionarCategoria")
     ?.addEventListener("click", adicionarNovaCategoria);
+  document.getElementById("btnAdicionarGastoFixo")
+    ?.addEventListener("click", adicionarGastoFixo);
   // Category hint: update when category or value changes
   categoriaSelect?.addEventListener("change", atualizarCatHint);
   valorInput?.addEventListener("input", atualizarCatHint);
@@ -73,6 +75,12 @@ function setupEventDelegation(){
     if(delBtn){ deletarLancamento(Number(delBtn.dataset.id)); return; }
     const editBtn = e.target.closest("[data-action='editar-lancamento']");
     if(editBtn) editarLancamentoHandler(Number(editBtn.dataset.id));
+  });
+
+  // Gastos fixos: deletar
+  document.getElementById("listaGastosFixos")?.addEventListener("click", e => {
+    const delBtn = e.target.closest("[data-action='deletar-gasto-fixo']");
+    if(delBtn) deletarGastoFixo(Number(delBtn.dataset.id));
   });
 
   // Categorias lista editor (screen categorias)
@@ -178,7 +186,7 @@ document.addEventListener('input', function(e) {
 // Alt/Option+1-4 para navegar entre telas
 document.addEventListener('keydown', function(e) {
   if (!e.altKey) return;
-  const codeMap = { 'Digit1': 'dashboard', 'Digit2': 'lancamentos', 'Digit3': 'categorias', 'Digit4': 'calculadoras' };
+  const codeMap = { 'Digit1': 'dashboard', 'Digit2': 'lancamentos', 'Digit3': 'categorias', 'Digit4': 'calculadoras', 'Digit5': 'gastos-fixos' };
   const screen = codeMap[e.code];
   if (!screen) return;
   e.preventDefault();
@@ -204,6 +212,7 @@ function init(){
     const dataInput = document.getElementById("dataInput");
     if(dataInput) dataInput.value = new Date().toISOString().split('T')[0];
 
+    aplicarGastosFixos();
     renderComplete();
   } catch (error) {
     if (window.lucide) lucide.createIcons();

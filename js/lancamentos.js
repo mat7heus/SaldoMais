@@ -23,6 +23,7 @@ function salvarOrcamentoHandler(){
 
     set(STORAGE.orcamentos, lista);
     orcamentoInput.value = formatarMoeda(valor);
+    aplicarGastosFixos();
     renderComplete();
   } catch (error) {
     console.error("Erro ao salvar orçamento:", error);

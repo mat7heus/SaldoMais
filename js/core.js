@@ -224,8 +224,9 @@ function navegar(){
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById(btn.dataset.screen).classList.add("active");
-      if(btn.dataset.screen === "dashboard")  renderDashboard();
-      if(btn.dataset.screen === "categorias") renderCategoriasLista();
+      if(btn.dataset.screen === "dashboard")    renderDashboard();
+      if(btn.dataset.screen === "categorias")  renderCategoriasLista();
+      if(btn.dataset.screen === "gastos-fixos") renderGastosFixos();
     };
   });
 }
