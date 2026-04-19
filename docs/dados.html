@@ -14,15 +14,23 @@
 </head>
 <body>
 
+  <!-- ── Loading screen ──── -->
+  <div class="loader" id="loader">
+    <img src="../images/saldomais-icon.png" alt="SaldoMais" class="loader-logo" />
+    <div class="loader-name">Saldo<span class="accent">Mais</span></div>
+    <div class="loader-bar-track"><div class="loader-bar-fill" id="loaderBar"></div></div>
+    <span class="loader-hint">Carregando&hellip;</span>
+  </div>
+
 <nav class="topnav">
-  <a href="../index.html" class="brand">
+  <a href="../webapp.html" class="brand">
     <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
     Saldo<span class="accent">Mais</span>
   </a>
   <span class="sep">/</span>
   <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
   <div class="spacer"></div>
-  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+  <a href="../webapp.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
 </nav>
 
 <header class="doc-hero">
@@ -120,13 +128,16 @@ const set = (key, val) => localStorage.setItem(key, JSON.stringify(val));</code>
   id_orcamento: number,     // FK → Orçamento.id
   id_categoria: number,     // FK → Categoria.id
   valor: number,            // valor em reais (float), sempre > 0
-  descricao: string         // texto livre, obrigatório
+  descricao: string,        // texto livre, obrigatório
+  data: string              // data no formato "YYYY-MM-DD" (opcional em registros antigos)
 }</code></pre>
       <h3>Invariantes</h3>
       <ul>
         <li><code>id_orcamento</code> referencia o orçamento do mês em que o lançamento foi criado.</li>
         <li>Ao <strong>deletar uma categoria</strong>, todos os lançamentos com aquele <code>id_categoria</code> são removidos em cascata.</li>
-        <li>Não existe edição de lançamento — apenas exclusão e recriação.</li>
+        <li>O campo <code>data</code> é preenchido automaticamente com a data atual na criação. Pode ser editado posteriormente via <code>editarLancamentoHandler()</code>.</li>
+        <li>Lançamentos são exibidos ordenados por <code>data</code> decrescente (mais recentes primeiro), com desempate por <code>id</code>.</li>
+        <li>Registros criados antes da introdução do campo <code>data</code> não terão essa propriedade — o código trata a ausência com fallback para string vazia.</li>
       </ul>
     </section>
 
@@ -169,7 +180,7 @@ cats.forEach(c => {
     { "id": 1713369601000, "mes_referencia": "2026-04", "valor_total": 5000 }
   ],
   "lancamentos": [
-    { "id": 1713369602000, "id_orcamento": 1713369601000, "id_categoria": 1713369600000, "valor": 150, "descricao": "Mercado" }
+    { "id": 1713369602000, "id_orcamento": 1713369601000, "id_categoria": 1713369600000, "valor": 150, "descricao": "Mercado", "data": "2026-04-18" }
   ]
 }</code></pre>
       <div class="callout callout-danger">
@@ -207,5 +218,13 @@ get(STORAGE.lancamentos).filter(l => l.id_orcamento === orcamentoAtual().id)</co
   <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
 </footer>
 
-</body>
+<script>
+(function(){
+  var l=document.getElementById("loader"),b=document.getElementById("loaderBar"),p=0;
+  function s(v){p=Math.min(v,100);b.style.width=p+"%";}
+  s(20);var r=setInterval(function(){if(p<80)s(p+8);else clearInterval(r);},80);
+  function done(){clearInterval(r);s(100);setTimeout(function(){l.classList.add("hidden");},340);}
+  if(document.readyState==="complete"){done();}else{window.addEventListener("load",done);setTimeout(done,2500);}
+})();
+</script></body>
 </html>

@@ -14,15 +14,23 @@
 </head>
 <body>
 
+  <!-- ── Loading screen ──── -->
+  <div class="loader" id="loader">
+    <img src="../images/saldomais-icon.png" alt="SaldoMais" class="loader-logo" />
+    <div class="loader-name">Saldo<span class="accent">Mais</span></div>
+    <div class="loader-bar-track"><div class="loader-bar-fill" id="loaderBar"></div></div>
+    <span class="loader-hint">Carregando&hellip;</span>
+  </div>
+
 <nav class="topnav">
-  <a href="../index.html" class="brand">
+  <a href="../webapp.html" class="brand">
     <img src="https://i.imgur.com/gNzlTGO.png" alt="SaldoMais" />
     Saldo<span class="accent">Mais</span>
   </a>
   <span class="sep">/</span>
   <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Documentação</a>
   <div class="spacer"></div>
-  <a href="../index.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
+  <a href="../webapp.html" class="btn-app"><i data-lucide="arrow-right"></i> Abrir App</a>
 </nav>
 
 <header class="doc-hero">
@@ -287,5 +295,13 @@ economia   = totalOriginal - (disponivel + pmtNovo * parcelas)</code></pre>
   <p class="footer-text">Documentação técnica — <a href="index.html">Voltar ao índice</a></p>
 </footer>
 
-</body>
+<script>
+(function(){
+  var l=document.getElementById("loader"),b=document.getElementById("loaderBar"),p=0;
+  function s(v){p=Math.min(v,100);b.style.width=p+"%";}
+  s(20);var r=setInterval(function(){if(p<80)s(p+8);else clearInterval(r);},80);
+  function done(){clearInterval(r);s(100);setTimeout(function(){l.classList.add("hidden");},340);}
+  if(document.readyState==="complete"){done();}else{window.addEventListener("load",done);setTimeout(done,2500);}
+})();
+</script></body>
 </html>

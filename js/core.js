@@ -54,12 +54,27 @@ function atualizarDataMes(){
 
 // ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
 
-function notificar(msg){
+function notificar(msg, type) {
   const toast = document.getElementById("notificationToast");
   if(!toast) return;
+
+  if(!type) {
+    const m = msg.toLowerCase();
+    if(m.includes('sucesso') || m.includes('salvo') || m.includes('criado') || m.includes('removido') || m.includes('atualizado') || m.includes('limpado') || m.includes('perfeito'))
+      type = 'success';
+    else if(m.includes('erro') || m.includes('limite excedido') || m.includes('inválid') || m.includes('já existe'))
+      type = 'error';
+    else if(m.includes('deve ser') || m.includes('defina') || m.includes('primeiro') || m.includes('digite') || m.includes('atenção') || m.includes('total deve'))
+      type = 'warn';
+    else type = 'info';
+  }
+
   toast.textContent = msg;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
+  toast.className = 'notification-toast toast-' + type;
+  void toast.offsetWidth;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 3200);
 }
 
 // ─── FORMATTING ──────────────────────────────────────────────────────────────
@@ -117,6 +132,17 @@ function setupModals(){
     input.addEventListener("keypress", e => { if(e.key === "Enter")  confirmBtn?.click(); });
     input.addEventListener("keydown",  e => { if(e.key === "Escape") cancelBtn?.click(); });
   }
+
+  // Edit lancamento modal
+  const editLancModal   = document.getElementById("editarLancamentoModal");
+  const editLancConfirm = document.getElementById("editarLancamentoConfirm");
+  const editLancCancel  = document.getElementById("editarLancamentoCancel");
+  const editLancDesc    = document.getElementById("editLancDesc");
+  if(editLancConfirm) editLancConfirm.addEventListener("click", () => editLancModal._resolve?.(true));
+  if(editLancCancel)  editLancCancel.addEventListener("click",  () => editLancModal._resolve?.(false));
+  if(editLancDesc){
+    editLancDesc.addEventListener("keydown", e => { if(e.key === "Escape") editLancCancel?.click(); });
+  }
 }
 
 function confirmar(msg){
@@ -131,6 +157,42 @@ function confirmar(msg){
       resolve(result);
     };
     modal.classList.add("show");
+  });
+}
+
+function editarLancamento(id){
+  return new Promise(resolve => {
+    const modal   = document.getElementById("editarLancamentoModal");
+    const descEl  = document.getElementById("editLancDesc");
+    const valorEl = document.getElementById("editLancValor");
+    const dataEl  = document.getElementById("editLancData");
+    const catEl   = document.getElementById("editLancCategoria");
+    if(!modal) return resolve(null);
+
+    const lanc = get(STORAGE.lancamentos).find(l => l.id === id);
+    if(!lanc) return resolve(null);
+
+    const cats = get(STORAGE.categorias);
+    catEl.innerHTML = cats.map(c => `<option value="${c.id}">${c.nome}</option>`).join("");
+
+    descEl.value  = lanc.descricao;
+    valorEl.value = formatarMoeda(lanc.valor);
+    dataEl.value  = lanc.data || new Date().toISOString().split('T')[0];
+    catEl.value   = String(lanc.id_categoria);
+
+    modal.classList.add("show");
+    if(window.lucide) lucide.createIcons({ nodes: [modal] });
+    descEl.focus();
+
+    modal._resolve = confirmado => {
+      modal.classList.remove("show");
+      modal._resolve = null;
+      if(!confirmado) return resolve(null);
+      const valor     = desformatarMoeda(valorEl.value);
+      const descricao = descEl.value.trim();
+      if(!descricao || !valor || valor <= 0) return resolve(null);
+      resolve({ descricao, valor, data: dataEl.value, id_categoria: Number(catEl.value) });
+    };
   });
 }
 
