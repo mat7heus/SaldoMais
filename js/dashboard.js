@@ -29,6 +29,8 @@ function renderDashboard(){
     }
     const ulEl = document.getElementById("ultimosLancamentos");
     if(ulEl) ulEl.innerHTML = "";
+    const pfEl = document.getElementById("projecaoFimMes");
+    if(pfEl) pfEl.innerHTML = "";
     return;
   }
 
@@ -36,6 +38,7 @@ function renderDashboard(){
   const lanc = get(STORAGE.lancamentos).filter(l => l.id_orcamento === o.id);
 
   renderResumoGeral(cats, lanc, o);
+  renderProjecaoFimMes(cats, lanc, o);
 
   categoriasStatus.innerHTML = cats.map(c => {
     const gasto           = lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0);
@@ -125,7 +128,6 @@ function renderResumoGeral(cats, lanc, o){
   const lancUlt30   = get(STORAGE.lancamentos).filter(l => l.data >= limite30Str && l.data <= hojeStr);
   const totalUlt30  = lancUlt30.reduce((s, l) => s + l.valor, 0);
   const mediaDiaria = totalUlt30 / 30;
-  const projecaoMes = mediaDiaria * diasNoMes;
 
   let categoriasAlert = 0;
   cats.forEach(c => {
@@ -159,7 +161,7 @@ function renderResumoGeral(cats, lanc, o){
     <div class="stat-card">
       <span class="stat-label">Média de gastos diários</span>
       <span class="stat-value" id="sv-media">R$ 0,00</span>
-      <span class="stat-subtitle">Últimos 30 dias · Projeção: ${formatarMoeda(projecaoMes)}</span>
+      <span class="stat-subtitle">Média dos últimos 30 dias</span>
     </div>
     ${categoriasAlert > 0 ? `
       <div class="stat-card" style="border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.07);">
@@ -172,6 +174,109 @@ function renderResumoGeral(cats, lanc, o){
   animarValor(document.getElementById("sv-gasto"), totalGasto);
   animarValor(document.getElementById("sv-rest"),  totalRestante);
   animarValor(document.getElementById("sv-media"),  mediaDiaria);
+}
+
+function renderProjecaoFimMes(cats, lanc, o){
+  const el = document.getElementById("projecaoFimMes");
+  if(!el) return;
+
+  const hoje          = new Date();
+  const diaAtual      = hoje.getDate();
+  const diasNoMes     = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+  const diasRestantes = diasNoMes - diaAtual;
+  const totalGasto    = lanc.reduce((s, l) => s + l.valor, 0);
+
+  if(!lanc.length){
+    el.innerHTML = `
+      <div class="projecao-card">
+        <div class="projecao-header">
+          <span class="projecao-title"><i data-lucide="trending-up" size="16"></i> Projeção de Fim de Mês</span>
+        </div>
+        <div class="projecao-empty">
+          <i data-lucide="info" size="18"></i>
+          Adicione lançamentos para ver a estimativa de saldo ao fim do mês.
+        </div>
+      </div>`;
+    if(window.lucide) lucide.createIcons();
+    return;
+  }
+
+  const mediaDiaria            = totalGasto / diaAtual;
+  const gastoAdicionalEstimado = mediaDiaria * diasRestantes;
+  const gastoTotalEstimado     = totalGasto + gastoAdicionalEstimado;
+  const saldoProjetado         = o.valor_total - gastoTotalEstimado;
+
+  const pctAtual     = Math.min((totalGasto / o.valor_total) * 100, 100);
+  const pctProjetado = Math.min((gastoTotalEstimado / o.valor_total) * 100, 100);
+
+  const positivo     = saldoProjetado >= 0;
+  const cor          = positivo ? 'var(--ok)'                : 'var(--danger)';
+  const corBorder    = positivo ? 'rgba(34,197,94,0.2)'      : 'rgba(239,68,68,0.2)';
+  const corBarraProj = positivo ? 'rgba(34,197,94,0.45)'     : 'rgba(239,68,68,0.55)';
+  const corTotal     = gastoTotalEstimado > o.valor_total    ? 'var(--danger)' : 'var(--text)';
+  const statusText   = positivo ? 'Estimativa: vai sobrar'   : 'Estimativa: vai faltar';
+  const labelDias    = diasRestantes > 0
+    ? `${diasRestantes} dia${diasRestantes !== 1 ? 's' : ''} restante${diasRestantes !== 1 ? 's' : ''}`
+    : 'Último dia do mês';
+
+  el.innerHTML = `
+    <div class="projecao-card" style="border-color:${corBorder};">
+      <div class="projecao-header">
+        <span class="projecao-title">
+          <i data-lucide="trending-up" size="16"></i>
+          Projeção de Fim de Mês
+        </span>
+        <span class="projecao-badge">
+          <i data-lucide="calendar" size="12"></i>
+          ${labelDias}
+        </span>
+      </div>
+
+      <div class="projecao-body">
+        <div class="projecao-saldo-block">
+          <span class="projecao-saldo-label">Saldo estimado</span>
+          <span class="projecao-saldo-value" id="pf-saldo" style="color:${cor};">R$ 0,00</span>
+          <span class="projecao-saldo-status">${statusText}</span>
+        </div>
+        <div class="projecao-breakdown">
+          <div class="projecao-row">
+            <span class="projecao-row-label">Gasto até hoje</span>
+            <span class="projecao-row-value" id="pf-atual">R$ 0,00</span>
+          </div>
+          <div class="projecao-row">
+            <span class="projecao-row-label">+ Estimativa restante</span>
+            <span class="projecao-row-value" id="pf-adicional">R$ 0,00</span>
+          </div>
+          <hr class="projecao-divider">
+          <div class="projecao-total-row">
+            <span class="projecao-row-label">= Total estimado</span>
+            <span id="pf-total" style="color:${corTotal};">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="projecao-barra-section">
+        <div class="projecao-barra-label">
+          <span>Atual ${pctAtual.toFixed(1)}%</span>
+          <span>Projetado ${pctProjetado.toFixed(1)}% do orçamento</span>
+        </div>
+        <div class="projecao-barra-track">
+          <div class="projecao-barra-projetada" style="width:${pctProjetado}%;background:${corBarraProj};"></div>
+          <div class="projecao-barra-atual" style="width:${pctAtual}%;"></div>
+        </div>
+      </div>
+
+      <div class="projecao-hint">
+        Com base em <strong style="color:var(--text);">${diaAtual} dia${diaAtual !== 1 ? 's' : ''}</strong> de gastos neste mês &middot; Média de <strong style="color:var(--text);">${formatarMoeda(mediaDiaria)}/dia</strong>
+      </div>
+    </div>`;
+
+  animarValor(document.getElementById("pf-saldo"),     saldoProjetado);
+  animarValor(document.getElementById("pf-atual"),     totalGasto);
+  animarValor(document.getElementById("pf-adicional"), gastoAdicionalEstimado);
+  animarValor(document.getElementById("pf-total"),     gastoTotalEstimado);
+
+  if(window.lucide) lucide.createIcons();
 }
 
 function renderGrafico(cats, lanc, o){
