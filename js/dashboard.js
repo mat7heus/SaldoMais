@@ -27,6 +27,8 @@ function renderDashboard(){
         </div>`;
       if(window.lucide) lucide.createIcons();
     }
+    const ulEl = document.getElementById("ultimosLancamentos");
+    if(ulEl) ulEl.innerHTML = "";
     return;
   }
 
@@ -62,7 +64,48 @@ function renderDashboard(){
   }).join("");
 
   renderGrafico(cats, lanc, o);
+  renderUltimosLancamentos(cats, lanc);
   if(window.lucide) lucide.createIcons();
+}
+
+function renderUltimosLancamentos(cats, lanc){
+  const el = document.getElementById("ultimosLancamentos");
+  if(!el) return;
+
+  const recentes = [...lanc]
+    .sort((a, b) => b.data.localeCompare(a.data) || b.id - a.id)
+    .slice(0, 5);
+
+  const itens = recentes.length === 0
+    ? `<div class="ultimos-lanc-empty"><i data-lucide="inbox" size="28"></i><span>Nenhum lançamento este mês</span></div>`
+    : recentes.map(l => {
+        const cat = cats.find(c => c.id === l.id_categoria);
+        const [y, m, d] = l.data.split("-");
+        return `
+          <div class="ultimos-lanc-item">
+            <span class="ultimos-lanc-dot" style="background:${cat ? cat.cor_hex : 'var(--muted)'}"></span>
+            <div class="ultimos-lanc-info">
+              <span class="ultimos-lanc-desc">${l.descricao}</span>
+              <span class="ultimos-lanc-cat">${cat ? cat.nome : '—'}</span>
+            </div>
+            <div class="ultimos-lanc-right">
+              <span class="ultimos-lanc-valor">${formatarMoeda(l.valor)}</span>
+              <span class="ultimos-lanc-data">${d}/${m}</span>
+            </div>
+          </div>`;
+      }).join("");
+
+  el.innerHTML = `
+    <div class="ultimos-lanc-card">
+      <div class="ultimos-lanc-header">
+        <span class="ultimos-lanc-title"><i data-lucide="clock" size="16"></i> Últimos Lançamentos</span>
+        <button class="ultimos-lanc-ver-todos" id="btnVerTodosLanc">Ver todos <i data-lucide="arrow-right" size="13"></i></button>
+      </div>
+      ${itens}
+    </div>`;
+
+  document.getElementById("btnVerTodosLanc")
+    ?.addEventListener("click", () => document.querySelector('.nav-btn[data-screen="lancamentos"]')?.click());
 }
 
 function renderResumoGeral(cats, lanc, o){
