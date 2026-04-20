@@ -22,6 +22,7 @@ function renderAll(){
     renderOrcamentoInput();
     renderCategorias();
     renderCategoriasLista();
+    renderReceitas();
   } catch (error) {
     if (window.lucide) lucide.createIcons();
     console.error("Erro ao renderizar elementos:", error);
@@ -50,6 +51,9 @@ function setupButtons(){
     ?.addEventListener("click", adicionarNovaCategoria);
   document.getElementById("btnAdicionarGastoFixo")
     ?.addEventListener("click", adicionarGastoFixo);
+  document.getElementById("btnAdicionarReceita")
+    ?.addEventListener("click", adicionarReceita);
+  setupCurrencyMask(document.getElementById("receitaValor"));
   // Category hint: update when category or value changes
   categoriaSelect?.addEventListener("change", atualizarCatHint);
   valorInput?.addEventListener("input", atualizarCatHint);
@@ -81,6 +85,12 @@ function setupEventDelegation(){
   document.getElementById("listaGastosFixos")?.addEventListener("click", e => {
     const delBtn = e.target.closest("[data-action='deletar-gasto-fixo']");
     if(delBtn) deletarGastoFixo(Number(delBtn.dataset.id));
+  });
+
+  // Receitas: deletar
+  document.getElementById("listaReceitas")?.addEventListener("click", e => {
+    const delBtn = e.target.closest("[data-action='deletar-receita']");
+    if(delBtn) deletarReceita(Number(delBtn.dataset.id));
   });
 
   // Categorias lista editor (screen categorias)
@@ -186,7 +196,7 @@ document.addEventListener('input', function(e) {
 // Alt/Option+1-4 para navegar entre telas
 document.addEventListener('keydown', function(e) {
   if (!e.altKey) return;
-  const codeMap = { 'Digit1': 'dashboard', 'Digit2': 'lancamentos', 'Digit3': 'categorias', 'Digit4': 'calculadoras', 'Digit5': 'gastos-fixos' };
+  const codeMap = { 'Digit1': 'dashboard', 'Digit2': 'lancamentos', 'Digit3': 'categorias', 'Digit4': 'calculadoras', 'Digit5': 'gastos-fixos', 'Digit6': 'receitas' };
   const screen = codeMap[e.code];
   if (!screen) return;
   e.preventDefault();
@@ -208,10 +218,14 @@ function init(){
     atualizarDataMes();
     atualizarAtalhos();
 
-    // Set today as default date in transaction form
+    // Set today as default date in forms
+    const hoje = new Date().toISOString().split('T')[0];
     const dataInput = document.getElementById("dataInput");
-    if(dataInput) dataInput.value = new Date().toISOString().split('T')[0];
+    if(dataInput) dataInput.value = hoje;
+    const receitaData = document.getElementById("receitaData");
+    if(receitaData) receitaData.value = hoje;
 
+    sincronizarOrcamentoComReceitas();
     aplicarGastosFixos();
     renderComplete();
   } catch (error) {

@@ -27,6 +27,7 @@
   <script src="./js/backup.js" defer></script>
   <script src="./js/pdf.js" defer></script>
   <script src="./js/gastos-fixos.js" defer></script>
+  <script src="./js/receitas.js" defer></script>
   <script src="./js/app.js" defer></script>
 </head>
 <body>
@@ -147,6 +148,11 @@
         <span class="nav-label">Lançamentos</span>
         <kbd class="nav-shortcut">Alt+2</kbd>
       </button>
+      <button data-screen="receitas" class="nav-btn" title="Registrar receitas e ganhos (Alt+6)">
+        <span class="nav-icon"><i data-lucide="trending-up"></i></span>
+        <span class="nav-label">Receitas</span>
+        <kbd class="nav-shortcut">Alt+6</kbd>
+      </button>
       <button data-screen="categorias" class="nav-btn" title="Personalizar categorias (Alt+3)">
         <span class="nav-icon"><i data-lucide="tags"></i></span>
         <span class="nav-label">Categorias</span>
@@ -189,21 +195,23 @@
         <div class="input-group">
           <label for="orcamentoInput" style="display:flex;align-items:center;gap:8px;"><i data-lucide="wallet" size="16"></i> Orçamento do Mês</label>
           <input id="orcamentoInput" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
-          <div class="input-helper">Digite o valor total disponível para este mês</div>
+          <div class="input-helper" id="orcamentoInputHelper">Digite o valor total disponível para este mês</div>
         </div>
-        <div class="button-group">
-          <button id="salvarOrcamento" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
-          <button id="limparMes" class="btn-danger" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
-        </div>
-        <button id="btnExportPdf" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
-        <div class="btn-backup-group">
-          <button id="btnExportBackup" class="btn-backup" title="Exportar todos os dados como JSON">
-            <i data-lucide="download" size="14"></i> Exportar Backup
-          </button>
-          <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
-            <i data-lucide="upload" size="14"></i> Importar Backup
-            <input type="file" id="inputImportBackup" accept=".json" style="display:none">
-          </label>
+        <div class="actions-group">
+          <div class="button-group">
+            <button id="salvarOrcamento" class="btn-primary"><i data-lucide="save" size="18"></i> Salvar Orçamento</button>
+            <button id="limparMes" class="btn-danger"><i data-lucide="trash-2" size="18"></i> Limpar Mês</button>
+          </div>
+          <button id="btnExportPdf" class="btn-export-pdf"><i data-lucide="file-down" size="16"></i> Exportar Relatório em PDF</button>
+          <div class="btn-backup-group">
+            <button id="btnExportBackup" class="btn-backup" title="Exportar todos os dados como JSON">
+              <i data-lucide="download" size="14"></i> Exportar Backup
+            </button>
+            <label class="btn-backup" title="Restaurar dados a partir de um backup JSON">
+              <i data-lucide="upload" size="14"></i> Importar Backup
+              <input type="file" id="inputImportBackup" accept=".json" style="display:none">
+            </label>
+          </div>
         </div>
       </div>
 
@@ -614,6 +622,53 @@
           Estas despesas são inseridas automaticamente quando você salva um novo orçamento mensal.
         </div>
         <div id="listaGastosFixos" class="lista-lancamentos"></div>
+      </div>
+    </section>
+
+    <!-- RECEITAS -->
+    <section id="receitas" class="screen">
+      <div class="dashboard-header">
+        <h2>Receitas</h2>
+        <p class="dashboard-subtitle">Registre seus ganhos — o orçamento é calculado automaticamente</p>
+      </div>
+
+      <div class="lancamento-form">
+        <div class="input-group">
+          <label for="receitaDesc" style="display:flex;align-items:center;gap:8px;"><i data-lucide="file-text" size="16"></i> Descrição</label>
+          <input id="receitaDesc" placeholder="Ex: Salário, Freelance XYZ, Dividendos..." autocomplete="off">
+        </div>
+
+        <div class="input-row">
+          <div class="input-group" style="flex:1;">
+            <label for="receitaValor" style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor</label>
+            <input id="receitaValor" type="text" inputmode="decimal" placeholder="Ex: 5.000,00">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="receitaTipo" style="display:flex;align-items:center;gap:8px;"><i data-lucide="tag" size="16"></i> Tipo</label>
+            <select id="receitaTipo">
+              <option value="salario">Salário</option>
+              <option value="freelance">Freelance</option>
+              <option value="rendimento">Rendimento</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="receitaData" style="display:flex;align-items:center;gap:8px;"><i data-lucide="calendar" size="16"></i> Data</label>
+          <input id="receitaData" type="date">
+        </div>
+
+        <button id="btnAdicionarReceita" class="btn-receita" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i data-lucide="plus-circle" size="18"></i> Adicionar Receita
+        </button>
+      </div>
+
+      <div id="receitasResumo"></div>
+
+      <div class="lancamentos-section">
+        <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Receitas do Mês</h3>
+        <div id="listaReceitas" class="lista-lancamentos"></div>
       </div>
     </section>
 

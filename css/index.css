@@ -320,10 +320,23 @@ body {
 }
 
 /* BUTTON GROUPS */
+.actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.actions-group button,
+.actions-group label.btn-backup {
+  margin-top: 0;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
 .button-group {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
 }
 
 .button-group button {
@@ -331,20 +344,34 @@ body {
 }
 
 .btn-primary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
   background: var(--accent) !important;
   color: #000 !important;
   font-weight: 500;
+  line-height: 1;
 }
+
+.btn-primary svg { display: block; flex-shrink: 0; }
 
 .btn-primary:hover {
   opacity: 0.9;
 }
 
 .btn-danger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
   background: var(--danger) !important;
   color: white !important;
   font-weight: 500;
+  line-height: 1;
 }
+
+.btn-danger svg { display: block; flex-shrink: 0; }
 
 .btn-danger:hover {
   opacity: 0.9;
@@ -352,7 +379,6 @@ body {
 
 .btn-export-pdf {
   width: 100%;
-  margin-top: 10px;
   background: transparent;
   border: 1px solid rgba(245, 158, 11, 0.22);
   color: var(--accent);
@@ -380,8 +406,7 @@ body {
 
 .btn-backup-group {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
 }
 
 .btn-backup {
@@ -2795,5 +2820,121 @@ button:active {
   .calc-table th,
   .calc-table td {
     padding: 5px 7px;
+  }
+}
+
+/* ── RECEITAS ──────────────────────────────────────────────────────────────── */
+
+.receita-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.12);
+  background: rgba(34, 197, 94, 0.03);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.receita-item:hover {
+  background: rgba(34, 197, 94, 0.07);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.receita-tipo-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.receita-tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.receita-valor {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ok);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.receitas-resumo-card {
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.receitas-resumo-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.receitas-resumo-label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.receitas-resumo-valor {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ok);
+  margin: 4px 0 2px;
+}
+
+.receitas-resumo-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.receitas-resumo-icon {
+  color: var(--ok);
+  opacity: 0.35;
+}
+
+.btn-receita {
+  padding: 12px 20px;
+  background: var(--ok);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-receita:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+
+.btn-receita:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .receitas-resumo-card {
+    padding: 16px;
+  }
+
+  .receitas-resumo-valor {
+    font-size: 22px;
   }
 }

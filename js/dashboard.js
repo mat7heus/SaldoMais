@@ -15,6 +15,8 @@ function animarValor(el, valorFinal){
 }
 
 function renderDashboard(){
+  if(totalReceitasMes() > 0) sincronizarOrcamentoComReceitas();
+
   const o = orcamentoAtual();
   if(!o || o.valor_total <= 0){
     const resumoGeral = document.getElementById("resumoGeral");
@@ -23,7 +25,7 @@ function renderDashboard(){
         <div class="dashboard-empty-state">
           <div class="dashboard-empty-icon"><i data-lucide="wallet" size="44"></i></div>
           <p class="dashboard-empty-title">Nenhum orçamento definido</p>
-          <p class="dashboard-empty-desc">Digite um valor acima e clique em "Salvar Orçamento" para começar a controlar seus gastos</p>
+          <p class="dashboard-empty-desc">Cadastre suas receitas na aba <strong>Receitas</strong> para calcular o orçamento automaticamente, ou insira um valor manualmente acima.</p>
         </div>`;
       if(window.lucide) lucide.createIcons();
     }
@@ -116,12 +118,14 @@ function renderResumoGeral(cats, lanc, o){
   if(!resumoGeral) return;
 
   const totalGasto      = lanc.reduce((s, l) => s + l.valor, 0);
-  const totalRestante   = o.valor_total - totalGasto;
-  const percentualUsado = (totalGasto / o.valor_total) * 100;
+  const totalReceitas   = totalReceitasMes();
+  const hasReceitas     = totalReceitas > 0;
+  const baseOrcamento   = hasReceitas ? totalReceitas : o.valor_total;
+  const totalRestante   = baseOrcamento - totalGasto;
+  const percentualUsado = baseOrcamento > 0 ? (totalGasto / baseOrcamento) * 100 : 0;
   const qtdLancamentos  = lanc.length;
 
   const hoje        = new Date();
-  const diasNoMes   = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
   const limite30    = new Date(hoje); limite30.setDate(hoje.getDate() - 29);
   const limite30Str = limite30.toISOString().split('T')[0];
   const hojeStr     = hoje.toISOString().split('T')[0];
@@ -136,12 +140,29 @@ function renderResumoGeral(cats, lanc, o){
     if(gasto > limite) categoriasAlert++;
   });
 
-  resumoGeral.innerHTML = `
+  const corSaldo       = totalRestante >= 0 ? 'var(--ok)' : 'var(--danger)';
+  const borderSaldo    = totalRestante >= 0 ? 'rgba(34,197,94,0.28)' : 'rgba(239,68,68,0.28)';
+  const bgSaldo        = totalRestante >= 0 ? 'rgba(34,197,94,0.05)' : 'rgba(239,68,68,0.05)';
+
+  const card1 = hasReceitas ? `
+    <div class="stat-card" style="border-color:rgba(34,197,94,0.28);background:rgba(34,197,94,0.05);">
+      <span class="stat-label">Total Receitas</span>
+      <span class="stat-value" id="sv-receitas" style="color:var(--ok)">R$ 0,00</span>
+      <span class="stat-subtitle">Orçamento do mês</span>
+    </div>` : `
     <div class="stat-card">
       <span class="stat-label">Total Disponível</span>
       <span class="stat-value" id="sv-total">R$ 0,00</span>
       <span class="stat-subtitle">Orçamento do mês</span>
-    </div>
+    </div>`;
+
+  const labelSaldo    = hasReceitas ? 'Saldo Real' : 'Disponível';
+  const subtitleSaldo = hasReceitas
+    ? (totalRestante >= 0 ? 'Receitas − Gastos' : 'Gastos excedem receitas')
+    : (totalRestante >= 0 ? 'Ainda pode gastar' : 'Orçamento ultrapassado');
+
+  resumoGeral.innerHTML = `
+    ${card1}
     <div class="stat-card">
       <span class="stat-label">Total Gasto</span>
       <span class="stat-value" id="sv-gasto">R$ 0,00</span>
@@ -153,10 +174,10 @@ function renderResumoGeral(cats, lanc, o){
         <span class="stat-count"><i data-lucide="receipt" size="11"></i> ${qtdLancamentos} ${qtdLancamentos === 1 ? 'lançamento' : 'lançamentos'}</span>
       </div>
     </div>
-    <div class="stat-card" style="border-color:${totalRestante>0?'rgba(34,197,94,0.28)':'rgba(239,68,68,0.28)'};background:${totalRestante>0?'rgba(34,197,94,0.05)':'rgba(239,68,68,0.05)'};">
-      <span class="stat-label">Disponível</span>
-      <span class="stat-value" id="sv-rest" style="color:${totalRestante>0?'var(--ok)':'var(--danger)'}">R$ 0,00</span>
-      <span class="stat-subtitle">${totalRestante>0?'Ainda pode gastar':'Orçamento ultrapassado'}</span>
+    <div class="stat-card" style="border-color:${borderSaldo};background:${bgSaldo};">
+      <span class="stat-label">${labelSaldo}</span>
+      <span class="stat-value" id="sv-rest" style="color:${corSaldo}">R$ 0,00</span>
+      <span class="stat-subtitle">${subtitleSaldo}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">Média de gastos diários</span>
@@ -170,10 +191,11 @@ function renderResumoGeral(cats, lanc, o){
         <span class="stat-subtitle">categoria${categoriasAlert>1?'s':''} com limite ultrapassado</span>
       </div>` : ''}`;
 
-  animarValor(document.getElementById("sv-total"), o.valor_total);
+  if(hasReceitas) animarValor(document.getElementById("sv-receitas"), totalReceitas);
+  else            animarValor(document.getElementById("sv-total"),    o.valor_total);
   animarValor(document.getElementById("sv-gasto"), totalGasto);
   animarValor(document.getElementById("sv-rest"),  totalRestante);
-  animarValor(document.getElementById("sv-media"),  mediaDiaria);
+  animarValor(document.getElementById("sv-media"), mediaDiaria);
 }
 
 function renderProjecaoFimMes(cats, lanc, o){
@@ -201,13 +223,14 @@ function renderProjecaoFimMes(cats, lanc, o){
     return;
   }
 
+  const baseOrcamento          = totalReceitasMes() || o.valor_total;
   const mediaDiaria            = totalGasto / diaAtual;
   const gastoAdicionalEstimado = mediaDiaria * diasRestantes;
   const gastoTotalEstimado     = totalGasto + gastoAdicionalEstimado;
-  const saldoProjetado         = o.valor_total - gastoTotalEstimado;
+  const saldoProjetado         = baseOrcamento - gastoTotalEstimado;
 
-  const pctAtual     = Math.min((totalGasto / o.valor_total) * 100, 100);
-  const pctProjetado = Math.min((gastoTotalEstimado / o.valor_total) * 100, 100);
+  const pctAtual     = Math.min((totalGasto / baseOrcamento) * 100, 100);
+  const pctProjetado = Math.min((gastoTotalEstimado / baseOrcamento) * 100, 100);
 
   const positivo     = saldoProjetado >= 0;
   const cor          = positivo ? 'var(--ok)'                : 'var(--danger)';

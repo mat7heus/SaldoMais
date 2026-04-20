@@ -121,6 +121,7 @@ async function resetarMes(){
   const idx   = lista.findIndex(x => x.id === o.id);
   if(idx >= 0){ lista[idx].valor_total = 0; set(STORAGE.orcamentos, lista); }
 
+  sincronizarOrcamentoComReceitas();
   atualizarCatHint();
   renderComplete();
   notificar("Mês limpado com sucesso", 'success');
@@ -185,8 +186,28 @@ function renderSelect(){
 }
 
 function renderOrcamentoInput(){
-  const o = orcamentoAtual();
-  orcamentoInput.value = o ? formatarMoeda(o.valor_total) : "";
+  const o           = orcamentoAtual();
+  const hasReceitas = totalReceitasMes() > 0;
+
+  orcamentoInput.value    = o ? formatarMoeda(o.valor_total) : "";
+  orcamentoInput.readOnly = hasReceitas;
+  orcamentoInput.style.opacity = hasReceitas ? '0.65' : '';
+  orcamentoInput.style.cursor  = hasReceitas ? 'not-allowed' : '';
+
+  const salvarBtn = document.getElementById('salvarOrcamento');
+  if (salvarBtn) salvarBtn.style.display = hasReceitas ? 'none' : '';
+
+  const helper = document.getElementById('orcamentoInputHelper');
+  if (helper) {
+    if (hasReceitas) {
+      helper.innerHTML = '<i data-lucide="trending-up" size="13"></i> Calculado automaticamente com base nas receitas cadastradas';
+      helper.style.color = 'var(--ok)';
+      if (window.lucide) lucide.createIcons({ nodes: [helper] });
+    } else {
+      helper.textContent = 'Digite o valor total disponível para este mês';
+      helper.style.color = '';
+    }
+  }
 }
 
 function formatarData(dataStr){

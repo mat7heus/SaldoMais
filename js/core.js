@@ -37,7 +37,8 @@ const grafico          = document.getElementById("grafico");
 const STORAGE = {
   categorias:  "saldomain_categorias",
   orcamentos:  "saldomain_orcamentos",
-  lancamentos: "saldomain_lancamentos"
+  lancamentos: "saldomain_lancamentos",
+  receitas:    "saldomain_receitas"
 };
 
 const get = key => JSON.parse(localStorage.getItem(key)) || [];
@@ -227,6 +228,7 @@ function navegar(){
       if(btn.dataset.screen === "dashboard")    renderDashboard();
       if(btn.dataset.screen === "categorias")  renderCategoriasLista();
       if(btn.dataset.screen === "gastos-fixos") renderGastosFixos();
+      if(btn.dataset.screen === "receitas")    renderReceitas();
     };
   });
 }

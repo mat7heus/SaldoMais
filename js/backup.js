@@ -2,11 +2,12 @@
 
 function exportarBackup() {
   const data = {
-    _versao: 1,
+    _versao: 2,
     _exportado_em: new Date().toISOString(),
     categorias:  get(STORAGE.categorias),
     orcamentos:  get(STORAGE.orcamentos),
     lancamentos: get(STORAGE.lancamentos),
+    receitas:    get(STORAGE.receitas),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -32,6 +33,7 @@ function importarBackup(e) {
       set(STORAGE.categorias,  data.categorias);
       set(STORAGE.orcamentos,  data.orcamentos);
       set(STORAGE.lancamentos, data.lancamentos);
+      if(data.receitas) set(STORAGE.receitas, data.receitas);
       renderComplete();
       notificar('Backup restaurado com sucesso!');
     } catch (_) {
