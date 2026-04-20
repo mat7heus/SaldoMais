@@ -74,6 +74,16 @@ function renderResumoGeral(cats, lanc, o){
   const percentualUsado = (totalGasto / o.valor_total) * 100;
   const qtdLancamentos  = lanc.length;
 
+  const hoje        = new Date();
+  const diasNoMes   = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+  const limite30    = new Date(hoje); limite30.setDate(hoje.getDate() - 29);
+  const limite30Str = limite30.toISOString().split('T')[0];
+  const hojeStr     = hoje.toISOString().split('T')[0];
+  const lancUlt30   = get(STORAGE.lancamentos).filter(l => l.data >= limite30Str && l.data <= hojeStr);
+  const totalUlt30  = lancUlt30.reduce((s, l) => s + l.valor, 0);
+  const mediaDiaria = totalUlt30 / 30;
+  const projecaoMes = mediaDiaria * diasNoMes;
+
   let categoriasAlert = 0;
   cats.forEach(c => {
     const gasto  = lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0);
@@ -103,6 +113,11 @@ function renderResumoGeral(cats, lanc, o){
       <span class="stat-value" id="sv-rest" style="color:${totalRestante>0?'var(--ok)':'var(--danger)'}">R$ 0,00</span>
       <span class="stat-subtitle">${totalRestante>0?'Ainda pode gastar':'Orçamento ultrapassado'}</span>
     </div>
+    <div class="stat-card">
+      <span class="stat-label">Média de gastos diários</span>
+      <span class="stat-value" id="sv-media">R$ 0,00</span>
+      <span class="stat-subtitle">Últimos 30 dias · Projeção: ${formatarMoeda(projecaoMes)}</span>
+    </div>
     ${categoriasAlert > 0 ? `
       <div class="stat-card" style="border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.07);">
         <span class="stat-label">Atenção</span>
@@ -113,6 +128,7 @@ function renderResumoGeral(cats, lanc, o){
   animarValor(document.getElementById("sv-total"), o.valor_total);
   animarValor(document.getElementById("sv-gasto"), totalGasto);
   animarValor(document.getElementById("sv-rest"),  totalRestante);
+  animarValor(document.getElementById("sv-media"),  mediaDiaria);
 }
 
 function renderGrafico(cats, lanc, o){
