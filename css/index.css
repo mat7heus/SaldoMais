@@ -327,6 +327,13 @@ body {
   margin-top: 15px;
 }
 
+.actions-group button,
+.actions-group label.btn-backup {
+  margin-top: 0;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
 .button-group {
   display: flex;
   gap: 10px;
@@ -337,20 +344,34 @@ body {
 }
 
 .btn-primary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
   background: var(--accent) !important;
   color: #000 !important;
   font-weight: 500;
+  line-height: 1;
 }
+
+.btn-primary svg { display: block; flex-shrink: 0; }
 
 .btn-primary:hover {
   opacity: 0.9;
 }
 
 .btn-danger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px;
   background: var(--danger) !important;
   color: white !important;
   font-weight: 500;
+  line-height: 1;
 }
+
+.btn-danger svg { display: block; flex-shrink: 0; }
 
 .btn-danger:hover {
   opacity: 0.9;
