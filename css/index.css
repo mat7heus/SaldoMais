@@ -2453,6 +2453,166 @@ button:active {
   font-size: 13px;
 }
 
+/* ─── PROJEÇÃO FIM DE MÊS ─────────────────────────────────────────────────── */
+.projecao-card {
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.projecao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.projecao-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.projecao-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+}
+
+.projecao-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.projecao-saldo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.projecao-saldo-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.projecao-saldo-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.projecao-saldo-status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.projecao-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.projecao-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.projecao-row-label {
+  color: var(--muted);
+}
+
+.projecao-row-value {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.projecao-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2px 0;
+}
+
+.projecao-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.projecao-barra-section {
+  margin-top: 4px;
+}
+
+.projecao-barra-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+.projecao-barra-track {
+  position: relative;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.projecao-barra-projetada {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.projecao-barra-atual {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.projecao-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+  text-align: center;
+}
+
+.projecao-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 @media (max-width: 768px) {
   .nav-shortcut {
     display: none;
@@ -2547,6 +2707,10 @@ button:active {
   }
 
   .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .projecao-body {
     grid-template-columns: 1fr;
   }
 
