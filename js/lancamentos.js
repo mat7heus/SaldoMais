@@ -119,7 +119,10 @@ async function resetarMes(){
   set(STORAGE.lancamentos, get(STORAGE.lancamentos).filter(l => l.id_orcamento !== o.id));
   const lista = get(STORAGE.orcamentos);
   const idx   = lista.findIndex(x => x.id === o.id);
-  if(idx >= 0){ lista[idx].valor_total = 0; set(STORAGE.orcamentos, lista); }
+  if(idx >= 0){ 
+    lista[idx].valor_total = 0; 
+    set(STORAGE.orcamentos, lista); 
+  }
 
   sincronizarOrcamentoComReceitas();
   atualizarCatHint();

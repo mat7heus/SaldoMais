@@ -30,8 +30,18 @@ function renderAll(){
 }
 
 function renderComplete(){
+  // Garante que o gráfico e sua legenda sejam limpos antes de re-renderizar o dashboard
+  if (window.Chart) {
+    const chartInstance = Chart.getChart("grafico");
+    if (chartInstance) chartInstance.destroy();
+  }
+  const legenda = document.getElementById("grafico-legenda");
+  if (legenda) legenda.innerHTML = "";
+  const catLista = document.getElementById("categoriasStatusLista");
+  if (catLista) catLista.innerHTML = "";
+
   renderAll();
-  renderDashboard();
+  if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 // ─── BUTTONS ─────────────────────────────────────────────────────────────────
