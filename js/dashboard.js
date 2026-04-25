@@ -20,6 +20,9 @@ function renderDashboard(){
   const o = orcamentoAtual();
   if(!o || o.valor_total <= 0){
     const resumoGeral = document.getElementById("resumoGeral");
+    const catLista    = document.getElementById("categoriasStatusLista");
+    const legenda     = document.getElementById("grafico-legenda");
+
     if(resumoGeral){
       resumoGeral.innerHTML = `
         <div class="dashboard-empty-state">
@@ -27,14 +30,44 @@ function renderDashboard(){
           <p class="dashboard-empty-title">Nenhum orçamento definido</p>
           <p class="dashboard-empty-desc">Cadastre suas receitas na aba <strong>Receitas</strong> para calcular o orçamento automaticamente, ou insira um valor manualmente acima.</p>
         </div>`;
-      if(window.lucide) lucide.createIcons();
     }
+
+    if (grafico) {
+      grafico.style.display = 'none';
+      if (!document.getElementById("chart-empty-msg")) {
+        const msg = document.createElement("div");
+        msg.id = "chart-empty-msg";
+        msg.className = "dashboard-empty-state";
+        msg.style.cssText = "background:transparent; border:none; padding:0; margin:0; width:100%;";
+        msg.innerHTML = `
+          <div class="dashboard-empty-icon"><i data-lucide="pie-chart" size="32"></i></div>
+          <p class="dashboard-empty-title" style="font-size:14px;">Gráfico indisponível</p>
+          <p class="dashboard-empty-desc" style="font-size:12px;">Defina um orçamento para visualizar a distribuição dos seus gastos.</p>`;
+        grafico.parentNode.appendChild(msg);
+      }
+    }
+    if(legenda) legenda.innerHTML = "";
+
+    if(catLista) {
+      catLista.innerHTML = `
+        <div class="dashboard-empty-state" style="background:transparent; border:none; padding:0; margin:0; width:100%;">
+          <div class="dashboard-empty-icon"><i data-lucide="layers" size="32"></i></div>
+          <p class="dashboard-empty-title" style="font-size:14px;">Status indisponível</p>
+          <p class="dashboard-empty-desc" style="font-size:12px;">Defina o orçamento para acompanhar o consumo por categoria.</p>
+        </div>`;
+    }
+
     const ulEl = document.getElementById("ultimosLancamentos");
     if(ulEl) ulEl.innerHTML = "";
     const pfEl = document.getElementById("projecaoFimMes");
     if(pfEl) pfEl.innerHTML = "";
+
+    if(window.lucide) lucide.createIcons();
     return;
   }
+
+  if (grafico) grafico.style.display = 'block';
+  document.getElementById("chart-empty-msg")?.remove();
 
   const cats = get(STORAGE.categorias);
   const lanc = get(STORAGE.lancamentos).filter(l => l.id_orcamento === o.id);
@@ -42,7 +75,8 @@ function renderDashboard(){
   renderResumoGeral(cats, lanc, o);
   renderProjecaoFimMes(cats, lanc, o);
 
-  categoriasStatus.innerHTML = cats.map(c => {
+  const catLista = document.getElementById("categoriasStatusLista");
+  if(catLista) catLista.innerHTML = cats.map(c => {
     const gasto           = lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0);
     const limite          = o.valor_total * c.percentual / 100;
     const pct             = Math.min((gasto / limite) * 100, 100);
