@@ -224,6 +224,10 @@ function navegar(){
       document.querySelectorAll("[data-screen]").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       btn.classList.add("active");
+      // Delay levemente maior para garantir que o DOM renderizou a troca de tela antes do scroll
+      setTimeout(() => {
+        btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 150);
       document.getElementById(btn.dataset.screen).classList.add("active");
       if(btn.dataset.screen === "dashboard")    renderDashboard();
       if(btn.dataset.screen === "categorias")  renderCategoriasLista();
