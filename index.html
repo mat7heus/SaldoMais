@@ -93,7 +93,7 @@
     .topnav .brand .accent { color: var(--accent); }
     .topnav .spacer { flex: 1; }
     .topnav .nav-links {
-      display: flex; align-items: center; gap: 20px;
+      display: flex; align-items: center; gap: 20px; margin-right: 1%;
     }
     .topnav .nav-links a {
       font-size: 13px; color: var(--muted);
@@ -101,14 +101,6 @@
       display: flex; align-items: center; gap: 6px;
     }
     .topnav .nav-links a:hover { color: var(--text); text-decoration: none; }
-    .nav-badge {
-      display: inline-flex; align-items: center;
-      padding: 2px 7px;
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.28);
-      border-radius: 999px; font-size: 10px; font-weight: 600;
-      color: var(--accent); letter-spacing: 0.03em; white-space: nowrap;
-    }
     .btn-app {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 7px 14px; background: var(--accent); color: #0b0b0c;
@@ -573,7 +565,7 @@
     .comparison-table tbody tr:last-child td { border-bottom: none; }
     .comparison-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
     .comparison-table tbody tr:hover td.highlight { background: rgba(245,158,11,0.055); }
-    .check   { color: var(--ok); font-size: 15px; }
+    .check   { color: var(--ok); font-size: 15px; margin-right: 1%;}
     .cross   { color: var(--danger); font-size: 15px; }
     .partial { color: var(--accent); font-size: 13px; }
     .th-badge {
@@ -733,7 +725,6 @@
       <a href="docs/index.html">Documentação</a>
       <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer">
         GitHub
-        <span class="nav-badge">v1.0 · Novidades</span>
       </a>
     </div>
     <a href="webapp.html" class="btn-app">
@@ -914,22 +905,22 @@
         <div class="feature-card reveal reveal-delay-3">
           <div class="feature-icon"><i data-lucide="tags"></i></div>
           <div class="feature-title">Categorias</div>
-          <p class="feature-desc">Crie categorias personalizadas com cores e percentuais do orçamento mensal.</p>
+          <p class="feature-desc">Crie categorias personalizadas com cores e percentuais do orçamento mensal, deixando sua organização ainda mais customizada.</p>
         </div>
         <div class="feature-card reveal reveal-delay-4">
           <div class="feature-icon"><i data-lucide="calculator"></i></div>
           <div class="feature-title">Calculadoras</div>
-          <p class="feature-desc">8 ferramentas financeiras: juros compostos, CDB/CDI, financiamento, dividendos e mais.</p>
+          <p class="feature-desc">Conte com as nossas calculadoras para facilitar o seu dia-a-dia e te ajudando a tomar as melhores decisões.</p>
         </div>
         <div class="feature-card reveal reveal-delay-5">
           <div class="feature-icon"><i data-lucide="file-down"></i></div>
           <div class="feature-title">Exportação PDF</div>
-          <p class="feature-desc">Gere relatórios mensais em PDF diretamente no navegador, sem precisar de servidor.</p>
+          <p class="feature-desc">Gere o relatório dos seus gastos em PDF diretamente no seu navegador e de forma completamente segura.</p>
         </div>
         <div class="feature-card reveal reveal-delay-6">
           <div class="feature-icon"><i data-lucide="hard-drive"></i></div>
           <div class="feature-title">Backup Local</div>
-          <p class="feature-desc">Exporte e importe seus dados como JSON. Privacidade total — nada sai do dispositivo.</p>
+          <p class="feature-desc">Precisa transferir seu histórico de um dispositivo pro outro? Basta exporar o seu backup e importar no novo dispositivo.</p>
         </div>
       </div>
     </div>
@@ -941,15 +932,15 @@
   <section class="howto-section">
     <div class="container">
       <p class="section-eyebrow reveal">Como funciona</p>
-      <h2 class="section-heading reveal reveal-delay-1">Simples desde o primeiro uso</h2>
-      <p class="section-sub reveal reveal-delay-2">Sem instalação, sem burocracia, sem conta.</p>
+      <h2 class="section-heading reveal reveal-delay-1">Simples, desde o seu primeiro uso</h2>
+      <p class="section-sub reveal reveal-delay-2">Sem instalação, sem burocracia, sem conta e melhor: Sem inserir seus dados!</p>
 
       <div class="steps-grid">
         <div class="step-card reveal reveal-delay-1">
           <div class="step-num">01</div>
           <div class="step-icon-wrap"><i data-lucide="mouse-pointer-2"></i></div>
           <h3 class="step-title">Abra no navegador</h3>
-          <p class="step-desc">Sem download, sem instalação. Funciona em qualquer browser moderno, no desktop ou mobile. Clicou, abriu.</p>
+          <p class="step-desc">Sem download, sem instalação. Funciona em qualquer navegador, no computador ou no seu celular.</p>
         </div>
         <div class="step-card reveal reveal-delay-2">
           <div class="step-num">02</div>
@@ -961,7 +952,7 @@
           <div class="step-num">03</div>
           <div class="step-icon-wrap"><i data-lucide="trending-up"></i></div>
           <h3 class="step-title">Controle seus gastos</h3>
-          <p class="step-desc">Registre lançamentos, acompanhe o dashboard e tome decisões financeiras mais inteligentes.</p>
+          <p class="step-desc">Registre lançamentos, acompanhe o dashboard e tome decisões financeiras mais inteligentes com o SaldoMais.</p>
         </div>
       </div>
     </div>
@@ -981,7 +972,7 @@
               <div class="pillar-icon green"><i data-lucide="server-off"></i></div>
               <div class="pillar-body">
                 <div class="pillar-title">Sem servidor</div>
-                <div class="pillar-desc">Nenhuma requisição para servidores externos. O app roda 100% no seu navegador.</div>
+                <div class="pillar-desc">Nenhuma requisição é enviada para servidores externos. O app roda 100% no seu navegador.</div>
               </div>
             </div>
             <div class="pillar">
@@ -995,14 +986,14 @@
               <div class="pillar-icon amber"><i data-lucide="lock"></i></div>
               <div class="pillar-body">
                 <div class="pillar-title">Dados no seu dispositivo</div>
-                <div class="pillar-desc">Tudo salvo no localStorage do navegador. Só você tem acesso.</div>
+                <div class="pillar-desc">Todos os dados são salvos no seu navegador. O SaldoMais não tem acesso aos seus dadosm apenas você.</div>
               </div>
             </div>
             <div class="pillar">
               <div class="pillar-icon amber"><i data-lucide="eye-off"></i></div>
               <div class="pillar-body">
                 <div class="pillar-title">Zero rastreamento</div>
-                <div class="pillar-desc">Sem analytics, sem cookies de terceiros, sem pixels de rastreamento.</div>
+                <div class="pillar-desc">Não usamos ferramentas de monitoramento de comportamento, cookies de terceiros ou qualquer outro tipo de sistema que envolve métricas.</div>
               </div>
             </div>
           </div>
@@ -1014,11 +1005,11 @@
           </div>
           <div class="privacy-stat amber" id="statPercent">
             <div class="privacy-stat-num" id="statPercentNum">100%</div>
-            <div class="privacy-stat-label">client-side. Sem nuvem, sem servidor. Offline quando clonado localmente.</div>
+            <div class="privacy-stat-label">dos dados ficam no seu navegador. Sem nuvem, sem servidor. Funciona offline quando clonado pra sua máquina através do <a href="https://github.com/mat7heus/SaldoMais">nosso repositório</a> (recomendado para usuários mais técnicos).</div>
           </div>
           <div class="privacy-stat" id="statPrice">
             <div class="privacy-stat-num" id="statPriceNum">R$0</div>
-            <div class="privacy-stat-label">de assinatura, para sempre. Gratuito e open source.</div>
+            <div class="privacy-stat-label">de assinatura. Você não gasta nada para usar o SaldoMais, somos um projeto gratuito e open source.</div>
           </div>
         </div>
       </div>
@@ -1031,8 +1022,8 @@
   <section class="comparison-section">
     <div class="container">
       <p class="section-eyebrow reveal">Comparativo</p>
-      <h2 class="section-heading reveal reveal-delay-1">SaldoMais vs. apps tradicionais</h2>
-      <p class="section-sub reveal reveal-delay-2">Veja por que a simplicidade e a privacidade fazem toda a diferença.</p>
+      <h2 class="section-heading reveal reveal-delay-1">SaldoMais vs. outros aplicativos</h2>
+      <p class="section-sub reveal reveal-delay-2">Veja por quê a simplicidade e a privacidade fazem toda a diferença.</p>
 
       <div class="comparison-table-wrap reveal reveal-delay-3">
         <table class="comparison-table">
@@ -1051,12 +1042,12 @@
           <tbody>
             <tr>
               <td>Anúncios</td>
-              <td class="highlight"><span class="check">✓</span> Nenhum</td>
+              <td class="highlight"><span class="check">✓</span> Nenhum, não temos fins lucrativos</td>
               <td><span class="cross">✗</span> Frequentes</td>
             </tr>
             <tr>
               <td>Assinatura mensal</td>
-              <td class="highlight"><span class="check">✓</span> Gratuito</td>
+              <td class="highlight"><span class="check">✓</span> Uso gratuito</td>
               <td><span class="cross">✗</span> R$15–60/mês</td>
             </tr>
             <tr>
@@ -1071,22 +1062,22 @@
             </tr>
             <tr>
               <td>Funciona offline</td>
-              <td class="highlight"><span class="check">✓</span> Se clonado*</td>
+              <td class="highlight"><span class="check">✓</span> Apenas se clonado localmente</td>
               <td><span class="partial">~ Parcial</span></td>
             </tr>
             <tr>
               <td>Open Source</td>
-              <td class="highlight"><span class="check">✓</span> GPL v3</td>
+              <td class="highlight"><span class="check">✓</span>Sim, sobre a licença GPL v3</td>
               <td><span class="cross">✗</span> Código fechado</td>
             </tr>
             <tr>
               <td>Rastreamento / Analytics</td>
-              <td class="highlight"><span class="check">✓</span> Nenhum</td>
+              <td class="highlight"><span class="check">✓</span> Nenhum (com orgulho)</td>
               <td><span class="cross">✗</span> Extensivo</td>
             </tr>
             <tr>
               <td>Calculadoras financeiras</td>
-              <td class="highlight"><span class="check">✓</span> 8 integradas</td>
+              <td class="highlight"><span class="check">✓</span> 8 integradas atualmente</td>
               <td><span class="partial">~ Poucas ou pagas</span></td>
             </tr>
           </tbody>
@@ -1103,8 +1094,8 @@
     <div class="container">
       <div class="contribute-inner reveal">
         <p class="section-eyebrow">Open Source</p>
-        <h2 class="contribute-title">Construído pela<br /><span class="accent">comunidade</span></h2>
-        <p class="contribute-lead">O SaldoMais é open source e vive de contribuições. Seja reportando um bug, sugerindo uma funcionalidade ou abrindo um PR — toda ajuda é bem-vinda.</p>
+        <h2 class="contribute-title">Construído pela<br /><span class="accent">comunidade!</span></h2>
+        <p class="contribute-lead">O SaldoMais é open source e vive de contribuições. Seja reportando um bug, sugerindo uma funcionalidade ou abrindo um PR — toda ajuda é bem-vinda. Ficamos muito felizes com novas contribuições.</p>
         <div class="contribute-actions">
           <a href="https://github.com/mat7heus/SaldoMais" target="_blank" rel="noopener noreferrer" class="btn-primary">
             <i data-lucide="star"></i>
@@ -1141,15 +1132,15 @@
       <div class="faq-list reveal reveal-delay-3">
         <div class="faq-item">
           <button class="faq-question">Meus dados são seguros?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Sim. Todos os seus dados ficam armazenados exclusivamente no localStorage do seu próprio navegador. Nenhuma informação é enviada para servidores externos. Nem nós, nem terceiros, têm acesso ao que você registra.</div>
+          <div class="faq-answer">Sim. Todos os seus dados ficam armazenados exclusivamente no seu próprio navegador. Nenhuma informação é enviada para servidores externos. Nem nós, nem terceiros, têm acesso ao que você registra.</div>
         </div>
         <div class="faq-item">
-          <button class="faq-question">O app funciona sem internet?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Depende de como você acessa. <strong>Se clonar o repositório</strong> e abrir os arquivos diretamente no navegador, tudo funciona sem internet — nenhum dado é enviado externamente. <strong>Se acessar pela URL hospedada</strong>, é necessária conexão com a internet para carregar a página, pois o projeto usa CDN para fontes e ícones. Em ambos os casos, seus dados ficam 100% no localStorage do seu dispositivo.</div>
+          <button class="faq-question">O SaldoMais funciona sem internet?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
+          <div class="faq-answer">Depende de como você acessa. <strong>Se você clonar o repositório</strong> e abrir os arquivos diretamente no navegador, tudo funciona sem internet — nenhum dado é enviado externamente. <strong>Se acessar pela URL hospedada</strong>, é necessária conexão com a internet para carregar a página. Em ambos os casos, seus dados ficam 100% no seu navegador. Caso queira clonar o SaldoMais, conheça a <a href="./docs/index.html">nossa documentação</a>.</div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Posso usar no celular?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Sim. O SaldoMais é responsivo e funciona bem em smartphones e tablets. Basta abrir o endereço no navegador do celular. Você também pode adicioná-lo à tela inicial como um atalho.</div>
+          <div class="faq-answer">Sim. O SaldoMais foi feito pensando também em dispositivos móveis e funciona bem em smartphones e tablets. Basta abrir o nosso site no navegador do celular. Você também pode adicioná-lo à tela inicial como um atalho.</div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Preciso criar uma conta?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
@@ -1157,11 +1148,11 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Posso perder meus dados?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Os dados ficam no localStorage do navegador, então limpar os dados do site os apagaria. Para evitar isso, use o recurso de Exportar Backup (formato JSON) disponível no Dashboard. Você pode reimportar a qualquer momento.</div>
+          <div class="faq-answer">Os dados ficam no seu navegador, então limpar os dados do site os apagaria. Para evitar isso, use o recurso de Exportar Backup (formato JSON) disponível no Dashboard. Você pode reimportar a qualquer momento na mesma interface.</div>
         </div>
         <div class="faq-item">
           <button class="faq-question">O SaldoMais é realmente gratuito?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Sim, 100% gratuito — sem plano free limitado, sem trial, sem propaganda. O projeto é open source (GPL v3) e não tem modelo de monetização. É uma ferramenta feita para ser útil, simples assim.</div>
+          <div class="faq-answer">Sim, 100% gratuito, sem plano free limitado, sem trial e sem propaganda. O projeto é de código aberto e não possui nenhum tipo de monetização. É uma ferramenta feita para ser útil, simples assim.</div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Como faço backup dos meus dados?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
@@ -1169,7 +1160,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Posso contribuir com o projeto?<i data-lucide="chevron-down" class="faq-chevron"></i></button>
-          <div class="faq-answer">Claro! O repositório está no GitHub e aceita contribuições. Você pode reportar bugs, sugerir funcionalidades, melhorar a documentação ou abrir pull requests. Veja o guia de contribuição na documentação técnica.</div>
+          <div class="faq-answer">Claro, a gente agradece! O repositório está no GitHub e aceita contribuições. Você pode reportar bugs, sugerir funcionalidades, melhorar a documentação ou abrir pull requests. Veja o guia de contribuição na documentação técnica.</div>
         </div>
       </div>
     </div>
