@@ -163,9 +163,14 @@ function setupMobileMenu() {
   if (!hamburger || !sidebar || !overlay) return;
 
   function abrirMenu() {
+    // Garante que o container de scroll seja recalculado ao abrir no mobile
+    sidebar.style.display = 'flex'; 
     sidebar.classList.add('open');
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      sidebar.querySelector('.nav-btn.active')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 400);
   }
 
   function fecharMenu() {
