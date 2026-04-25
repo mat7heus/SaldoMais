@@ -337,8 +337,36 @@ function renderProjecaoFimMes(cats, lanc, o){
 }
 
 function renderGrafico(cats, lanc, o){
+  if(!grafico) return console.error("Canvas não encontrado");
+  const chartContainer = grafico.parentNode;
+  const legendaEl = document.getElementById('grafico-legenda');
+
+  // Se não houver lançamentos, exibe a mensagem de estado vazio
+  if (lanc.length === 0) {
+    grafico.style.display = 'none';
+    document.getElementById("chart-empty-msg-no-expenses")?.remove(); // Remove mensagem anterior se houver
+    document.getElementById("chart-empty-msg")?.remove(); // Remove mensagem de "Gráfico indisponível" se houver
+
+    const msg = document.createElement("div");
+    msg.id = "chart-empty-msg-no-expenses";
+    msg.className = "dashboard-empty-state";
+    msg.style.cssText = "background:transparent; border:none; padding:0; margin:0; width:100%;";
+    msg.innerHTML = `
+      <div class="dashboard-empty-icon"><i data-lucide="receipt" size="32"></i></div>
+      <p class="dashboard-empty-title" style="font-size:14px;">Sem despesas registradas</p>
+      <p class="dashboard-empty-desc" style="font-size:12px;">Insira pelo menos uma despesa em lançamentos para acompanhar seus gastos.</p>`;
+    chartContainer.appendChild(msg);
+    if(legendaEl) legendaEl.innerHTML = "";
+    if(window.lucide) lucide.createIcons();
+    return;
+  }
+
   try {
-    if(!cats || !cats.length) return console.warn("Sem categorias");
+    grafico.style.display = 'block'; // Garante que o canvas esteja visível
+    document.getElementById("chart-empty-msg-no-expenses")?.remove(); // Remove a mensagem de "sem despesas"
+    document.getElementById("chart-empty-msg")?.remove(); // Remove a mensagem de "Gráfico indisponível"
+
+    if(!cats || !cats.length) return console.warn("Sem categorias"); // Este caso deve ser tratado pelo renderDashboard para orçamento 0
     const labels    = cats.map(c => c.nome);
     const gastos    = cats.map(c => lanc.filter(l => l.id_categoria === c.id).reduce((s, l) => s + l.valor, 0));
     const cores     = cats.map(c => c.cor_hex);
@@ -346,14 +374,10 @@ function renderGrafico(cats, lanc, o){
     const percentuais = totalGasto > 0
       ? gastos.map(g => (g / totalGasto) * 100)
       : cats.map(() => 100 / cats.length);
-
-    if(!grafico) return console.error("Canvas não encontrado");
     const ctx = grafico.getContext("2d");
     if(!ctx)   return console.error("Contexto 2D não disponível");
 
     if(window.graficoChart instanceof Chart) window.graficoChart.destroy();
-
-    const legendaEl = document.getElementById('grafico-legenda');
     if(legendaEl){
       legendaEl.innerHTML = labels.map((label, i) => `
         <div class="grafico-legenda-item">
