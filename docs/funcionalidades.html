@@ -53,6 +53,9 @@
       <a href="#lancamentos">Lançamentos</a>
       <a href="#categorias">Categorias</a>
       <a href="#dashboard">Dashboard</a>
+      <a href="#gastos-fixos">Gastos Fixos</a>
+      <a href="#receitas">Receitas</a>
+      <a href="#carteira">Carteira de Investimentos</a>
       <a href="#pdf">Exportação de PDF</a>
       <a href="#backup">Backup e Restauração</a>
       <a href="#atalhos">Atalhos de teclado</a>
@@ -210,6 +213,93 @@ const gastoAtual = lancamentos
       </ul>
     </section>
 
+    <section id="gastos-fixos">
+      <h2>Gastos Fixos</h2>
+      <p><strong>Localização:</strong> Tela <code>section#gastos-fixos</code><br />
+      <strong>Módulo responsável:</strong> <code>js/gastos-fixos.js</code></p>
+      <p>Despesas recorrentes mensais cadastradas uma única vez e aplicadas automaticamente como lançamentos no primeiro dia de cada mês.</p>
+
+      <h3>Fluxo de aplicação automática</h3>
+      <ol>
+        <li><code>aplicarGastosFixos()</code> é chamada em <code>init()</code></li>
+        <li>Verifica se já existe algum lançamento com <code>id_gasto_fixo === fixo.id</code> no mês atual</li>
+        <li>Se não, cria o lançamento com o valor e categoria do gasto fixo</li>
+        <li>Exibe notificação informativa se algum gasto foi aplicado</li>
+      </ol>
+
+      <h3>Regras</h3>
+      <ul>
+        <li>Requer orçamento definido para o mês para ser aplicado</li>
+        <li>O lançamento gerado é idêntico a um lançamento manual — sujeito ao limite da categoria</li>
+        <li>Não são removidos por <code>resetarMes()</code> — persistem entre meses</li>
+      </ul>
+    </section>
+
+    <section id="receitas">
+      <h2>Receitas</h2>
+      <p><strong>Localização:</strong> Tela <code>section#receitas</code><br />
+      <strong>Módulo responsável:</strong> <code>js/receitas.js</code></p>
+      <p>Entradas financeiras do mês que controlam automaticamente o orçamento disponível.</p>
+
+      <h3>Sincronização com orçamento</h3>
+      <p>Ao adicionar ou remover uma receita, <code>sincronizarOrcamentoComReceitas()</code> soma todas as receitas do mês e atualiza o <code>valor_total</code> do orçamento correspondente. Enquanto houver receitas, o input manual de orçamento fica <strong>desabilitado</strong>.</p>
+
+      <h3>Regras</h3>
+      <ul>
+        <li>Cada receita pertence a um mês via <code>mes_referencia</code></li>
+        <li>Tipos disponíveis: <strong>Salário</strong>, <strong>Freelance</strong>, <strong>Rendimento</strong>, <strong>Outro</strong></li>
+        <li>Ao deletar todas as receitas do mês, o campo de orçamento manual é reabilitado</li>
+      </ul>
+    </section>
+
+    <section id="carteira">
+      <h2>Carteira de Investimentos</h2>
+      <p><strong>Localização:</strong> Tela <code>section#carteira</code><br />
+      <strong>Módulo responsável:</strong> <code>js/carteira.js</code></p>
+
+      <h3>Abas disponíveis</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Aba</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <tr><td>Estrutura</td><td>Seleção de ativos com % de alocação, perfil do investidor, alertas e gráficos</td></tr>
+            <tr><td>Calcular Aporte</td><td>Distribui um valor de aporte pelos ativos da carteira usando aritmética em centavos</td></tr>
+            <tr><td>Simulador</td><td>Projeta evolução patrimonial com aporte mensal × prazo (máx 50 anos)</td></tr>
+            <tr><td>Histórico</td><td>Últimos 50 cálculos de aporte realizados</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Aba Estrutura</h3>
+      <ul>
+        <li>30 ativos fixos organizados em 5 classes — Renda Fixa, Renda Variável, Fundos, Previdência, Criptomoedas</li>
+        <li>Checkboxes + inputs de percentual por ativo. Totalizador em tempo real: verde se soma = 100%, vermelho caso contrário</li>
+        <li>Botão "Salvar" habilitado somente quando soma === 100%</li>
+        <li>Perfil do investidor calculado pelo percentual de Renda Fixa (Conservador ≥ 70%, Moderado 40–69%, Arrojado &lt; 40%)</li>
+        <li>Alerta de concentração exibido se qualquer ativo ultrapassar 40% do total</li>
+        <li>Gráfico doughnut (Chart.js) + gráfico sunburst "Distribuição Hierárquica" (ECharts)</li>
+      </ul>
+
+      <h3>Aba Calcular Aporte</h3>
+      <ul>
+        <li>Distribui o valor digitado entre os ativos proporcionalmente à alocação</li>
+        <li>Aritmética em centavos inteiros (<code>Math.floor</code>) para evitar erros de ponto flutuante</li>
+        <li>O resíduo de centavos é somado ao último ativo da lista</li>
+        <li>Alerta visual se algum ativo ficou abaixo do mínimo permitido (varia por tipo de ativo)</li>
+        <li>Exportação do resultado como CSV com BOM UTF-8</li>
+        <li>Resultado salvo automaticamente no histórico a cada cálculo</li>
+      </ul>
+
+      <h3>Aba Simulador</h3>
+      <ul>
+        <li>Projeta evolução do patrimônio mês a mês com juros compostos</li>
+        <li>Taxa anual calculada pela média ponderada da alocação da carteira por classe</li>
+        <li>Prazo limitado a <strong>50 anos</strong> para evitar travamento do navegador</li>
+        <li>Exibe cards com Patrimônio Estimado, Total Aportado e Rendimento Estimado</li>
+        <li>Gráfico de área (Chart.js) com evolução anual</li>
+      </ul>
+    </section>
+
     <section id="pdf">
       <h2>Exportação de PDF</h2>
       <p><strong>Módulo responsável:</strong> <code>js/pdf.js</code><br />
@@ -249,7 +339,7 @@ const gastoAtual = lancamentos
         <li>Usuário seleciona arquivo <code>.json</code></li>
         <li><code>FileReader.readAsText()</code> lê o conteúdo</li>
         <li><code>JSON.parse()</code> — exceção capturada se inválido</li>
-        <li>Valida presença das chaves <code>categorias</code>, <code>orcamentos</code>, <code>lancamentos</code></li>
+        <li>Valida presença das chaves <code>categorias</code>, <code>orcamentos</code>, <code>lancamentos</code> (receitas incluída na versão 2)</li>
         <li>Sobrescreve o storage completamente (sem merge)</li>
         <li>Chama <code>renderComplete()</code></li>
         <li><code>e.target.value = ""</code> — reseta para permitir reimportar</li>
@@ -269,6 +359,10 @@ const gastoAtual = lancamentos
             <tr><td><kbd>Alt+2</kbd></td><td>Navega para Lançamentos</td></tr>
             <tr><td><kbd>Alt+3</kbd></td><td>Navega para Categorias</td></tr>
             <tr><td><kbd>Alt+4</kbd></td><td>Navega para Calculadoras</td></tr>
+            <tr><td><kbd>Alt+5</kbd></td><td>Navega para Gastos Fixos</td></tr>
+            <tr><td><kbd>Alt+6</kbd></td><td>Navega para Receitas</td></tr>
+            <tr><td><kbd>Alt+7</kbd></td><td>Navega para Carteira de Investimentos</td></tr>
+            <tr><td><kbd>Alt+B</kbd></td><td>Colapsa/expande a sidebar (apenas desktop)</td></tr>
             <tr><td><kbd>Enter</kbd> (em input de <code>.calc-card</code>)</td><td>Dispara o cálculo do card correspondente</td></tr>
           </tbody>
         </table>

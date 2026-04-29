@@ -273,7 +273,7 @@
       <span class="badge amber">Zero dependências</span>
       <span class="badge">localStorage</span>
       <span class="badge">Dark mode nativo</span>
-      <span class="badge green">7 documentos</span>
+      <span class="badge green">11 módulos JS</span>
     </div>
   </section>
 
@@ -303,7 +303,7 @@
             <span class="doc-num">02</span>
           </div>
           <div class="doc-title">Módulos JS</div>
-          <p class="doc-desc">Os 8 módulos JS — responsabilidades, assinaturas de funções e contratos de interface entre os módulos.</p>
+          <p class="doc-desc">Os 11 módulos JS — responsabilidades, assinaturas de funções e contratos de interface entre os módulos.</p>
           <div class="doc-footer">Abrir documento <i data-lucide="arrow-right"></i></div>
         </a>
 
@@ -391,7 +391,12 @@
         <div class="stack-item">
           <div class="si-icon"><i data-lucide="pie-chart"></i></div>
           <div class="si-name">Chart.js</div>
-          <div class="si-use">Gráfico de distribuição</div>
+          <div class="si-use">Gráficos doughnut e barras</div>
+        </div>
+        <div class="stack-item">
+          <div class="si-icon"><i data-lucide="sun"></i></div>
+          <div class="si-name">ECharts</div>
+          <div class="si-use">Gráfico sunburst da carteira</div>
         </div>
         <div class="stack-item">
           <div class="si-icon"><i data-lucide="file-down"></i></div>
@@ -414,32 +419,42 @@
         <div class="qs-card">
           <div class="qs-if">Novo no projeto</div>
           <div class="qs-then"><a href="arquitetura.html">arquitetura.html</a></div>
-          <div class="qs-desc">Entenda o modelo de execução antes de qualquer módulo.</div>
+          <div class="qs-desc">Entenda o modelo de execução, ordem de scripts e padrões antes de tocar em qualquer módulo.</div>
         </div>
         <div class="qs-card">
-          <div class="qs-if">Modificar uma feature</div>
+          <div class="qs-if">Modificar uma feature existente</div>
           <div class="qs-then"><a href="funcionalidades.html">funcionalidades.html</a> + <a href="modulos.html">modulos.html</a></div>
-          <div class="qs-desc">Regras de negócio e contratos de interface.</div>
+          <div class="qs-desc">Regras de negócio e assinaturas das funções responsáveis.</div>
         </div>
         <div class="qs-card">
           <div class="qs-if">Alterar dados ou storage</div>
           <div class="qs-then"><a href="dados.html">dados.html</a></div>
-          <div class="qs-desc">Leitura obrigatória antes de qualquer mudança de schema.</div>
+          <div class="qs-desc">Leitura obrigatória antes de qualquer mudança de schema ou nova chave no localStorage.</div>
         </div>
         <div class="qs-card">
           <div class="qs-if">Criar UI nova</div>
           <div class="qs-then"><a href="design-system.html">design-system.html</a></div>
-          <div class="qs-desc">Tokens e componentes corretos para manter consistência visual.</div>
+          <div class="qs-desc">Tokens CSS, componentes e padrões visuais para manter consistência com o projeto.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Trabalhar na carteira de investimentos</div>
+          <div class="qs-then"><a href="modulos.html#carteira">modulos.html → carteira.js</a> + <a href="funcionalidades.html#carteira">funcionalidades.html → Carteira</a></div>
+          <div class="qs-desc">Catálogo de ativos, perfil de risco, cálculo de aporte e simulador patrimonial.</div>
         </div>
         <div class="qs-card">
           <div class="qs-if">Adicionar uma calculadora</div>
           <div class="qs-then"><a href="contribuindo.html">contribuindo.html</a></div>
-          <div class="qs-desc">Seção dedicada ao passo a passo de nova calculadora.</div>
+          <div class="qs-desc">Passo a passo para criar uma nova calculadora financeira seguindo o padrão do projeto.</div>
+        </div>
+        <div class="qs-card">
+          <div class="qs-if">Entender gastos fixos ou receitas</div>
+          <div class="qs-then"><a href="funcionalidades.html#gastos-fixos">funcionalidades.html → Gastos Fixos</a> + <a href="funcionalidades.html#receitas">Receitas</a></div>
+          <div class="qs-desc">Aplicação automática de despesas recorrentes e sincronização do orçamento com receitas.</div>
         </div>
         <div class="qs-card">
           <div class="qs-if">Depurar um problema</div>
           <div class="qs-then"><a href="contribuindo.html">contribuindo.html → depuração</a></div>
-          <div class="qs-desc">Técnicas e estratégias para debug da aplicação.</div>
+          <div class="qs-desc">Técnicas e estratégias para debug sem servidor e com escopo global.</div>
         </div>
       </div>
     </div>

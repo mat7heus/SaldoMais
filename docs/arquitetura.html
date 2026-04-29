@@ -75,6 +75,9 @@
 &lt;script src="./js/calculadoras.js" defer&gt;&lt;/script&gt;
 &lt;script src="./js/backup.js"       defer&gt;&lt;/script&gt;
 &lt;script src="./js/pdf.js"          defer&gt;&lt;/script&gt;
+&lt;script src="./js/gastos-fixos.js" defer&gt;&lt;/script&gt;
+&lt;script src="./js/receitas.js"     defer&gt;&lt;/script&gt;
+&lt;script src="./js/carteira.js"     defer&gt;&lt;/script&gt;
 &lt;script src="./js/app.js"          defer&gt;&lt;/script&gt;</code></pre>
       <p><code>core.js</code> deve ser sempre o primeiro — ele define as constantes (<code>STORAGE</code>, <code>PDF_COLORS</code>, <code>MESES</code>), as referências DOM e as funções utilitárias usadas por todos os outros. <code>app.js</code> deve ser o último — ele chama <code>init()</code>, que depende de funções definidas nos demais arquivos.</p>
     </section>
@@ -87,7 +90,10 @@
   ├── dashboard.js
   ├── calculadoras.js
   ├── backup.js
-  └── pdf.js
+  ├── pdf.js
+  ├── gastos-fixos.js
+  ├── receitas.js
+  └── carteira.js
           └── app.js  (orquestra todos)</code></pre>
       <p>Nenhum módulo importa outro explicitamente — a dependência é implícita via escopo global. Se uma função de <code>lancamentos.js</code> chama <code>formatarMoeda()</code>, ela assume que <code>core.js</code> já foi executado antes.</p>
     </section>
@@ -96,15 +102,19 @@
       <h2>Fluxo de inicialização</h2>
       <p><code>app.js</code> termina com a chamada direta a <code>init()</code>, que executa na ordem:</p>
       <pre><code class="language-plaintext">init()
-  ├── mostrarLoading()          — exibe spinner de carregamento
-  ├── criarCategorias()         — seed de categorias padrão (só na primeira execução)
-  ├── setupModals()             — registra listeners dos modais
-  ├── setupButtons()            — registra listeners dos botões + máscaras de moeda
-  ├── setupEventDelegation()    — event delegation para listas dinâmicas
-  ├── navegar()                 — registra listeners de navegação entre telas
-  ├── setupMobileMenu()         — hamburger + overlay do menu mobile
-  ├── atualizarDataMes()        — preenche "Abril de 2026" no header
-  └── renderComplete()          — renderiza todas as telas e o dashboard</code></pre>
+  ├── mostrarLoading()                  — exibe spinner de carregamento
+  ├── criarCategorias()                 — seed de categorias padrão (só na primeira execução)
+  ├── setupModals()                     — registra listeners dos modais
+  ├── setupButtons()                    — registra listeners dos botões + máscaras de moeda
+  ├── setupEventDelegation()            — event delegation para listas dinâmicas
+  ├── navegar()                         — registra listeners de navegação entre telas
+  ├── setupMobileMenu()                 — hamburger + overlay do menu mobile
+  ├── setupSidebarToggle()              — colapso da sidebar no desktop (Alt+B)
+  ├── atualizarDataMes()                — preenche "Abril de 2026" no header
+  ├── atualizarAtalhos()                — adapta exibição para macOS (⌥ vs Alt+)
+  ├── sincronizarOrcamentoComReceitas() — sincroniza orçamento com receitas do mês
+  ├── aplicarGastosFixos()              — aplica gastos fixos no 1º dia do mês
+  └── renderComplete()                  — renderiza todas as telas e o dashboard</code></pre>
     </section>
 
     <section id="padrao-render">
@@ -122,7 +132,8 @@
   │     ├── renderLancamentos()      — lista de transações do mês
   │     ├── renderOrcamentoInput()   — preenche o input de orçamento
   │     ├── renderCategorias()       — editor de sliders de percentual
-  │     └── renderCategoriasLista()  — lista com ações de editar/remover
+  │     ├── renderCategoriasLista()  — lista com ações de editar/remover
+  │     └── renderReceitas()         — lista de receitas do mês
   └── renderDashboard()             — cards de resumo + gráfico + barras</code></pre>
       <div class="callout callout-note">
         <div><strong>Nota:</strong> O padrão de re-render total é deliberado: simplicidade sobre performance. O volume de dados é pequeno (dezenas a centenas de registros), então reconstruir o HTML a cada operação é aceitável.</div>
@@ -141,7 +152,7 @@
 
     <section id="modais-promise">
       <h2>Modais baseados em Promise</h2>
-      <p>Os dois modais (<code>confirmModal</code> e <code>editarCategoriaModal</code>) usam uma Promise manual em vez de <code>window.confirm</code>. O painel armazena um <code>_resolve</code> no elemento DOM:</p>
+      <p>Os modais (<code>confirmModal</code>, <code>editarCategoriaModal</code>, <code>editarLancamentoModal</code> e <code>carteiraInputModal</code>) usam uma Promise manual em vez de <code>window.confirm</code>. O painel armazena um <code>_resolve</code> no elemento DOM:</p>
       <pre><code class="language-javascript">function confirmar(msg) {
   return new Promise(resolve => {
     modal._resolve = result => {
@@ -189,6 +200,10 @@
             <tr><td><kbd>Alt+2</kbd></td><td>Lançamentos</td></tr>
             <tr><td><kbd>Alt+3</kbd></td><td>Categorias</td></tr>
             <tr><td><kbd>Alt+4</kbd></td><td>Calculadoras</td></tr>
+            <tr><td><kbd>Alt+5</kbd></td><td>Gastos Fixos</td></tr>
+            <tr><td><kbd>Alt+6</kbd></td><td>Receitas</td></tr>
+            <tr><td><kbd>Alt+7</kbd></td><td>Carteira de Investimentos</td></tr>
+            <tr><td><kbd>Alt+B</kbd></td><td>Colapsar/expandir sidebar (desktop)</td></tr>
           </tbody>
         </table>
       </div>
@@ -201,7 +216,8 @@
         <table>
           <thead><tr><th>Biblioteca</th><th>Versão</th><th>Global exposto</th><th>Uso</th></tr></thead>
           <tbody>
-            <tr><td><strong>Chart.js</strong></td><td>latest</td><td><code>Chart</code></td><td>Gráfico doughnut no dashboard</td></tr>
+            <tr><td><strong>Chart.js</strong></td><td>latest</td><td><code>Chart</code></td><td>Gráficos doughnut (dashboard e carteira) e barras horizontais</td></tr>
+            <tr><td><strong>ECharts</strong></td><td>latest</td><td><code>echarts</code></td><td>Gráfico sunburst "Distribuição Hierárquica" na carteira</td></tr>
             <tr><td><strong>jsPDF</strong></td><td>2.5.1</td><td><code>window.jspdf</code></td><td>Geração de PDF client-side</td></tr>
             <tr><td><strong>Lucide</strong></td><td>latest</td><td><code>lucide</code></td><td>Ícones SVG via <code>lucide.createIcons()</code></td></tr>
             <tr><td><strong>Inter</strong></td><td>—</td><td>—</td><td>Tipografia (Google Fonts)</td></tr>
