@@ -17,6 +17,9 @@
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- ECharts (Sunburst) -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
   <link rel="stylesheet" href="./css/index.css">
 
   <style>
@@ -43,6 +46,7 @@
   <script src="./js/pdf.js" defer></script>
   <script src="./js/gastos-fixos.js" defer></script>
   <script src="./js/receitas.js" defer></script>
+  <script src="./js/carteira.js" defer></script>
   <script src="./js/app.js" defer></script>
 </head>
 <body>
@@ -120,6 +124,22 @@
   </div>
 </div>
 
+<div id="carteiraInputModal" class="confirm-modal">
+  <div class="confirm-container">
+    <h3 id="carteiraInputTitulo" style="margin:0 0 4px;font-size:16px;color:var(--text);">Nova Carteira</h3>
+    <div class="input-group" style="margin-top:16px;">
+      <label style="font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;">
+        <i data-lucide="briefcase" size="14"></i> Nome da carteira
+      </label>
+      <input id="carteiraInputNome" type="text" placeholder="Ex: Aposentadoria" autocomplete="off" style="margin-top:6px;">
+    </div>
+    <div class="confirm-btn-row">
+      <button id="carteiraInputConfirm" style="background:var(--accent);color:#000;"><i data-lucide="check" size="16"></i> Confirmar</button>
+      <button id="carteiraInputCancel" style="background:rgba(255,255,255,0.08);color:var(--text);"><i data-lucide="x" size="16"></i> Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="app">
 
   <!-- Barra superior mobile -->
@@ -182,6 +202,11 @@
         <span class="nav-icon"><i data-lucide="trending-up"></i></span>
         <span class="nav-label">Receitas</span>
         <kbd class="nav-shortcut">Alt+6</kbd>
+      </button>
+      <button data-screen="carteira" class="nav-btn" title="Carteira de Investimentos (Alt+7)">
+        <span class="nav-icon"><i data-lucide="briefcase"></i></span>
+        <span class="nav-label">Carteira</span>
+        <kbd class="nav-shortcut">Alt+7</kbd>
       </button>
     </nav>
 
@@ -687,6 +712,129 @@
       <div class="lancamentos-section">
         <h3 style="display:flex;align-items:center;gap:8px;"><i data-lucide="list-checks" size="20"></i> Receitas do Mês</h3>
         <div id="listaReceitas" class="lista-lancamentos"></div>
+      </div>
+    </section>
+
+    <!-- CARTEIRA DE INVESTIMENTOS -->
+    <section id="carteira" class="screen">
+      <div class="dashboard-header">
+        <h2>Carteira de Investimentos</h2>
+        <p class="dashboard-subtitle">Estruture, calcule aportes e simule o crescimento da sua carteira</p>
+      </div>
+
+      <!-- Seletor de carteiras + perfil -->
+      <div class="carteira-top-bar">
+        <div class="carteira-select-group">
+          <select id="carteiraSelect"></select>
+          <button id="btnNovaCarteira" class="btn-carteira-ghost" title="Nova carteira"><i data-lucide="plus"></i> Nova</button>
+          <button id="btnRenomearCarteira" class="btn-carteira-ghost" title="Renomear carteira"><i data-lucide="pencil"></i></button>
+          <button id="btnDeletarCarteira" class="btn-carteira-ghost btn-carteira-danger" title="Excluir carteira"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div id="carteiraPerfil"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="carteira-tabs">
+        <button class="carteira-tab active" data-tab="estrutura">Estrutura</button>
+        <button class="carteira-tab" data-tab="aporte">Calcular Aporte</button>
+        <button class="carteira-tab" data-tab="simulador">Simulador</button>
+        <button class="carteira-tab" data-tab="historico">Histórico</button>
+      </div>
+
+      <!-- ABA ESTRUTURA -->
+      <div id="carteira-tab-estrutura" class="carteira-tab-content active">
+        <div id="carteiraConcentracaoAlert" class="carteira-alert carteira-alert-warn" style="display:none;"></div>
+        <div class="carteira-estrutura-grid">
+          <div class="carteira-ativos-panel">
+            <div class="carteira-panel-header">
+              <h4>Selecione os Ativos</h4>
+              <span id="carteiraTotalBadge" class="carteira-total-badge">Total: 0%</span>
+            </div>
+            <div id="carteiraAtivosLista"></div>
+            <button id="btnSalvarCarteira" class="btn-primary" style="width:100%;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;" disabled>
+              <i data-lucide="save"></i> Salvar Carteira
+            </button>
+          </div>
+          <div class="carteira-charts-panel">
+            <div class="carteira-chart-card">
+              <h5>Distribuição por Classe</h5>
+              <div style="position:relative;height:220px;">
+                <canvas id="carteiraDonutChart"></canvas>
+              </div>
+            </div>
+            <div class="carteira-chart-card" style="margin-top:14px;">
+              <h5>Distribuição Hierárquica</h5>
+              <div id="carteiraSunburst" style="height:300px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA CALCULAR APORTE -->
+      <div id="carteira-tab-aporte" class="carteira-tab-content">
+        <div class="lancamento-form">
+          <div class="input-group">
+            <label style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Valor do Aporte (R$)</label>
+            <input id="carteiraAporteValor" type="text" inputmode="decimal" class="input-moeda" placeholder="Ex: 1.000,00">
+          </div>
+          <button id="btnCalcularAporte" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;">
+            <i data-lucide="calculator"></i> Calcular Distribuição
+          </button>
+        </div>
+        <div id="carteiraAporteResult" style="display:none;">
+          <div id="carteiraAporteAlertMinimo" class="carteira-alert carteira-alert-warn" style="display:none;margin-top:16px;"></div>
+          <div class="carteira-chart-card" style="margin-top:16px;">
+            <h5>Distribuição do Aporte</h5>
+            <div style="position:relative;height:260px;">
+              <canvas id="carteiraAporteChart"></canvas>
+            </div>
+          </div>
+          <div class="calc-table-wrapper" style="margin-top:16px;">
+            <table class="calc-table" id="carteiraAporteTabela"></table>
+          </div>
+          <button id="btnExportarCSV" class="btn-export-pdf" style="margin-top:12px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i data-lucide="download"></i> Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- ABA SIMULADOR -->
+      <div id="carteira-tab-simulador" class="carteira-tab-content">
+        <div class="lancamento-form">
+          <div class="input-row">
+            <div class="input-group" style="flex:1;">
+              <label style="display:flex;align-items:center;gap:8px;"><i data-lucide="banknote" size="16"></i> Aporte Mensal (R$)</label>
+              <input id="simAporteMensal" type="text" inputmode="decimal" class="input-moeda" placeholder="Ex: 500,00">
+            </div>
+            <div class="input-group" style="flex:1;">
+              <label style="display:flex;align-items:center;gap:8px;"><i data-lucide="calendar" size="16"></i> Prazo (anos)</label>
+              <input id="simPrazo" type="number" min="1" max="50" placeholder="Ex: 10">
+            </div>
+          </div>
+          <button id="btnSimular" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;">
+            <i data-lucide="trending-up"></i> Simular
+          </button>
+        </div>
+        <div id="simResultado" style="display:none;">
+          <div id="simPatrimonioCard" style="margin-top:16px;"></div>
+          <div class="carteira-chart-card" style="margin-top:16px;">
+            <h5>Evolução Patrimonial Estimada</h5>
+            <div style="position:relative;height:280px;">
+              <canvas id="simChart"></canvas>
+            </div>
+          </div>
+          <p class="carteira-disclaimer">⚠️ Projeção baseada em taxas históricas estimadas: RF 12% a.a., RV 10% a.a., Fundos 9% a.a., Previdência 8% a.a., Cripto 20% a.a. Não representa garantia de retorno.</p>
+        </div>
+      </div>
+
+      <!-- ABA HISTÓRICO -->
+      <div id="carteira-tab-historico" class="carteira-tab-content">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+          <button id="btnLimparHistorico" class="btn-danger" style="display:flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;margin-top:0;">
+            <i data-lucide="trash-2" size="14"></i> Limpar Histórico
+          </button>
+        </div>
+        <div id="carteiraHistoricoLista"></div>
       </div>
     </section>
 
