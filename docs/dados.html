@@ -54,6 +54,10 @@
       <a href="#categoria">Entidade: Categoria</a>
       <a href="#orcamento">Entidade: Orçamento</a>
       <a href="#lancamento">Entidade: Lançamento</a>
+      <a href="#receita">Entidade: Receita</a>
+      <a href="#gasto-fixo">Entidade: GastoFixo</a>
+      <a href="#carteira">Entidade: Carteira</a>
+      <a href="#historico-aporte">Entidade: HistoricoAporte</a>
       <a href="#relacionamentos">Relacionamentos</a>
       <a href="#ids">IDs com Date.now()</a>
       <a href="#backup">Formato do backup</a>
@@ -86,6 +90,12 @@ const set = (key, val) => localStorage.setItem(key, JSON.stringify(val));</code>
             <tr><td><code>STORAGE.categorias</code></td><td><code>saldomain_categorias</code></td><td>Categorias de gasto</td></tr>
             <tr><td><code>STORAGE.orcamentos</code></td><td><code>saldomain_orcamentos</code></td><td>Orçamentos mensais</td></tr>
             <tr><td><code>STORAGE.lancamentos</code></td><td><code>saldomain_lancamentos</code></td><td>Transações registradas</td></tr>
+            <tr><td><code>STORAGE.receitas</code></td><td><code>saldomain_receitas</code></td><td>Receitas mensais</td></tr>
+            <tr><td><code>STORAGE.gastosFixos</code></td><td><code>saldomain_gastos_fixos</code></td><td>Despesas recorrentes mensais</td></tr>
+            <tr><td><code>CARTEIRA_STORAGE.carteiras</code></td><td><code>saldomain_carteiras</code></td><td>Carteiras de investimento</td></tr>
+            <tr><td><code>CARTEIRA_STORAGE.ativa</code></td><td><code>saldomain_carteira_ativa</code></td><td>ID da carteira ativa (string)</td></tr>
+            <tr><td><code>CARTEIRA_STORAGE.historico</code></td><td><code>saldomain_historico_aportes</code></td><td>Histórico de cálculos de aporte (máx 50)</td></tr>
+            <tr><td>—</td><td><code>saldomain_sidebar_collapsed</code></td><td>Estado de colapso da sidebar no desktop</td></tr>
           </tbody>
         </table>
       </div>
@@ -141,6 +151,75 @@ const set = (key, val) => localStorage.setItem(key, JSON.stringify(val));</code>
       </ul>
     </section>
 
+    <section id="receita">
+      <h2>Entidade: Receita</h2>
+      <pre><code class="language-typescript">{
+  id: number,               // timestamp Unix gerado na criação
+  descricao: string,        // texto livre, obrigatório
+  valor: number,            // valor em reais (float), sempre > 0
+  tipo: 'salario' | 'freelance' | 'rendimento' | 'outro',
+  data: string,             // formato "YYYY-MM-DD"
+  mes_referencia: string    // formato "YYYY-MM" — define o mês da receita
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>Cada receita pertence a um mês via <code>mes_referencia</code>.</li>
+        <li>A soma das receitas do mês atualiza automaticamente o <code>valor_total</code> do orçamento ao adicionar ou remover uma receita (<code>sincronizarOrcamentoComReceitas()</code>).</li>
+        <li>Enquanto houver receitas, o campo de orçamento manual fica desabilitado — o orçamento é controlado pelas receitas.</li>
+      </ul>
+    </section>
+
+    <section id="gasto-fixo">
+      <h2>Entidade: GastoFixo</h2>
+      <pre><code class="language-typescript">{
+  id: number,           // timestamp Unix gerado na criação
+  nome: string,         // descrição da despesa recorrente
+  valor: number,        // valor em reais (float), sempre > 0
+  id_categoria: number  // FK → Categoria.id
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>Gastos fixos são aplicados automaticamente no primeiro dia de cada mês como lançamentos normais.</li>
+        <li>O lançamento gerado recebe o campo extra <code>id_gasto_fixo</code> com o id do gasto fixo de origem, evitando aplicação duplicada no mesmo mês.</li>
+        <li>Não são afetados por <code>resetarMes()</code> — persistem entre meses.</li>
+      </ul>
+    </section>
+
+    <section id="carteira">
+      <h2>Entidade: Carteira</h2>
+      <pre><code class="language-typescript">{
+  id: string,      // timestamp Unix como string, gerado na criação
+  nome: string,    // nome da carteira
+  ativos: {        // mapa ativoId → percentual alocado (0–100)
+    [ativoId: string]: number
+  }
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>A soma dos percentuais dos ativos marcados deve ser exatamente 100 para habilitar o botão de salvar.</li>
+        <li>O catálogo de ativos (<code>CATALOGO</code>) é fixo — 30 ativos em 5 classes. Não é editável pelo usuário.</li>
+        <li>A carteira ativa é armazenada separadamente como string em <code>saldomain_carteira_ativa</code>.</li>
+        <li>Alerta de concentração exibido quando qualquer ativo supera 40% do total.</li>
+      </ul>
+    </section>
+
+    <section id="historico-aporte">
+      <h2>Entidade: HistoricoAporte</h2>
+      <pre><code class="language-typescript">{
+  id: number,       // timestamp Unix gerado na criação
+  data: string,     // data formatada "DD/MM/YYYY"
+  carteira: string, // nome da carteira no momento do cálculo
+  valor: number,    // valor total do aporte calculado
+  resumo: string    // primeiros 3 ativos: "Nome: R$ X,XX · ..."
+}</code></pre>
+      <h3>Invariantes</h3>
+      <ul>
+        <li>Gerado automaticamente a cada clique em "Calcular Aporte".</li>
+        <li>Limitado a <strong>50 entradas</strong> — as mais antigas são descartadas quando o limite é atingido.</li>
+        <li>Pode ser apagado completamente pelo botão "Limpar Histórico" na aba Histórico.</li>
+      </ul>
+    </section>
+
     <section id="relacionamentos">
       <h2>Relacionamentos</h2>
       <pre><code class="language-plaintext">Categoria (1) ──── (N) Lançamento
@@ -171,7 +250,7 @@ cats.forEach(c => {
     <section id="backup">
       <h2>Formato do arquivo de backup</h2>
       <pre><code class="language-json">{
-  "_versao": 1,
+  "_versao": 2,
   "_exportado_em": "2026-04-18T14:30:00.000Z",
   "categorias": [
     { "id": 1713369600000, "nome": "Custos fixos", "percentual": 30, "cor_hex": "#f59e0b" }
@@ -181,6 +260,9 @@ cats.forEach(c => {
   ],
   "lancamentos": [
     { "id": 1713369602000, "id_orcamento": 1713369601000, "id_categoria": 1713369600000, "valor": 150, "descricao": "Mercado", "data": "2026-04-18" }
+  ],
+  "receitas": [
+    { "id": 1713369603000, "descricao": "Salário", "valor": 5000, "tipo": "salario", "data": "2026-04-05", "mes_referencia": "2026-04" }
   ]
 }</code></pre>
       <div class="callout callout-danger">

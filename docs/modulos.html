@@ -39,7 +39,7 @@
     <div>
       <div class="doc-hero-num">Documento 02 de 07</div>
       <h1>Módulos JavaScript</h1>
-      <p class="doc-hero-lead">Os 8 módulos JS do projeto — responsabilidades, funções públicas, contratos de entrada/saída e comportamentos relevantes para quem precisa modificar ou estender o código.</p>
+      <p class="doc-hero-lead">Os 11 módulos JS do projeto — responsabilidades, funções públicas, contratos de entrada/saída e comportamentos relevantes para quem precisa modificar ou estender o código.</p>
     </div>
   </div>
 </header>
@@ -56,6 +56,9 @@
       <a href="#calculadoras">calculadoras.js</a>
       <a href="#backup">backup.js</a>
       <a href="#pdf">pdf.js</a>
+      <a href="#gastos-fixos">gastos-fixos.js</a>
+      <a href="#receitas">receitas.js</a>
+      <a href="#carteira">carteira.js</a>
       <a href="#app">app.js</a>
     </nav>
   </aside>
@@ -73,7 +76,7 @@
           <tbody>
             <tr><td><code>MESES</code></td><td><code>string[]</code></td><td>Nomes dos meses em pt-BR, índice 0-based</td></tr>
             <tr><td><code>PDF_COLORS</code></td><td><code>object</code></td><td>Paleta de cores RGB para o relatório PDF</td></tr>
-            <tr><td><code>STORAGE</code></td><td><code>object</code></td><td>Chaves do <code>localStorage</code>: <code>categorias</code>, <code>orcamentos</code>, <code>lancamentos</code></td></tr>
+            <tr><td><code>STORAGE</code></td><td><code>object</code></td><td>Chaves do <code>localStorage</code>: <code>categorias</code>, <code>orcamentos</code>, <code>lancamentos</code>, <code>receitas</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -111,8 +114,8 @@ desformatarMoeda(texto: string): number
 // Converte string formatada de volta para number.
 // Ex: "R$ 1.500,50" → 1500.5
 
-notificar(msg: string): void
-// Exibe toast de notificação por 2500ms.
+notificar(msg: string, type?: 'success'|'error'|'warn'|'info'): void
+// Exibe toast de notificação por 3200ms. Se type omitido, infere pelo conteúdo da mensagem.
 
 confirmar(msg: string): Promise&lt;boolean&gt;
 // Abre modal de confirmação. Resolve com true (confirmou) ou false (cancelou).
@@ -322,7 +325,7 @@ mostrarResultado(id: string): void
       <h2>backup.js</h2>
       <p>Exportação e importação do estado completo da aplicação. Depende de <code>core.js</code>.</p>
       <pre><code class="language-javascript">exportarBackup(): void
-// Serializa { _versao: 1, _exportado_em, categorias, orcamentos, lancamentos }
+// Serializa { _versao: 2, _exportado_em, categorias, orcamentos, lancamentos, receitas }
 // Cria um Blob JSON e dispara download via &lt;a&gt; temporário.
 // Nome: SaldoMais-backup-YYYY-MM-DD.json
 
@@ -334,11 +337,12 @@ importarBackup(e: Event): void
 
       <h3>Formato do arquivo</h3>
       <pre><code class="language-json">{
-  "_versao": 1,
+  "_versao": 2,
   "_exportado_em": "2026-04-18T12:00:00.000Z",
   "categorias": [...],
   "orcamentos": [...],
-  "lancamentos": [...]
+  "lancamentos": [...],
+  "receitas": [...]
 }</code></pre>
       <div class="callout callout-warn">
         <div><strong>Atenção:</strong> A validação de importação verifica apenas a existência das três chaves — não valida a estrutura interna dos objetos.</div>
@@ -388,6 +392,132 @@ pdfRodape(doc, { W, H, M }): void
 // Salva como SaldoMais-YYYY-MM.pdf.</code></pre>
     </section>
 
+    <section id="gastos-fixos">
+      <h2>gastos-fixos.js</h2>
+      <p>Gerencia despesas recorrentes mensais que são aplicadas automaticamente no primeiro dia de cada mês. Depende de <code>core.js</code> e <code>lancamentos.js</code>.</p>
+      <p>Estende o objeto <code>STORAGE</code> de <code>core.js</code> adicionando a chave <code>gastosFixos → "saldomain_gastos_fixos"</code>.</p>
+      <pre><code class="language-javascript">adicionarGastoFixo(): void
+// Lê #gastoFixoNome, #gastoFixoValor, #gastoFixoCategoria.
+// Validações: orçamento definido, nome não vazio, valor > 0, categoria selecionada.
+// Persiste e chama renderGastosFixos().
+
+deletarGastoFixo(id: number): Promise&lt;void&gt;
+// Modal de confirmação antes de remover. Chama renderGastosFixos().
+
+aplicarGastosFixos(): void
+// Verificada no init(). Aplica cada gasto fixo como lançamento no mês atual
+// somente se ainda não foi aplicado (identifica via id_gasto_fixo no lançamento).
+// Notifica o usuário se algum gasto foi aplicado.
+
+renderGastosFixos(): void
+// Reconstrói #listaGastosFixos. Exibe total de gastos fixos no rodapé da lista.</code></pre>
+    </section>
+
+    <section id="receitas">
+      <h2>receitas.js</h2>
+      <p>Gerencia as entradas financeiras do mês e sincroniza o orçamento automaticamente com a soma das receitas. Depende de <code>core.js</code> e <code>lancamentos.js</code>.</p>
+      <pre><code class="language-javascript">totalReceitasMes(): number
+// Soma os valores de todas as receitas do mês atual.
+
+receitasDoMes(): Receita[]
+// Retorna as receitas filtradas pelo mês atual (mes_referencia === mesAtual()).
+
+sincronizarOrcamentoComReceitas(): void
+// Se houver receitas no mês, atualiza o valor_total do orçamento atual
+// com a soma total das receitas. Cria o orçamento se não existir.
+// Chamada no init() e a cada add/delete de receita.
+
+adicionarReceita(): void
+// Lê #receitaDesc, #receitaValor, #receitaTipo, #receitaData.
+// Persiste e chama sincronizarOrcamentoComReceitas() + renderComplete().
+
+deletarReceita(id: number): Promise&lt;void&gt;
+// Modal de confirmação antes de remover. Ressincroniza orçamento e re-renderiza.
+
+renderReceitas(): void
+// Reconstrói #listaReceitas com badges de tipo coloridos e total do mês.</code></pre>
+
+      <h3>Tipos de receita</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Label</th><th>Cor</th></tr></thead>
+          <tbody>
+            <tr><td><code>salario</code></td><td>Salário</td><td><span class="swatch" style="background:#22c55e"></span>verde</td></tr>
+            <tr><td><code>freelance</code></td><td>Freelance</td><td><span class="swatch" style="background:#3b82f6"></span>azul</td></tr>
+            <tr><td><code>rendimento</code></td><td>Rendimento</td><td><span class="swatch" style="background:#f59e0b"></span>âmbar</td></tr>
+            <tr><td><code>outro</code></td><td>Outro</td><td><span class="swatch" style="background:#8b5cf6"></span>roxo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="carteira">
+      <h2>carteira.js</h2>
+      <p>Módulo de carteira de investimentos. Auto-inicializa via <code>initCarteira()</code>. Independente do fluxo de <code>renderComplete()</code> — gerencia seu próprio ciclo de render.</p>
+
+      <h3>Constantes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Constante</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <tr><td><code>CATALOGO</code></td><td>30 ativos fixos agrupados em 5 classes: Renda Fixa, Renda Variável, Fundos, Previdência, Criptomoedas</td></tr>
+            <tr><td><code>CLASSE_CORES</code></td><td>Mapeamento classe → cor hex para os gráficos</td></tr>
+            <tr><td><code>TAXA_ANUAL_CLASSE</code></td><td>Taxa anual estimada por classe (RF 12%, RV 10%, Fundos 9%, Prev 8%, Cripto 20%)</td></tr>
+            <tr><td><code>CARTEIRA_STORAGE</code></td><td>Chaves: <code>saldomain_carteiras</code>, <code>saldomain_carteira_ativa</code>, <code>saldomain_historico_aportes</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Funções principais</h3>
+      <pre><code class="language-javascript">// ─ Gestão de carteiras ─
+carteiraNovaHandler(): Promise&lt;void&gt;
+// Abre modal carteiraInputModal para nome. Cria nova carteira e a torna ativa.
+
+carteiraRenomearHandler(): Promise&lt;void&gt;
+// Abre modal com nome atual pré-preenchido. Atualiza o nome na carteira ativa.
+
+carteiraDeletarHandler(): Promise&lt;void&gt;
+// Modal de confirmação. Remove carteira ativa e ativa a anterior (se existir).
+
+carteiraSalvarHandler(): void
+// Persiste os percentuais checados no storage da carteira ativa.
+// Só habilita o botão quando a soma === 100%.
+
+// ─ Abas ─
+carteiraCalcularAporte(): void
+// Lê o valor de aporte. Distribui em centeiros inteiros por cada ativo (sem float).
+// Alerta se algum ativo ficou abaixo do mínimo permitido por tipo.
+// Salva no histórico (máx 50 entradas) e exibe gráfico de barras horizontais.
+
+carteiraSimular(): void
+// Projeta evolução patrimonial com aporteMensal × prazoAnos (máx 50 anos).
+// Taxa anual ponderada pela alocação da carteira. Gráfico de área (Chart.js).
+
+carteiraExportarCSV(): void
+// Exporta o resultado do último cálculo de aporte como CSV UTF-8 com BOM.
+
+// ─ Visualização ─
+carteiraRenderDonut(): void
+// Gráfico doughnut Chart.js com distribuição por classe de ativo.
+
+carteiraRenderSunburst(): void
+// Gráfico sunburst ECharts ("Distribuição Hierárquica") — classe → ativos.
+// Sem labels; informações exibidas apenas no tooltip.</code></pre>
+
+      <h3>Perfil do investidor</h3>
+      <p>Calculado a partir do percentual de Renda Fixa sobre o total alocado:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Perfil</th><th>Condição</th><th>Cor</th><th>Ícone</th></tr></thead>
+          <tbody>
+            <tr><td>Conservador</td><td>RF ≥ 70%</td><td><span class="swatch" style="background:#22c55e"></span>verde</td><td>shield</td></tr>
+            <tr><td>Moderado</td><td>RF 40–69%</td><td><span class="swatch" style="background:#f59e0b"></span>âmbar</td><td>activity</td></tr>
+            <tr><td>Arrojado</td><td>RF &lt; 40%</td><td><span class="swatch" style="background:#ef4444"></span>vermelho</td><td>zap</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section id="app">
       <h2>app.js</h2>
       <p>Orquestração geral: conecta todos os módulos, registra eventos e inicializa a aplicação. <strong>Deve ser carregado por último.</strong></p>
@@ -403,7 +533,8 @@ setupButtons(): void
 // Registra listeners para:
 //   salvarOrcamento, limparMes, addLancamento,
 //   btnExportPdf, btnExportBackup, inputImportBackup,
-//   btnAdicionarCategoria, logoBtnSidebar
+//   btnAdicionarCategoria, btnAdicionarGastoFixo,
+//   btnAdicionarReceita, btnAdicionarCarteira
 
 setupCurrencyMask(el: HTMLElement): void
 // Formata em tempo real como BRL.
@@ -411,14 +542,20 @@ setupCurrencyMask(el: HTMLElement): void
 
 setupEventDelegation(): void
 // Event delegation em:
-//   #listaLancamentos    → deletar-lancamento
+//   #listaLancamentos      → deletar-lancamento, editar-lancamento
+//   #listaGastosFixos      → deletar-gasto-fixo
+//   #listaReceitas         → deletar-receita
 //   #categoriasListaEditor → salvar-percentuais, editar-categoria,
 //                            deletar-categoria, percentual-slider/input
-//   #listaCategorias     → salvar-percentuais, percentual-slider/input
+//   #listaCategorias       → salvar-percentuais, percentual-slider/input
 
 setupMobileMenu(): void
 // Hamburger abre sidebar.open com overlay.
 // Overlay e cada .nav-btn fecham o menu em mobile.
+
+setupSidebarToggle(): void
+// Gerencia colapso da sidebar no desktop (Alt+B).
+// Persiste estado em saldomain_sidebar_collapsed.
 
 init(): void
 // Sequência de bootstrap completa. Chamado ao final do arquivo.</code></pre>
