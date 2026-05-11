@@ -275,7 +275,7 @@
         </div>
         <div id="categoriasStatus" class="categorias-container chart-container">
           <h3>Status por Categoria</h3>
-          <div id="categoriasStatusLista" style="width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0;"></div>
+          <div id="categoriasStatusLista" style="width: 100%;"></div>
         </div>
       </div>
 
@@ -725,7 +725,7 @@
     <section id="carteira" class="screen">
       <div class="dashboard-header">
         <h2>Carteira de Investimentos</h2>
-        <p class="dashboard-subtitle">Estruture, calcule aportes e simule o crescimento da sua carteira</p>
+        <p class="dashboard-subtitle">Estruture, organize e gerencie sua carteira de investimentos no SaldoMais.</p>
       </div>
 
       <!-- Seletor de carteiras + perfil -->
@@ -742,9 +742,10 @@
       <!-- Tabs -->
       <div class="carteira-tabs">
         <button class="carteira-tab active" data-tab="estrutura">Estrutura</button>
-        <button class="carteira-tab" data-tab="aporte">Calcular Aporte</button>
+        <button class="carteira-tab" data-tab="aporte">Calcular aporte</button>
         <button class="carteira-tab" data-tab="simulador">Simulador</button>
         <button class="carteira-tab" data-tab="historico">Histórico</button>
+        <button class="carteira-tab" data-tab="personalizada">Inventário de ativos</button>
       </div>
 
       <!-- ABA ESTRUTURA -->
@@ -842,6 +843,100 @@
         </div>
         <div id="carteiraHistoricoLista"></div>
       </div>
+
+      <!-- ABA PERSONALIZADA -->
+      <div id="carteira-tab-personalizada" class="carteira-tab-content">
+
+        <!-- Toolbar: exportar / importar JSON exclusivo da carteira -->
+        <div class="cw-toolbar">
+          <button id="cwBtnExportCSV" class="btn-export-pdf">
+            <i data-lucide="file-spreadsheet" size="14"></i> Exportar CSV
+          </button>
+          <div class="btn-backup-group" style="margin-top:0;flex:1;">
+            <button id="cwBtnExportJSON" class="btn-backup">
+              <i data-lucide="download" size="14"></i> Exportar Backup
+            </button>
+            <label class="btn-backup">
+              <i data-lucide="upload" size="14"></i> Importar Backup
+              <input type="file" id="cwInputImportJSON" accept=".json" style="display:none">
+            </label>
+          </div>
+        </div>
+
+        <!-- Formulários: tipo + ativo -->
+        <div class="cw-forms-grid">
+
+          <div class="lancamento-form">
+            <p class="cw-form-title"><i data-lucide="layers" size="14"></i> Tipo de Ativo</p>
+            <div class="input-group">
+              <label>Nome</label>
+              <input id="cwTipoNome" type="text" placeholder="Ex: Renda Fixa, FIIs, Criptos…" autocomplete="off">
+            </div>
+            <div id="cwTipoCorPreview" class="cw-cor-preview"></div>
+            <button id="cwBtnAdicionarTipo" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+              <i data-lucide="plus-circle" size="16"></i> Adicionar Tipo
+            </button>
+          </div>
+
+          <div class="lancamento-form">
+            <p class="cw-form-title"><i data-lucide="briefcase" size="14"></i> Ativo</p>
+            <div class="input-group">
+              <label>Nome</label>
+              <input id="cwAtivoNome" type="text" placeholder="Ex: PETR4, Tesouro Selic…" autocomplete="off">
+            </div>
+            <div class="input-row">
+              <div class="input-group" style="flex:2;">
+                <label>Tipo</label>
+                <select id="cwAtivoTipo"></select>
+              </div>
+              <div class="input-group" style="flex:1;">
+                <label>Alocação (%)</label>
+                <input id="cwAtivoPct" type="number" min="0" max="100" step="0.1" placeholder="Ex: 25">
+              </div>
+            </div>
+            <button id="cwBtnAdicionarAtivo" class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+              <i data-lucide="plus-circle" size="16"></i> Adicionar Ativo
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Lista de ativos agrupada por tipo -->
+        <div class="lancamentos-section">
+          <h3 style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="list-checks" size="20"></i> Ativos da Carteira
+          </h3>
+          <div id="cwListaAtivos"></div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="cw-graficos-grid">
+          <div class="carteira-chart-card">
+            <h5>Por Ativo</h5>
+            <div style="position:relative;height:280px;">
+              <canvas id="cwDonutChart"></canvas>
+              <div id="cwDonutEmpty" class="cw-chart-empty">
+                <i data-lucide="pie-chart" style="width:32px;height:32px;opacity:0.35;"></i>
+                <p class="lancamentos-empty-title">Nenhum dado para exibir</p>
+                <p class="lancamentos-empty-desc">Adicione ativos com alocação definida.</p>
+              </div>
+            </div>
+          </div>
+          <div class="carteira-chart-card">
+            <h5>Por Tipo</h5>
+            <div style="position:relative;height:280px;">
+              <canvas id="cwBarrasChart"></canvas>
+              <div id="cwBarrasEmpty" class="cw-chart-empty">
+                <i data-lucide="chart-no-axes-column" style="width:32px;height:32px;opacity:0.35;"></i>
+                <p class="lancamentos-empty-title">Nenhum dado para exibir</p>
+                <p class="lancamentos-empty-desc">Adicione ativos com alocação definida.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </section>
 
     <footer class="screen-footer">

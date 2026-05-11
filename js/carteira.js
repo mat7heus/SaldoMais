@@ -107,6 +107,12 @@ function initCarteira() {
   setupCarteiraInputModal();
   setupCarteiraNavHook();
   setupCarteiraShortcut();
+
+  // ─── Aba Personalizada ───────────────────────────────────────────────
+  cwAtualizarCorPreview();
+  cwRenderTipoSelect();
+  cwRenderLista();
+  cwSetupButtons();
 }
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
@@ -118,7 +124,8 @@ function setupCarteiraTabs() {
       document.querySelectorAll('.carteira-tab-content').forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('carteira-tab-' + btn.dataset.tab)?.classList.add('active');
-      if (btn.dataset.tab === 'historico') carteiraRenderHistorico();
+      if (btn.dataset.tab === 'historico')     carteiraRenderHistorico();
+      if (btn.dataset.tab === 'personalizada') setTimeout(cwRenderGraficos, 50);
     });
   });
 }
@@ -129,7 +136,6 @@ function setupCarteiraNavHook() {
   const btn = document.querySelector('.nav-btn[data-screen="carteira"]');
   if (!btn) return;
   btn.addEventListener('click', () => {
-    // Render charts when screen becomes visible
     setTimeout(() => {
       carteiraRenderDonut();
       carteiraRenderSunburst();
@@ -562,7 +568,6 @@ function carteiraCalcularAporte() {
   const entries = Object.entries(ativos).filter(([, pct]) => pct > 0);
   if (!entries.length) { notificar('Salve uma carteira com ativos antes de calcular.', 'warn'); return; }
 
-  // Calcular em centavos (evita ponto flutuante)
   const aporteCents = Math.round(aporte * 100);
   let somaAlocado = 0;
   const distribuicao = entries.map(([id, pct]) => {
@@ -571,10 +576,8 @@ function carteiraCalcularAporte() {
     somaAlocado += valorCents;
     return { id, nome: ativo?.nome || id, classe: ativo?.classe || '', pct, valorCents };
   });
-  // Resíduo vai para o último item, garantindo que soma === aporte exato
   distribuicao[distribuicao.length - 1].valorCents += (aporteCents - somaAlocado);
 
-  // Alerta de mínimo
   const abaixoMinimo = distribuicao.filter(d => {
     const min = MINIMOS[d.id] || 0;
     return d.valorCents > 0 && (d.valorCents / 100) < min;
@@ -591,7 +594,6 @@ function carteiraCalcularAporte() {
     }
   }
 
-  // Tabela
   const tabela = document.getElementById('carteiraAporteTabela');
   if (tabela) {
     tabela.innerHTML = `
@@ -612,7 +614,6 @@ function carteiraCalcularAporte() {
       </tr></tfoot>`;
   }
 
-  // Gráfico de barras horizontal
   const canvas = document.getElementById('carteiraAporteChart');
   if (canvas) {
     if (_carteiraAporteChart) { _carteiraAporteChart.destroy(); _carteiraAporteChart = null; }
@@ -647,7 +648,6 @@ function carteiraCalcularAporte() {
     });
   }
 
-  // Salvar no histórico (max 50)
   const historico = carteiraGetHistorico();
   historico.unshift({
     id: Date.now(),
@@ -696,7 +696,6 @@ function carteiraSimular() {
   const atual = carteiraGetAtual();
   const ativos = atual?.ativos || {};
 
-  // Taxa anual ponderada pela carteira
   let totalPct = 0, taxaPonderada = 0;
   Object.entries(ativos).forEach(([id, pct]) => {
     const ativo = CATALOGO.find(a => a.id === id);
@@ -708,7 +707,6 @@ function carteiraSimular() {
   const taxaMensal  = Math.pow(1 + taxaAnual, 1 / 12) - 1;
   const meses       = prazoAnos * 12;
 
-  // Projeção mês a mês
   const pontos = [];
   let patrimonio = 0;
   for (let m = 0; m <= meses; m++) {
@@ -718,7 +716,6 @@ function carteiraSimular() {
   const patrimonioFinal = pontos[pontos.length - 1].valor;
   const totalAportado   = aporteMensal * meses;
 
-  // Cards
   const card = document.getElementById('simPatrimonioCard');
   if (card) {
     card.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
@@ -737,7 +734,6 @@ function carteiraSimular() {
     </div>`;
   }
 
-  // Gráfico de área
   const canvas = document.getElementById('simChart');
   if (canvas) {
     if (_simChart) { _simChart.destroy(); _simChart = null; }
@@ -821,6 +817,467 @@ function setupCarteiraShortcut() {
       document.querySelector('.nav-btn[data-screen="carteira"]')?.click();
     }
   });
+}
+
+// =============================================================================
+// ABA PERSONALIZADA — Tipos e Ativos customizados
+// =============================================================================
+
+const CW_KEYS = {
+  tipos:  'saldomain_carteira_tipos',
+  ativos: 'saldomain_carteira_ativos',
+};
+
+const CW_PALETA = [
+  '#f59e0b', '#3b82f6', '#a855f7', '#22c55e', '#ef4444',
+  '#06b6d4', '#ec4899', '#f97316', '#84cc16', '#64748b',
+];
+
+let _cwCorSelecionada = null;
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+
+function cwGet(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+}
+function cwSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+function cwTipos()      { return cwGet(CW_KEYS.tipos);  }
+function cwSetTipos(v)  { cwSet(CW_KEYS.tipos, v);      }
+function cwAtivos()     { return cwGet(CW_KEYS.ativos); }
+function cwSetAtivos(v) { cwSet(CW_KEYS.ativos, v);     }
+
+function cwProximaCor() {
+  return CW_PALETA[cwTipos().length % CW_PALETA.length];
+}
+
+function cwTotalDoTipo(tipo_id) {
+  return cwAtivos().filter(a => a.tipo_id === tipo_id).reduce((s, a) => s + (parseFloat(a.pct) || 0), 0);
+}
+
+// ─── BOTÕES ───────────────────────────────────────────────────────────────────
+
+function cwSetupButtons() {
+  document.getElementById('cwBtnAdicionarTipo')?.addEventListener('click', cwAdicionarTipo);
+  document.getElementById('cwBtnAdicionarAtivo')?.addEventListener('click', cwAdicionarAtivo);
+  document.getElementById('cwBtnExportCSV')?.addEventListener('click', cwExportarCSV);
+  document.getElementById('cwBtnExportJSON')?.addEventListener('click', cwExportarJSON);
+  document.getElementById('cwInputImportJSON')?.addEventListener('change', cwImportarJSON);
+
+  document.getElementById('cwTipoCorPreview')?.addEventListener('click', e => {
+    const dot = e.target.closest('.cw-paleta-dot');
+    if (!dot) return;
+    _cwCorSelecionada = dot.dataset.cor;
+    cwAtualizarCorPreview();
+  });
+
+  document.getElementById('cwTipoNome')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') document.getElementById('cwBtnAdicionarTipo')?.click();
+  });
+  document.getElementById('cwAtivoNome')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') document.getElementById('cwBtnAdicionarAtivo')?.click();
+  });
+
+  // Delegação de eventos estável na lista (evita múltiplos listeners ao re-renderizar)
+  const lista = document.getElementById('cwListaAtivos');
+  lista?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'cw-del-tipo')        cwDeletarTipo(btn.dataset.id);
+    if (action === 'cw-del-ativo')       cwDeletarAtivo(btn.dataset.id);
+    if (action === 'cw-distribuir-tipo') cwDistribuirIgual(btn.dataset.tipoId);
+  });
+  lista?.addEventListener('change', e => {
+    const inp = e.target.closest('.cw-pct-input');
+    if (inp) cwSalvarPct(inp.dataset.id, inp.value);
+  });
+}
+
+// ─── TIPO: ADICIONAR / DELETAR ────────────────────────────────────────────────
+
+function cwAtualizarCorPreview() {
+  const el = document.getElementById('cwTipoCorPreview');
+  if (!el) return;
+  const auto  = CW_PALETA[cwTipos().length % CW_PALETA.length];
+  const ativa = _cwCorSelecionada || auto;
+  el.innerHTML = CW_PALETA.map(cor =>
+    `<span class="cw-paleta-dot${cor === ativa ? ' cw-paleta-dot--ativa' : ''}"
+      style="background:${cor}" data-cor="${cor}" title="${cor}"></span>`
+  ).join('');
+}
+
+function cwAdicionarTipo() {
+  const input = document.getElementById('cwTipoNome');
+  const nome  = input?.value.trim();
+  if (!nome) { notificar('Digite um nome para o tipo.', 'warn'); return; }
+
+  const tipos = cwTipos();
+  if (tipos.find(t => t.nome.toLowerCase() === nome.toLowerCase())) {
+    notificar('Já existe um tipo com este nome.', 'warn'); return;
+  }
+
+  tipos.push({ id: Date.now().toString(), nome, cor: _cwCorSelecionada || cwProximaCor() });
+  cwSetTipos(tipos);
+  _cwCorSelecionada = null;
+  if (input) input.value = '';
+  cwAtualizarCorPreview();
+  cwRenderTipoSelect();
+  cwRenderLista();
+  notificar('Tipo adicionado!', 'success');
+}
+
+async function cwDeletarTipo(id) {
+  if (cwAtivos().find(a => a.tipo_id === id)) {
+    notificar('Remova os ativos deste tipo antes de excluí-lo.', 'warn');
+    return;
+  }
+  const tipos = cwTipos();
+  const tipo  = tipos.find(t => t.id === id);
+  const ok    = await confirmar(`Excluir o tipo "${tipo?.nome}"?`);
+  if (!ok) return;
+  cwSetTipos(tipos.filter(t => t.id !== id));
+  cwAtualizarCorPreview();
+  cwRenderTipoSelect();
+  cwRenderLista();
+  notificar('Tipo removido.', 'success');
+}
+
+// ─── ATIVO: ADICIONAR / DELETAR / EDITAR % ───────────────────────────────────
+
+function cwRenderTipoSelect() {
+  const sel   = document.getElementById('cwAtivoTipo');
+  if (!sel) return;
+  const tipos = cwTipos();
+  sel.innerHTML = tipos.length
+    ? tipos.map(t => `<option value="${t.id}">${t.nome}</option>`).join('')
+    : '<option value="">— Crie um tipo primeiro —</option>';
+}
+
+function cwAdicionarAtivo() {
+  const nomeEl  = document.getElementById('cwAtivoNome');
+  const tipoEl  = document.getElementById('cwAtivoTipo');
+  const pctEl   = document.getElementById('cwAtivoPct');
+  const nome    = nomeEl?.value.trim();
+  const tipo_id = tipoEl?.value;
+  const pct     = parseFloat(pctEl?.value || 0);
+
+  if (!nome)            { notificar('Digite o nome do ativo.', 'warn');                   return; }
+  if (!tipo_id)         { notificar('Crie e selecione um tipo de ativo.', 'warn');        return; }
+  if (!pct || pct <= 0) { notificar('Digite uma alocação maior que 0%.', 'warn');         return; }
+  if (pct > 100)        { notificar('A alocação não pode exceder 100%.', 'warn');          return; }
+
+  const ativos = cwAtivos();
+  if (ativos.find(a => a.nome.toLowerCase() === nome.toLowerCase())) {
+    notificar('Já existe um ativo com este nome.', 'warn'); return;
+  }
+
+  const totalTipo = ativos.filter(a => a.tipo_id === tipo_id).reduce((s, a) => s + (parseFloat(a.pct) || 0), 0);
+  if (Math.round((totalTipo + pct) * 10) / 10 > 100) {
+    notificar(`Alocação do tipo excederia 100% (alocado: ${totalTipo.toFixed(1)}%).`, 'warn'); return;
+  }
+
+  ativos.push({ id: Date.now().toString(), nome, tipo_id, pct });
+  cwSetAtivos(ativos);
+  if (nomeEl) nomeEl.value = '';
+  if (pctEl)  pctEl.value  = '';
+  cwRenderLista();
+  cwRenderGraficos();
+  notificar('Ativo adicionado!', 'success');
+}
+
+async function cwDeletarAtivo(id) {
+  const ativo = cwAtivos().find(a => a.id === id);
+  const ok    = await confirmar(`Remover o ativo "${ativo?.nome}"?`);
+  if (!ok) return;
+  cwSetAtivos(cwAtivos().filter(a => a.id !== id));
+  cwRenderLista();
+  cwRenderGraficos();
+  notificar('Ativo removido.', 'success');
+}
+
+function cwSalvarPct(id, val) {
+  const ativos = cwAtivos();
+  const idx    = ativos.findIndex(a => a.id === id);
+  if (idx === -1) return;
+  ativos[idx].pct = parseFloat(val) || 0;
+  cwSetAtivos(ativos);
+  cwRenderLista();
+  cwRenderGraficos();
+}
+
+// ─── DISTRIBUIR IGUALMENTE (por tipo) ────────────────────────────────────────
+
+function cwDistribuirIgual(tipo_id) {
+  const todos  = cwAtivos();
+  const doTipo = todos.filter(a => a.tipo_id === tipo_id);
+  if (!doTipo.length) { notificar('Nenhum ativo neste tipo.', 'warn'); return; }
+
+  const n      = doTipo.length;
+  const base   = parseFloat((100 / n).toFixed(4));
+  const ultimo = parseFloat((100 - base * (n - 1)).toFixed(4));
+  const idxMap = Object.fromEntries(doTipo.map((a, i) => [a.id, i]));
+  cwSetAtivos(todos.map(a => {
+    if (!(a.id in idxMap)) return a;
+    return { ...a, pct: idxMap[a.id] === n - 1 ? ultimo : base };
+  }));
+  cwRenderLista();
+  cwRenderGraficos();
+  notificar('Ativos distribuídos igualmente!', 'success');
+}
+
+// ─── LISTA DE ATIVOS ─────────────────────────────────────────────────────────
+
+function cwRenderLista() {
+  const container = document.getElementById('cwListaAtivos');
+  if (!container) return;
+
+  const tipos  = cwTipos();
+  const ativos = cwAtivos();
+
+  if (!tipos.length) {
+    container.innerHTML = `<div class="lancamentos-empty">
+      <div class="lancamentos-empty-icon"><i data-lucide="briefcase" style="width:36px;height:36px;"></i></div>
+      <p class="lancamentos-empty-title">Carteira personalizada vazia</p>
+      <p class="lancamentos-empty-desc">Crie um tipo de ativo no formulário acima para começar.</p>
+    </div>`;
+    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    return;
+  }
+
+  container.innerHTML = tipos.map(tipo => {
+    const ativosDoTipo = ativos.filter(a => a.tipo_id === tipo.id);
+    const tipoTotal    = Math.round(cwTotalDoTipo(tipo.id) * 10) / 10;
+    const tipoPct      = Math.min(tipoTotal, 100);
+    const tipoCor      = tipoTotal > 100 ? 'var(--danger)' : tipoTotal >= 100 ? 'var(--ok)' : tipoTotal >= 80 ? 'var(--warn)' : 'var(--accent)';
+    return `
+      <div class="cw-grupo">
+        <div class="cw-grupo-header">
+          <div class="cw-grupo-info">
+            <span class="cw-grupo-dot" style="background:${tipo.cor}"></span>
+            <span class="cw-grupo-nome">${tipo.nome}</span>
+            <span class="cw-grupo-count">${ativosDoTipo.length} ativo${ativosDoTipo.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="cw-grupo-actions">
+            <span class="cw-grupo-pct" style="color:${tipoCor}">${tipoTotal.toFixed(1)}%</span>
+            <button class="btn-carteira-ghost" data-action="cw-distribuir-tipo" data-tipo-id="${tipo.id}" title="Distribuir igualmente">
+              <i data-lucide="equal"></i>
+            </button>
+            <button class="btn-carteira-ghost btn-carteira-danger"
+              data-action="cw-del-tipo" data-id="${tipo.id}" title="Excluir tipo">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </div>
+        <div class="cw-grupo-progress-track">
+          <div class="cw-grupo-progress-fill" style="width:${tipoPct}%;background:${tipoCor}"></div>
+        </div>
+        ${ativosDoTipo.length ? `
+          <div class="cw-ativos-lista">
+            ${ativosDoTipo.map(a => `
+              <div class="cw-ativo-row">
+                <span class="cw-ativo-nome">${a.nome}</span>
+                <div class="cw-ativo-pct-group">
+                  <input type="number" class="cw-pct-input" data-id="${a.id}"
+                    min="0" max="100" step="0.1" value="${parseFloat(a.pct).toFixed(1)}">
+                  <span class="percentual-unit">%</span>
+                </div>
+                <button class="btn-carteira-ghost btn-carteira-danger"
+                  data-action="cw-del-ativo" data-id="${a.id}" title="Remover ativo">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>`).join('')}
+          </div>` : `
+          <div class="cw-tipo-vazio">Nenhum ativo neste tipo</div>`}
+      </div>`;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons({ nodes: [container] });
+}
+
+// ─── GRÁFICOS ────────────────────────────────────────────────────────────────
+
+let _cwDonut  = null;
+let _cwBarras = null;
+
+function cwRenderGraficos() {
+  cwRenderDonut();
+  cwRenderBarras();
+}
+
+function cwRenderDonut() {
+  const canvas = document.getElementById('cwDonutChart');
+  const empty  = document.getElementById('cwDonutEmpty');
+  if (!canvas) return;
+  if (_cwDonut) { _cwDonut.destroy(); _cwDonut = null; }
+
+  const tipos  = cwTipos();
+  const ativos = cwAtivos().filter(a => parseFloat(a.pct) > 0);
+  if (!ativos.length) {
+    canvas.style.display = 'none';
+    if (empty) { empty.classList.add('show'); lucide.createIcons({ nodes: [empty] }); }
+    return;
+  }
+  canvas.style.display = '';
+  if (empty) empty.classList.remove('show');
+
+  const tiposMap = Object.fromEntries(tipos.map(t => [t.id, t]));
+
+  _cwDonut = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels:   ativos.map(a => a.nome),
+      datasets: [{
+        data:            ativos.map(a => parseFloat(a.pct) || 0),
+        backgroundColor: ativos.map(a => tiposMap[a.tipo_id]?.cor || '#888'),
+        borderWidth:     0,
+        hoverOffset:     8,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#a1a1aa', font: { size: 11 }, boxWidth: 12, padding: 12 },
+        },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(1)}%` },
+        },
+      },
+    },
+  });
+}
+
+function cwRenderBarras() {
+  const canvas = document.getElementById('cwBarrasChart');
+  const empty  = document.getElementById('cwBarrasEmpty');
+  if (!canvas) return;
+  if (_cwBarras) { _cwBarras.destroy(); _cwBarras = null; }
+
+  const tipos  = cwTipos();
+  const ativos = cwAtivos();
+
+  const porTipo = (!tipos.length || !ativos.length) ? [] : tipos.map(t => ({
+    nome:  t.nome,
+    cor:   t.cor,
+    total: ativos
+      .filter(a => a.tipo_id === t.id)
+      .reduce((s, a) => s + (parseFloat(a.pct) || 0), 0),
+  })).filter(t => t.total > 0);
+
+  if (!porTipo.length) {
+    canvas.style.display = 'none';
+    if (empty) { empty.classList.add('show'); lucide.createIcons({ nodes: [empty] }); }
+    return;
+  }
+  canvas.style.display = '';
+  if (empty) empty.classList.remove('show');
+
+  _cwBarras = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels:   porTipo.map(t => t.nome),
+      datasets: [{
+        data:            porTipo.map(t => parseFloat(t.total.toFixed(1))),
+        backgroundColor: porTipo.map(t => t.cor),
+        borderWidth:     0,
+        borderRadius:    6,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend:  { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(1)}%` } },
+      },
+      scales: {
+        x: {
+          max:   100,
+          ticks: { color: '#a1a1aa', callback: v => v + '%' },
+          grid:  { color: 'rgba(255,255,255,0.06)' },
+        },
+        y: {
+          ticks: { color: '#f5f5f5', font: { size: 11 } },
+          grid:  { display: false },
+        },
+      },
+    },
+  });
+}
+
+// ─── EXPORTAR CSV ─────────────────────────────────────────────────────────────
+
+function cwExportarCSV() {
+  const tipos  = cwTipos();
+  const ativos = cwAtivos();
+  if (!ativos.length) { notificar('Nenhum ativo para exportar.', 'warn'); return; }
+
+  const rows = [['Ativo', 'Tipo', 'Alocação (%)']];
+  tipos.forEach(t =>
+    ativos.filter(a => a.tipo_id === t.id)
+      .forEach(a => rows.push([a.nome, t.nome, parseFloat(a.pct).toFixed(1)]))
+  );
+
+  const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href:     url,
+    download: `SaldoMais-carteira-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
+  a.click();
+  URL.revokeObjectURL(url);
+  notificar('CSV exportado!', 'success');
+}
+
+// ─── EXPORTAR / IMPORTAR JSON ─────────────────────────────────────────────────
+
+function cwExportarJSON() {
+  const data = {
+    _versao:       1,
+    _exportado_em: new Date().toISOString(),
+    tipos:         cwTipos(),
+    ativos:        cwAtivos(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href:     url,
+    download: `SaldoMais-carteira-backup-${new Date().toISOString().slice(0, 10)}.json`,
+  });
+  a.click();
+  URL.revokeObjectURL(url);
+  notificar('Backup da carteira exportado!', 'success');
+}
+
+function cwImportarJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.tipos) || !Array.isArray(data.ativos)) {
+        notificar('Arquivo inválido — formato não reconhecido.', 'warn'); return;
+      }
+      const ok = await confirmar('Restaurar backup? Os dados atuais da carteira personalizada serão substituídos.');
+      if (!ok) return;
+      cwSetTipos(data.tipos);
+      cwSetAtivos(data.ativos);
+      cwAtualizarCorPreview();
+      cwRenderTipoSelect();
+      cwRenderLista();
+      cwRenderGraficos();
+      notificar('Backup da carteira restaurado!', 'success');
+    } catch (_) {
+      notificar('Erro ao ler o arquivo. Verifique se é um backup válido.', 'warn');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 // ─── BOOTSTRAP ───────────────────────────────────────────────────────────────
