@@ -1,9 +1,8 @@
 <div align="center">
 
-<img src="./images/banner_saldomais.png" alt="Banner do SaldoMais" style="border-radius:18px;" />
+<img src="./images/banner_saldomais.png" alt="Banner do SaldoMais" style="border-radius:18px;"/>
 
-<img src="./images/saldomais-icon.png" alt="Ícone do SaldoMais" width="88" height="88" style="border-radius:18px;" />
-
+<img src="./images/saldomais-icon.png" alt="Ícone do SaldoMais" width="88" height="88" style="border-radius:18px;"/>
 <h1>SaldoMais</h1>
 
 <p><strong>Gastos claros, decisões inteligentes.</strong></p>
@@ -19,9 +18,9 @@
 
 ---
 
-SaldoMais é uma aplicação de **finanças pessoais** client-side — sem backend, sem cadastro, sem instalação. Tudo roda no navegador com dados persistidos via `localStorage`.
+**SaldoMais** é uma aplicação **client-side** de finanças pessoais — sem backend, sem cadastro, sem instalação. Tudo roda no navegador com dados persistidos via `localStorage`.
 
-Desenvolvida com HTML, CSS e JavaScript puro, a aplicação cobre o ciclo completo de controle financeiro: do registro de despesas à simulação de investimentos.
+Desenvolvida com **HTML, CSS e JavaScript puro** (Vanilla JS), a aplicação cobre o ciclo completo de controle financeiro: do registro de despesas à simulação de investimentos.
 
 ---
 
@@ -40,6 +39,18 @@ Desenvolvida com HTML, CSS e JavaScript puro, a aplicação cobre o ciclo comple
 
 ---
 
+## Tecnologias
+
+| Tecnologia | Finalidade |
+|---|---|
+| HTML5 + CSS3 + JavaScript (Vanilla) | Interface e lógica da aplicação |
+| [Chart.js](https://www.chartjs.org/) | Gráficos interativos |
+| [ECharts](https://echarts.apache.org/) | Gráfico de distribuição hierárquica (sunburst) |
+| [jsPDF](https://github.com/parallax/jsPDF) | Geração de relatórios PDF client-side |
+| [Lucide Icons](https://lucide.dev/) | Ícones SVG |
+
+---
+
 ## Acesso
 
 A aplicação está disponível em:
@@ -50,7 +61,7 @@ Não é necessário servidor, conta de usuário ou conexão contínua com a inte
 
 ---
 
-## Rodando localmente
+## Executando localmente
 
 ```bash
 git clone https://github.com/mat7heus/SaldoMais.git
@@ -60,18 +71,23 @@ Abra o arquivo `webapp.html` diretamente no navegador. Nenhum build step ou depe
 
 ---
 
-## Stack
+## Estrutura do projeto
 
-| Tecnologia | Uso |
-|---|---|
-| HTML5 + CSS3 + JS | Interface e lógica da aplicação |
-| Chart.js | Gráficos interativos |
-| ECharts | Gráfico de distribuição hierárquica (sunburst) |
-| jsPDF | Geração de PDF client-side |
-| Lucide Icons | Ícones SVG |
+```
+SaldoMais/
+├── webapp.html          # Aplicação principal
+├── images/              # Assets visuais
+├── styles/              # Folhas de estilo
+├── scripts/             # Lógica da aplicação
+│   ├── modules/         # Módulos do sistema
+│   └── utils/           # Utilitários
+├── services/            # Serviços (PDF, exportação)
+├── pages/               # Páginas/views
+└── README.md
+```
 
 ---
 
 ## Licença
 
-Distribuído sob a licença [GPL v3](LICENSE).
+Distribuído sob a licença **[GPL v3](LICENSE)**.
