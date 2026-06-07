@@ -99,13 +99,10 @@ function initCarteira() {
   }
 
   carteiraRenderSelect();
-  carteiraRenderAtivos();
   carteiraRenderPerfil();
-  carteiraRenderConcentracao();
   setupCarteiraTabs();
   setupCarteiraButtons();
   setupCarteiraInputModal();
-  setupCarteiraNavHook();
   setupCarteiraShortcut();
 
   // ─── Aba Personalizada ───────────────────────────────────────────────
@@ -130,19 +127,6 @@ function setupCarteiraTabs() {
   });
 }
 
-// ─── NAV HOOK ────────────────────────────────────────────────────────────────
-
-function setupCarteiraNavHook() {
-  const btn = document.querySelector('.nav-btn[data-screen="carteira"]');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    setTimeout(() => {
-      carteiraRenderDonut();
-      carteiraRenderSunburst();
-    }, 50);
-  });
-}
-
 // ─── SELECT DE CARTEIRAS ──────────────────────────────────────────────────────
 
 function carteiraRenderSelect() {
@@ -155,11 +139,7 @@ function carteiraRenderSelect() {
   ).join('');
   sel.onchange = () => {
     carteiraSetAtiva(sel.value);
-    carteiraRenderAtivos();
     carteiraRenderPerfil();
-    carteiraRenderConcentracao();
-    carteiraRenderDonut();
-    carteiraRenderSunburst();
   };
 }
 
@@ -223,11 +203,7 @@ async function carteiraNovaHandler() {
   carteiraSetCarteiras(carteiras);
   carteiraSetAtiva(nova.id);
   carteiraRenderSelect();
-  carteiraRenderAtivos();
   carteiraRenderPerfil();
-  carteiraRenderConcentracao();
-  carteiraRenderDonut();
-  carteiraRenderSunburst();
   notificar('Carteira criada com sucesso!', 'success');
 }
 
@@ -259,11 +235,7 @@ async function carteiraDeletarHandler() {
   carteiraSetCarteiras(novas);
   carteiraSetAtiva(novas[0].id);
   carteiraRenderSelect();
-  carteiraRenderAtivos();
   carteiraRenderPerfil();
-  carteiraRenderConcentracao();
-  carteiraRenderDonut();
-  carteiraRenderSunburst();
   notificar('Carteira excluída.', 'success');
 }
 
@@ -355,9 +327,6 @@ function carteiraSalvarHandler() {
   carteiras[idx].ativos = ativos;
   carteiraSetCarteiras(carteiras);
   carteiraRenderPerfil();
-  carteiraRenderConcentracao();
-  carteiraRenderDonut();
-  carteiraRenderSunburst();
   notificar('Carteira salva com sucesso!', 'success');
 }
 
