@@ -741,40 +741,10 @@
 
       <!-- Tabs -->
       <div class="carteira-tabs">
-        <button class="carteira-tab active" data-tab="estrutura">Estrutura</button>
         <button class="carteira-tab" data-tab="aporte">Calcular aporte</button>
         <button class="carteira-tab" data-tab="simulador">Simulador</button>
         <button class="carteira-tab" data-tab="historico">Histórico</button>
-        <button class="carteira-tab" data-tab="personalizada">Inventário de ativos</button>
-      </div>
-
-      <!-- ABA ESTRUTURA -->
-      <div id="carteira-tab-estrutura" class="carteira-tab-content active">
-        <div id="carteiraConcentracaoAlert" class="carteira-alert carteira-alert-warn" style="display:none;"></div>
-        <div class="carteira-estrutura-grid">
-          <div class="carteira-ativos-panel">
-            <div class="carteira-panel-header">
-              <h4>Selecione os Ativos</h4>
-              <span id="carteiraTotalBadge" class="carteira-total-badge">Total: 0%</span>
-            </div>
-            <div id="carteiraAtivosLista"></div>
-            <button id="btnSalvarCarteira" class="btn-primary" style="width:100%;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;" disabled>
-              <i data-lucide="save"></i> Salvar Carteira
-            </button>
-          </div>
-          <div class="carteira-charts-panel">
-            <div class="carteira-chart-card">
-              <h5>Distribuição por Classe</h5>
-              <div style="position:relative;height:220px;">
-                <canvas id="carteiraDonutChart"></canvas>
-              </div>
-            </div>
-            <div class="carteira-chart-card" style="margin-top:14px;">
-              <h5>Distribuição Hierárquica</h5>
-              <div id="carteiraSunburst" style="height:300px;"></div>
-            </div>
-          </div>
-        </div>
+        <button class="carteira-tab active" data-tab="personalizada">Inventário de ativos</button>
       </div>
 
       <!-- ABA CALCULAR APORTE -->
@@ -845,7 +815,7 @@
       </div>
 
       <!-- ABA PERSONALIZADA -->
-      <div id="carteira-tab-personalizada" class="carteira-tab-content">
+      <div id="carteira-tab-personalizada" class="carteira-tab-content active">
 
         <!-- Toolbar: exportar / importar JSON exclusivo da carteira -->
         <div class="cw-toolbar">
