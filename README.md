@@ -1,7 +1,4 @@
 <div align="center">
-
-<img src="./images/banner_saldomais.png" alt="Banner do SaldoMais" style="border-radius:18px;" />
-
 <img src="./images/saldomais-icon.png" alt="Ícone do SaldoMais" width="88" height="88" style="border-radius:18px;" />
 <h1>SaldoMais</h1>
 
